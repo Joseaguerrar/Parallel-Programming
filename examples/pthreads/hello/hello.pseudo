@@ -1,0 +1,8 @@
+main:
+    create_thread(greet)
+    print("Hello form main thread")
+end procedure
+
+procedure greet
+    print("Hello form secondary thread")
+end procedure
