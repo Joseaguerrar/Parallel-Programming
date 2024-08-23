@@ -12,7 +12,7 @@ Glossary:
 
 5.Paralelismo de datos:
 
-6.Hilo de ejecución: Un arreglo de valores que el SO carga en los registros del CPU y permiten ejecutar código en ella.
+6.Hilo de ejecución: Un arreglo de valores que el SO carga en los registros del CPU y permiten ejecutar código en ella. Contiene el program counter, el stack pointer y los demas regisros que le permitiran ejecutar instrucciones que le corresponden.
 
 7.Indeterminismo:
 
