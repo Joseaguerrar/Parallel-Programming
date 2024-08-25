@@ -1,17 +1,18 @@
 Repositorio para ejemplos y tareas del curso Programación paralela y concurrente
 
 Glossary:
-1.Programación serial:
 
-2.Programación concurrente:
+1.Programación serial: es la programación en la que se ejecutan las instrucciones una a una, en el orden en que se encuentran escritas en el código fuente.
 
-3.Programación paralela:
+2.Programación concurrente: es la programación en la que se ejecutan varias instrucciones al mismo tiempo, pero no necesariamente en el mismo orden en que se encuentran escritas en el código fuente.
+
+3.Programación paralela: es la programación en la que se ejecutan varias instrucciones al mismo tiempo, y en el mismo orden en que se encuentran escritas en el código fuente de usando múltiples procesadores o hilos de ejecución.
 
 4.Concurrencia de tareas:
 
 5.Paralelismo de datos:
 
-6.Hilo de ejecución:
+6.Hilo de ejecución: Un arreglo de valores que el SO carga en los registros del CPU y permiten ejecutar código en ella. Contiene el program counter, el stack pointer y los demas regisros que le permitiran ejecutar instrucciones que le corresponden.
 
 7.Indeterminismo:
 
