@@ -12,7 +12,19 @@ int main(){
     pthread_create(&nieto1,NULL,buy_lottery,&semilla1);
     pthread_create(&nieto2,NULL,buy_lottery,&semilla2);
 
+    int* num1;
+    int* num2;
 
+    pthread_join(&nieto1,(void**)&num1);
+    pthread_join(&nieto2,(void**)&num2);
+    //Si no se hace el casting el compilador tira warning, además así almacenamos la dirección de los números
+
+    //Devolvemos los números
+    printf("Número de loteria del nieto 1: %i", *num1);
+    printf("Número de loteria del nieto 2: %i", *num2);
+
+    free(num1);
+    free(num2);
 
 
     return EXIT_SUCCESS;
