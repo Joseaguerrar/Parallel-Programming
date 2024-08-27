@@ -1,6 +1,0 @@
-crear función aleatorios()//para los números
-crear el main(){
-    crear los nietos y asignarles aleatorios();
-    usar el join();//obteniendo el valor pero de la dirección
-    retornar el valor de la dirección;
-}
