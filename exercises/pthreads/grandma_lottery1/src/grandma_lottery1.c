@@ -6,7 +6,8 @@ void* buy_lottery(void*);
 
 int main(){
     pthread_t nieto1,nieto2;
-    int semilla1=1, semilla2=2;
+    int semilla1=time(NULL);
+    int semilla2=time(NULL)+1;//diferencia la semilla, también se le puede sumar pthread_self para el id único
 
     //creación de los hilos representando los nietos
     pthread_create(&nieto1,NULL,buy_lottery,&semilla1);
@@ -15,25 +16,21 @@ int main(){
     int* num1;
     int* num2;
 
-    pthread_join(&nieto1,(void**)&num1);
-    pthread_join(&nieto2,(void**)&num2);
+    pthread_join(nieto1,(void**)&num1);
+    pthread_join(nieto2,(void**)&num2);
     //Si no se hace el casting el compilador tira warning, además así almacenamos la dirección de los números
 
     //Devolvemos los números
-    printf("Número de loteria del nieto 1: %i", *num1);
-    printf("Número de loteria del nieto 2: %i", *num2);
+    printf("Número de loteria del nieto 1: %i\n", *num1);
+    printf("Número de loteria del nieto 2: %i\n", *num2);
 
     free(num1);
     free(num2);
-
-
     return EXIT_SUCCESS;
 }
 
-
-
 void* buy_lottery(void* arg){
-    __uint16_t* num_lottery= malloc(sizeof(__uint16_t));
+    int* num_lottery= malloc(sizeof(int));
     //reservamos espacio en memoria para el entero
     if(num_lottery==NULL){
         //si es nulo, hubo error
@@ -41,7 +38,7 @@ void* buy_lottery(void* arg){
         exit(EXIT_FAILURE);
         //devolvemos salida erronea
     }
-    *num_lottery=rand_r(( __uint16_t*)arg)%100;
+    *num_lottery=rand_r(( int*)arg)%100;
     //le decimos que el valor que va a guardar es un random positivo de 0 a 99
 
     /*rand_r es una versión de rand que es reentrante, lo cual es importante en un entorno multihilo. 
