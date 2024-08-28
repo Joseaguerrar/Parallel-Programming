@@ -12,11 +12,13 @@ Glossary:
 
 5.Paralelismo de datos:
 
-6.Hilo de ejecución: Un arreglo de valores que el SO carga en los registros del CPU y permiten ejecutar código en ella. Contiene el program counter, el stack pointer y los demas regisros que le permitiran ejecutar instrucciones que le corresponden.
+6.Hilo de ejecución: un arreglo de valores que el SO carga en los registros del CPU y permiten ejecutar código en ella. Contiene el program counter, el stack pointer y los demas regisros que le permitiran ejecutar instrucciones que le corresponden.
 
-7.Indeterminismo:
+7.Indeterminismo: varios hilos o procesos pueden ejecutarse simultáneamente y competir por recursos como memoria o acceso a archivos. Dependiendo del orden en que los hilos ejecutan sus instrucciones, el estado final del programa puede cambiar, lo que puede resultar en resultados inesperados o comportamientos incorrectos si no se gestionan adecuadamente las condiciones de carrera.
 
-8.Memoria privada y compartida:
+8.Memoria privada y compartida: 
+  Privada: es la memoria que pertenece exclusivamente a un hilo o proceso particular. Ningún otro hilo o proceso tiene acceso a esta memoria, lo que significa que los datos almacenados en ella son privados y no pueden ser modificados ni leídos por otros hilos. 
+  Compartida: es la memoria a la que pueden acceder y modificar múltiples hilos o procesos. Los datos en la memoria compartida son accesibles por todos los hilos, lo que facilita la comunicación y la colaboración entre ellos.
 
 9.Espera activa:
 
