@@ -9,24 +9,69 @@
 #include <unistd.h>
 #include <linux/time.h>//se incluyó porque me tiraba error sin esta
 
-// thread_shared_data_t
+/**
+ * @file hello_iw_shr.c
+ * @brief Ejemplo de un programa que crea múltiples hilos y mide el tiempo de ejecución.
+ *
+ * Este archivo contiene un programa en C que utiliza hilos (threads) para 
+ * ejecutar tareas en paralelo. El programa define dos estructuras de datos: 
+ * `shared_data_t` que contiene datos compartidos por todos los hilos, 
+ * y `private_data_t` que contiene datos privados específicos para cada hilo.
+ */
+
+/**
+ * @brief Estructura que contiene datos compartidos por todos los hilos.
+ *
+ * Esta estructura incluye un contador de hilos (`thread_count`) que se utiliza
+ * para determinar cuántos hilos se deben crear.
+ */
 typedef struct shared_data {
-  uint64_t thread_count;
+  uint64_t thread_count;  ///< Número de hilos que se deben crear.
 } shared_data_t;
 
-// thread_private_data_t
+/**
+ * @brief Estructura que contiene datos privados para cada hilo.
+ *
+ * Cada hilo tiene un número de hilo (`thread_number`) único y un puntero a 
+ * la estructura de datos compartidos (`shared_data`).
+ */
 typedef struct private_data {
-  uint64_t thread_number;  // rank
-  shared_data_t* shared_data;//todos tienen puntero a la misma estructura
+  uint64_t thread_number;  ///< Número de hilo (identificador único del hilo).
+  shared_data_t* shared_data;  ///< Puntero a la estructura de datos compartidos.
 } private_data_t;
 
 /**
- * @brief ...
+ * @brief Función que ejecuta cada hilo.
+ *
+ * Esta función es llamada por cada hilo creado y se encarga de imprimir un 
+ * mensaje indicando cuál hilo se está ejecutando.
+ *
+ * @param data Puntero a los datos privados del hilo (`private_data_t`).
+ * @return Siempre retorna NULL.
  */
 void* greet(void* data);
+
+/**
+ * @brief Crea los hilos y espera a que todos terminen.
+ *
+ * Esta función se encarga de crear el número de hilos especificado en 
+ * `shared_data_t` y luego esperar a que todos los hilos terminen su ejecución.
+ *
+ * @param shared_data Puntero a la estructura que contiene los datos compartidos por todos los hilos.
+ * @return Un código de error si no se pudieron crear los hilos, de lo contrario EXIT_SUCCESS.
+ */
 int create_threads(shared_data_t* shared_data);
 
-// procedure main(argc, argv[])
+/**
+ * @brief Punto de entrada del programa.
+ *
+ * La función principal del programa. Inicializa los datos compartidos, 
+ * crea los hilos y mide el tiempo de ejecución del programa.
+ *
+ * @param argc Número de argumentos pasados al programa.
+ * @param argv Vector de cadenas con los argumentos pasados al programa.
+ * @return EXIT_SUCCESS si todo salió bien, o un código de error si ocurrió algún problema.
+ */
 int main(int argc, char* argv[]) {
   int error = EXIT_SUCCESS;
   // create thread_count as result of converting argv[1] to integer
