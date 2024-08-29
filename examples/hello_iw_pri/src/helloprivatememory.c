@@ -8,18 +8,50 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-// thread_private_data_t
-typedef struct private_data {
-  uint64_t thread_number;  // rank
-  uint64_t thread_count;
-  struct private_data* next;
-} private_data_t;
-//funciona como lista enlazada
+/**
+ * @file threaded_program.c
+ * @brief Programa de ejemplo que utiliza hilos y estructuras enlazadas.
+ *
+ * Este archivo contiene un programa en C que crea múltiples hilos y los 
+ * organiza en una lista enlazada simple. Cada hilo ejecuta una función que 
+ * imprime su número de hilo y el número total de hilos creados.
+ */
 
 /**
- * @brief ...
+ * @brief Estructura que contiene datos privados para cada hilo.
+ *
+ * Esta estructura almacena el número del hilo (`thread_number`), la cuenta total 
+ * de hilos (`thread_count`), y un puntero al siguiente `private_data_t` en la 
+ * lista enlazada.
+ */
+typedef struct private_data {
+  uint64_t thread_number;  ///< Número de hilo (identificador único del hilo).
+  uint64_t thread_count;   ///< Número total de hilos creados.
+  struct private_data* next;  ///< Puntero al siguiente nodo en la lista enlazada.
+} private_data_t;
+
+/**
+ * @brief Función que ejecuta cada hilo.
+ *
+ * Esta función es llamada por cada hilo creado. Imprime el número de hilo y 
+ * el total de hilos creados.
+ *
+ * @param data Puntero a los datos privados del hilo (`private_data_t`).
+ * @return Siempre retorna NULL.
  */
 void* greet(void* data);
+
+/**
+ * @brief Crea los hilos y espera a que todos terminen.
+ *
+ * Esta función reserva memoria para los hilos y sus datos privados, luego 
+ * crea cada hilo, asignándole sus datos privados y el número total de hilos.
+ * Finalmente, espera a que todos los hilos terminen su ejecución antes de 
+ * liberar la memoria reservada.
+ *
+ * @param thread_count Número de hilos a crear.
+ * @return EXIT_SUCCESS si todo salió bien, o un código de error si hubo problemas al crear los hilos.
+ */
 int create_threads(uint64_t thread_count);
 
 // procedure main(argc, argv[])
