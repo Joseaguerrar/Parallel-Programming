@@ -51,11 +51,23 @@ void* greet(void* data);
  * Finalmente, espera a que todos los hilos terminen su ejecución antes de 
  * liberar la memoria reservada.
  *
- * @param thread_count Número de hilos a crear.
- * @return EXIT_SUCCESS si todo salió bien, o un código de error si hubo problemas al crear los hilos.
+ * @param count Número de hilos a crear.
+ * @param routine Función que ejecutará cada hilo.
+ * @param data Puntero a los datos compartidos que se pasarán a cada hilo.
+ * @return private_data_t* Arreglo de estructuras de datos privados, o NULL si ocurre un error.
  */
-int create_threads(uint64_t thread_count);
+private_data_t* create_threads(size_t count, void*(*routine)(void*), void* data);
 
+/**
+ * @brief Espera a que todos los hilos en el equipo finalicen su ejecución.
+ *
+ * Esta función se asegura de unir los hilos utilizando el identificador de hilo almacenado en la estructura `private_data_t` y finalmente libera la memoria asignada para las estructuras de datos privados.
+ *
+ * @param count Número de hilos en el equipo.
+ * @param private_data Arreglo de estructuras de datos privados.
+ * @return int Número de errores encontrados al unir hilos.
+ */
+int join_threads(size_t count, private_data_t* private_data);
 
 /**
  * @brief Procedimiento principal.
