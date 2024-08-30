@@ -9,7 +9,7 @@
 #include <unistd.h>
 
 /**
- * @file hello_iw_pri.c
+ * @file create_thread_team.c
  * @brief Programa de ejemplo que utiliza hilos y estructuras enlazadas.
  *
  * Este archivo contiene un programa en C que crea múltiples hilos y los 
@@ -90,62 +90,94 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    error = create_threads(thread_count);
-    return error;
-}
-
-/**
- * @brief Crea el número especificado de hilos.
- *
- * Esta función crea los hilos y espera a que terminen.
- *
- * @param thread_count Número de hilos a crear.
- * @return int Código de estado que indica éxito o fracaso.
- */
-int create_threads(uint64_t thread_count) {
-    int error = EXIT_SUCCESS;
-    pthread_t* threads = (pthread_t*) malloc(thread_count * sizeof(pthread_t));
-    private_data_t* private_data = (private_data_t*) calloc(thread_count, sizeof(private_data_t));
-
-    if (threads && private_data) {
-        for (uint64_t thread_number = 0; thread_number < thread_count; ++thread_number) {
-            private_data[thread_number].thread_number = thread_number;
-            private_data[thread_number].thread_count = thread_count;
-            error = pthread_create(&threads[thread_number], NULL, greet, &private_data[thread_number]);
-            if (error != EXIT_SUCCESS) {
-                fprintf(stderr, "Error: no se pudo crear el hilo secundario\n");
-                error = 21;
-                break;
-            }
-        }
-
-        printf("Hola desde el hilo principal\n");
-
-        for (uint64_t thread_number = 0; thread_number < thread_count; ++thread_number) {
-            pthread_join(threads[thread_number], NULL);
-        }
-
-        free(private_data);
-        free(threads);
-    } else {
-        fprintf(stderr, "Error: no se pudo asignar memoria para %" PRIu64 " hilos\n", thread_count);
-        error = 22;
+    // Crear hilos
+    private_data_t* private_data = create_threads(thread_count, greet, NULL);
+    if (private_data == NULL) {
+        return EXIT_FAILURE;
     }
 
-    return error;
+    // Mensaje desde el hilo principal
+    printf("Hola desde el hilo principal\n");
+
+    // Esperar a que todos los hilos finalicen
+    int errors = join_threads(thread_count, private_data);
+
+    return errors ? EXIT_FAILURE : EXIT_SUCCESS;
 }
 
 /**
- * @brief Función de saludo para cada hilo.
+ * @brief Crea un conjunto de hilos que ejecutan una rutina especificada.
  *
- * Esta función es ejecutada por cada hilo e imprime un mensaje de saludo
- * indicando el número de hilo y el total de hilos.
+ * Esta función crea un número determinado de hilos (`count`), cada uno de los cuales ejecuta la función
+ * especificada por el puntero `routine`. Se reserva memoria dinámica para un arreglo de estructuras
+ * `private_data_t`, que almacena información específica para cada hilo, como su número de hilo,
+ * el número total de hilos, y un puntero a los datos compartidos.
  *
- * @param data Puntero a los datos específicos del hilo (private_data_t).
- * @return void* Siempre retorna NULL.
+ * Si la creación de algún hilo falla, la función `join_threads` se invoca para limpiar los hilos creados
+ * hasta ese punto, y la función retorna `NULL`.
+ *
+ * @param count Número de hilos a crear.
+ * @param routine Puntero a la función que ejecutará cada hilo. Esta función debe seguir la firma `void*(*routine)(void*)`.
+ * @param data Puntero a los datos compartidos que se pasarán a cada hilo.
+ * @return private_data_t* Puntero al arreglo de estructuras `private_data_t` que contiene los datos privados
+ * de cada hilo, o `NULL` si ocurre un error durante la creación de los hilos.
+ */
+private_data_t* create_threads(size_t count, void*(*routine)(void*), void* data) {
+    private_data_t* private_data = (private_data_t*) calloc(count, sizeof(private_data_t));
+    if (private_data) {
+        for (size_t index = 0; index < count; ++index) {
+            private_data[index].thread_number = index;
+            private_data[index].thread_count = count;
+            private_data[index].shared_data = data;
+            if (pthread_create(&private_data[index].thread_id, NULL, routine, &private_data[index]) != 0) {
+                fprintf(stderr, "Error: no se pudo crear el hilo %zu\n", index);
+                join_threads(index, private_data);
+                return NULL;
+            }
+        }
+    }
+    return private_data;
+}
+
+/**
+ * @brief Función que ejecuta cada hilo para mostrar un mensaje de saludo.
+ *
+ * Esta función es llamada por cada hilo creado. Recibe un puntero a una estructura
+ * `private_data_t` que contiene información específica del hilo, como su número de hilo
+ * y el número total de hilos. La función imprime un mensaje que incluye el número del hilo
+ * y el total de hilos.
+ *
+ * @param data Puntero a la estructura de datos privados del hilo (`private_data_t`).
+ * @return void* Siempre retorna `NULL` al finalizar la ejecución del hilo.
  */
 void* greet(void* data) {
     private_data_t* private_data = (private_data_t*) data;
     printf("Hola desde el hilo secundario %" PRIu64 " de %" PRIu64 "\n", private_data->thread_number, private_data->thread_count);
     return NULL;
+}
+
+/**
+ * @brief Espera a que todos los hilos creados terminen su ejecución y libera la memoria asociada.
+ *
+ * Esta función recorre un arreglo de estructuras `private_data_t`, utilizando `pthread_join`
+ * para esperar a que cada hilo termine su ejecución. Si ocurre un error al unir un hilo, 
+ * se incrementa un contador de errores. Al finalizar, la función libera la memoria asignada 
+ * al arreglo de estructuras `private_data_t`.
+ *
+ * @param count Número de hilos en el equipo.
+ * @param private_data Puntero al arreglo de estructuras de datos privados de cada hilo.
+ * @return int Número de errores ocurridos durante la unión de los hilos. Si todos los hilos
+ * se unen correctamente, retorna 0.
+ */
+int join_threads(size_t count, private_data_t* private_data) {
+    int error_count = 0;
+    for (size_t index = 0; index < count; ++index) {
+        const int error = pthread_join(private_data[index].thread_id, NULL);
+        if (error) {
+            fprintf(stderr, "Error: no se pudo unir el hilo %zu\n", index);
+            ++error_count;
+        }
+    }
+    free(private_data);
+    return error_count;
 }
