@@ -1,0 +1,10 @@
+procedure main():
+  shared thread_count := 5
+  declare team := create_threads(thread_count, routine)
+  ...
+  join_threads(team)
+end procedure
+
+procedure routine(thread_number)
+  print("I am thread ", thread_number, " of ", thread_count)
+end procedure
