@@ -21,13 +21,15 @@
  * @brief Estructura que contiene datos privados para cada hilo.
  *
  * Esta estructura almacena el número del hilo (`thread_number`), la cuenta total 
- * de hilos (`thread_count`), y un puntero al siguiente `private_data_t` en la 
- * lista enlazada.
+ * de hilos (`thread_count`), un puntero a los datos compartidos (`shared_data`),
+ * y el identificador del hilo (`thread_id`).
  */
 typedef struct private_data {
-  uint64_t thread_number;  ///< Número de hilo (identificador único del hilo).
-  uint64_t thread_count;   ///< Número total de hilos creados.
-  struct private_data* next;  ///< Puntero al siguiente nodo en la lista enlazada.
+    uint64_t thread_number;  ///< Número de hilo (identificador único del hilo).
+    uint64_t thread_count;   ///< Número total de hilos creados.
+    void* shared_data;       ///< Puntero a los datos compartidos entre hilos.
+    pthread_t thread_id;     ///< Identificador del hilo.
+    struct private_data* next;  ///< Puntero al siguiente nodo en la lista enlazada.
 } private_data_t;
 
 /**
