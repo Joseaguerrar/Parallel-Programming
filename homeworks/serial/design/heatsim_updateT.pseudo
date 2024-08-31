@@ -1,0 +1,42 @@
+subrutina actualizar temperatura(matriz, Δt, α, h){
+    /*matriz
+    Δt=tiempo transcurrido
+    α=difusividad térmica
+    h= tamaño de celda */ 
+
+    # Crear una copia de la matriz para almacenar las nuevas temperaturas
+    matriz temporal <- copiar matriz(matriz);
+    //cambio_maximo <- 0
+
+    for i desde 1 hasta R-2 do{ // No se actualizan los bordes
+        for j desde 1 hasta C-2 do{ // No se actualizan los bordes
+            //Fórmula
+            T_k1 <- matriz[i][j] + (Δt * α / h^2) * (matriz[i-1][j] + matriz[i][j+1] + matriz[i+1][j] + matriz[i][j-1] - 4 * matriz[i][j]);
+            //Actualizar matriz temp
+            matriz_temporal[i][j] <- Tk1;
+            
+            # Calcular el cambio máximo en esta iteración
+            //abs=valor absoluto
+            cambio <- abs(Tk1 - matriz[i][j])
+            if cambio > cambio maximo do{
+                cambio maximo <- cambio;
+            } endif
+        } end for
+    } end for
+
+    # Copiar los nuevos valores de temperatura a la matriz original
+    copiar matriz(matriz temporal, matriz);
+
+    return cambio maximo
+}//end procedure
+
+
+//******EXTRA*****//
+
+subrutina copiar matriz(origen, destino){
+    for i desde 0 hasta R-1 do{
+        for j desde 0 hasta C-1 do{
+            destino[i][j] <- origen[i][j]
+        } end for
+    }end for
+}//end procedure   
