@@ -72,7 +72,7 @@ int main(int argc, char* argv[]) {
   }
 
   // Creamos la estructura de datos compartidos y asignamos los datos.
-  shared_data_t* shared_data = <shared_data_t*>calloc(1, sizeof(shared_data_t));
+  shared_data_t* shared_data = (shared_data_t*)calloc(1, sizeof(shared_data_t));  //NOLINT
   if (shared_data) {
     shared_data->next_thread = 0;
     shared_data->thread_count = thread_count;
@@ -102,10 +102,10 @@ int main(int argc, char* argv[]) {
 int create_threads(shared_data_t* shared_data) {
   int error = EXIT_SUCCESS;
   // for thread_number := 0 to thread_count do
-  pthread_t* threads = <pthread_t*>
+  pthread_t* threads = (pthread_t*)  //NOLINT
   // Creamos el array de hilos
     malloc(shared_data->thread_count * sizeof(pthread_t));
-  private_data_t* private_data = <private_data_t*>
+  private_data_t* private_data = (private_data_t*) //NOLINT
   // Espacio de memoria privado para cada hilo.
     calloc(shared_data->thread_count, sizeof(private_data_t));
     // Verificamos que se crearon y pasamos por cada uno asignando.
@@ -155,7 +155,7 @@ void* greet(void* data) {
   assert(data);
   /* Biblioteca de pruebas unitarias, nos dice si la memoria es válida o no.
   Si no fuera válida, lanza una excepción.*/ 
-  private_data_t* private_data = <private_data_t*> data;  // Casteo
+  private_data_t* private_data = (private_data_t*) data;  // NOLINT
   // Puntero a los datos compartidos.
   shared_data_t* shared_data = private_data->shared_data;
   unsigned int nSeed = private_data->seed;
