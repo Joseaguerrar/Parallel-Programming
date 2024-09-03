@@ -10,6 +10,23 @@ double alpha, double height, double epsilon) {
 
     // Crear una matriz temporal para almacenar los nuevos valores
     double **temp_matriz = asign_matrix(filas, columnas);
+
+    // Actualizar las temperaturas en la matriz, ignorando los bordes
+    for (int i = 1; i < filas - 1; i++) {
+        for (int j = 1; j < columnas - 1; j++) {
+            //Fórmula dada
+            double new_temp = matriz[i][j] + (dtime * alpha / (height * height)) * 
+            (matriz[i-1][j] + matriz[i+1][j] + matriz[i][j-1] + matriz[i][j+1] - (4 * matriz[i][j]));
+            temp_matriz[i][j] = new_temp;
+            
+            // Calcular el cambio máximo
+            double change = fabs(new_temp - matriz[i][j]);//fabs es para el valor absoluto de un flotante
+            //si hay un mayor cambio hacemos el swap
+            if (change > max_change) {
+                max_change = change;
+            }
+        }
+    }
 }
 
 //implementación para la asignación de la matriz
