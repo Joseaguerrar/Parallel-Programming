@@ -52,6 +52,7 @@ while (next_thread < my_thread_id) {
   usleep(my_delay);
 }
 Ejecute al menos tres veces su solución pseudoaleatoria con la cantidad máxima de hilos y un máximo de espera de 50µs. Tome la mayor de las duraciones. ¿Hubo una mejora de la espera pseudoaleatoria respecto a la espera constante?
+R/ La mejora no está garantizada al utilizar el pseudoaleatorio. Pero es una característica ya sabida de esto, ya que no tenemos certeza de si sale bien o mal a la hora de hacerlo así. Era un poco más consistente, porque los rangos eras más cercanos que los del retraso fijo.
 
 Comparación de las esperas. ¿Mejora el tiempo de ejecución de los dos tipos de esperas (constante y pseudoaleatoria) si disminuye o incrementa la espera máxima de los hilos? Haga al menos un par de ejecuciones con al menos los siguientes tiempos de espera:
 
@@ -66,9 +67,3 @@ Comparación de las esperas. ¿Mejora el tiempo de ejecución de los dos tipos d
 75µs
 
 100µs
-
-Sugerencia: si hay varios compañeros(as) trabajando el mismo ejercicio en el laboratorio, escojan tiempos diferentes y compartan los resultados. Pueden crear una gráfica en un documento compartido. Agreguen más tiempos de ejecución si hay más de 6 integrantes.
-
-Cree una gráfica donde el eje-x son las duraciones dadas por argumento al programa. El eje-y son los tiempos de ejecución de los programas. El gráfico tendrá dos series, una para la espera constante y otra para la espera pseudoaleatoria.
-
-Agregue la gráfica al readme.md del ejercicio y una discusión de a lo sumo dos párrafos. Indique cuál fue el mejor tiempo máximo de espera obtenido y los efectos de disminuir o incrementarlo. Conjeture y trate de explicar por qué ocurre este comportamiento. Finalmente indique si la espera activa con retraso es una solución óptima, y en caso negativo, provea una idea que pueda lograr este ideal.
