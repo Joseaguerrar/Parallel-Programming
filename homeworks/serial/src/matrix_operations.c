@@ -27,6 +27,17 @@ double alpha, double height, double epsilon) {
             }
         }
     }
+
+    // Copiar la matriz temporal a la original
+    for (int i = 1; i < filas - 1; i++) {
+        for (int j = 1; j < columnas - 1; j++) {
+            matriz[i][j] = temp_matriz[i][j];
+        }
+    }
+    
+    //Liberar matriz
+    free_matrix(temp_matriz, filas);
+    return max_change;
 }
 
 //implementación para la asignación de la matriz
