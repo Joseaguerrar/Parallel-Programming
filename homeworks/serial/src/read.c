@@ -34,3 +34,22 @@ double *dtime, double *alpha, double *height) {
     fclose(fp);
     return matriz;
 }
+
+//Implementación de la función para escribir resultado
+void print_result(const char *file, double **matriz, int filas, int columnas) {
+    //Abrimos el archivo, si es nulo, tira error
+    FILE *fp = fopen(file, "wb");
+    if (!fp) {
+        perror("Error al abrir el archivo de salida");
+        exit(EXIT_FAILURE);
+    }
+
+    fwrite(&filas, sizeof(int), 1, fp);
+    fwrite(&columnas, sizeof(int), 1, fp);
+
+    for (int i = 0; i < filas; i++) {
+        fwrite(matriz[i], sizeof(double), columnas, fp);
+    }
+    //Cerramos el archivo
+    fclose(fp);
+}
