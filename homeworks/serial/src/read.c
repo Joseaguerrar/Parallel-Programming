@@ -19,4 +19,18 @@ double *dtime, double *alpha, double *height) {
     
     //creamos la matriz con los valores obtenidos
     double **matriz = asign_matrix(*filas, *columnas);
+
+    for (int i = 0; i < *filas; i++) {
+        fread(matriz[i], sizeof(double), *columnas, fp);
+    }
+
+    // Leer los demás parámetros desde el archivo
+    fread(epsilon, sizeof(double), 1, fp);
+    fread(dtime, sizeof(double), 1, fp);
+    fread(alpha, sizeof(double), 1, fp);
+    fread(height, sizeof(double), 1, fp);
+
+    //Cerramos el archivo y retornamos la matriz
+    fclose(fp);
+    return matriz;
 }
