@@ -11,6 +11,15 @@ double alpha, double height, double epsilon) {
     // Crear una matriz temporal para almacenar los nuevos valores
     double **temp_matriz = asign_matrix(filas, columnas);
 }
-
+//implementación
+double** asign_matrix(int filas, int columnas) {
+    //Reservamos espacio para las filas(apuntan a arrays de doubles)
+    double **matriz = (double **)malloc(filas * sizeof(double *));
+    for (int i = 0; i < filas; i++) {
+        //Reservamos espacio para las columnas(apuntan a doubles)
+        matriz[i] = (double *)malloc(columnas * sizeof(double));
+    }
+    return matriz;
+}
 
 
