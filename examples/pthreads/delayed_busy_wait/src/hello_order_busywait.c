@@ -50,14 +50,13 @@ int main(int argc, char* argv[]) {
   // max_delay := integer(argv[2])
   uint64_t thread_count = sysconf(_SC_NPROCESSORS_ONLN);
   uint64_t max_delay = 0;
-  
   // Verificamos que la cantidad de argumentos sea la correcta.
   if (argc < 2 || argc > 3) {
     fprintf(stderr, "Uso: %s <thread_count> [max_delay_microsec]\n", argv[0]);
     return 1;
   }
 
-   // Parsear thread_count
+  // Parsear thread_count
   if (sscanf(argv[1], "%" SCNu64, &thread_count) != 1) {
     fprintf(stderr, "Error: thread_count inválido\n");
     return 11;
@@ -73,7 +72,7 @@ int main(int argc, char* argv[]) {
   }
 
   // Creamos la estructura de datos compartidos y asignamos los datos.
-  shared_data_t* shared_data = (shared_data_t*)calloc(1, sizeof(shared_data_t));
+  shared_data_t* shared_data = <shared_data_t*>calloc(1, sizeof(shared_data_t));
   if (shared_data) {
     shared_data->next_thread = 0;
     shared_data->thread_count = thread_count;
@@ -103,20 +102,24 @@ int main(int argc, char* argv[]) {
 int create_threads(shared_data_t* shared_data) {
   int error = EXIT_SUCCESS;
   // for thread_number := 0 to thread_count do
-  pthread_t* threads = (pthread_t*)
-    malloc(shared_data->thread_count * sizeof(pthread_t));  // Creamos el array de hilos
-  private_data_t* private_data = (private_data_t*)  
-    calloc(shared_data->thread_count, sizeof(private_data_t));  // Espacio de memoria privado para cada hilo.
-  if (threads && private_data) {  // Verificamos que se crearon y pasamos por cada uno asignando.
+  pthread_t* threads = <pthread_t*>
+  // Creamos el array de hilos
+    malloc(shared_data->thread_count * sizeof(pthread_t));
+  private_data_t* private_data = <private_data_t*>
+  // Espacio de memoria privado para cada hilo.
+    calloc(shared_data->thread_count, sizeof(private_data_t));
+    // Verificamos que se crearon y pasamos por cada uno asignando.
+  if (threads && private_data) {
     for (uint64_t thread_number = 0; thread_number < shared_data->thread_count
         ; ++thread_number) {
       private_data[thread_number].thread_number = thread_number;
       private_data[thread_number].shared_data = shared_data;
-      private_data[thread_number].seed = time(NULL) ^ thread_number;  // Inicializar semilla
-
+      private_data[thread_number].seed = time(NULL) ^ thread_number;
+      // Inicializar semilla
       // create_thread(greet, thread_number)
       error = pthread_create(&threads[thread_number], /*attr*/ NULL, greet
-        , /*arg*/ &private_data[thread_number]);  // Mandamos el hilo, la función, y los datos privados.
+        , /*arg*/ &private_data[thread_number]);
+        // Mandamos el hilo, la función, y los datos privados.
       if (error == EXIT_SUCCESS) {
       } else {
         fprintf(stderr, "Error: could not create secondary thread\n");
@@ -126,7 +129,8 @@ int create_threads(shared_data_t* shared_data) {
     }
 
     // print "Hello from main thread"
-    // Hay que mencionar que el hilo no espera a nadie, por lo que no seguirá el orden de espera activa.
+    /* Hay que mencionar que el hilo no espera a nadie, 
+    por lo que no seguirá el orden de espera activa.*/
     printf("Hello from main thread\n");
     // Esperamos a cada uno de los hijos.
     for (uint64_t thread_number = 0; thread_number < shared_data->thread_count
@@ -148,14 +152,17 @@ int create_threads(shared_data_t* shared_data) {
 
 // procedure greet:
 void* greet(void* data) {
-  assert(data);  // Biblioteca de pruebas unitarias, nos dice si la memoria es válida o no. Si no fuera válida, lanza una excepción.
-  private_data_t* private_data = (private_data_t*) data;  // Casteo
-  shared_data_t* shared_data = private_data->shared_data; // Puntero a los datos compartidos.
+  assert(data);
+  /* Biblioteca de pruebas unitarias, nos dice si la memoria es válida o no.
+  Si no fuera válida, lanza una excepción.*/ 
+  private_data_t* private_data = <private_data_t*> data;  // Casteo
+  // Puntero a los datos compartidos.
+  shared_data_t* shared_data = private_data->shared_data;
   unsigned int nSeed = private_data->seed;
-  
   // Wait until it is my turn
   // Espera activa. Espera hasta que el número de hilo sea el que corresponde.
-  // Esto ocurre si el número de hilo que está ejecutándose es mayor al que toca en ese momento,
+  /* Esto ocurre si el número de hilo que está ejecutándose
+  es mayor al que toca en ese momento*/
   // para seguir un orden.
   while (shared_data->next_thread < private_data->thread_number) {
     // busy-waiting
