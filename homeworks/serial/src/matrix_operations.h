@@ -1,3 +1,4 @@
+//  Copyright [2024] <jose.guerrarodriguez@ucr.ac.cr>
 #ifndef MATRIX_OPERATIONS_H
 #define MATRIX_OPERATIONS_H
 
@@ -19,7 +20,7 @@
  * @return double El cambio máximo de temperatura en la matriz durante esta actualización.
  */
 double update_temp(double **matriz, int filas, int columnas, double dtime,
-double alpha, double height, double epsilon);
+double alpha, double height);
 
 /**
  * @brief Crea una matriz bidimensional con el número especificado de filas y columnas.
@@ -38,4 +39,4 @@ double** asign_matrix(int filas, int columnas);
  */
 void free_matrix(double **matriz, int filas);
 
-#endif //MATRIX_OPERATIONS_H
+#endif  //  MATRIX_OPERATIONS_H

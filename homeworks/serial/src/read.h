@@ -1,3 +1,4 @@
+//  Copyright [2024] <jose.guerrarodriguez@ucr.ac.cr>
 #ifndef READ_H
 #define READ_H
 
@@ -18,8 +19,8 @@
  * @param height Puntero a un `double` donde se almacenará el tamaño de las celdas (h).
  * @return double** Un puntero doble que apunta a la matriz de temperaturas.
  */
-double ** read_file(const char *file, int *filas, int *columnas, double *epsilon, 
-double *dtime, double *alpha, double *height);
+double ** read_file(const char *file, int *filas, int *columnas,
+double *epsilon, double *dtime, double *alpha, double *height);
 
 /**
  * @brief Imprime el resultado de la simulación en un archivo.
@@ -31,4 +32,4 @@ double *dtime, double *alpha, double *height);
  */
 void print_result(const char *file, double **matriz, int filas, int columnas);
 
-#endif //READ_H
+#endif  //  READ_H
