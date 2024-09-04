@@ -1,0 +1,12 @@
+subrutina leer entrada(archivo){
+    abrir archivo;
+    leer dimensiones de la matriz(R,C);//R=rows, C=columns
+    asignar memoria para matriz;
+    for i=0 to R-1 do {
+        for j=0 to C-1 do{
+            leer Temperatura[i][j] desde archivo;
+        }
+    }
+    cerrar archivo;
+    retornar matriz;
+}//end procedure
