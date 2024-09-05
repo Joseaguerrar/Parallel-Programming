@@ -1,3 +1,4 @@
+//  Copyright [2024] <jose.guerrarodriguez@ucr.ac.cr>
 #ifndef SIMULATION_READER_H
 #define SIMULATION_READER_H
 
@@ -23,6 +24,7 @@ typedef struct {
  * @param max_params Número máximo de simulaciones que puede almacenar el array `params`.
  * @return int Número de simulaciones leídas desde el archivo.
  */
-int read_simulation_file(const char *filename, SimulationParams *params, int max_params);
+int read_simulation_file(const char *filename,
+                        SimulationParams *params, int max_params);
 
-#endif // SIMULATION_READER_H
+#endif  // SIMULATION_READER_H
