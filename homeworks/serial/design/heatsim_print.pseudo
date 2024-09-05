@@ -1,9 +1,0 @@
-subrutina imprimir resultado(matriz){
-    abrir archivo de salida
-    for i desde 0 hasta R-1 do{
-        for j desde 0 hasta C-1 do{
-            escribir T[i][j] en archivo de salida
-        }end for
-    }end for
-    cerrar archivo de salida
-}//end procedure
