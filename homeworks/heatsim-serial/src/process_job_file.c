@@ -63,11 +63,12 @@ void process_job_file(const char *job_file, const char *output_dir) {
         k = 0;
         max_change = 0.0;
         // Continuar iterando hasta que el cambio máximo sea menor que ε
-        while (max_change > epsilon) {
-            max_change = update_temp(matriz, filas, columnas,
-            dtime, alpha, height);
+        do {
+            max_change = update_temp(matriz, filas, columnas, dtime, alpha, height);
             k++;
-        }
+        } while (max_change > epsilon);
+
+       
         // Crear el nombre del archivo para guardar el estado final de la matriz
         snprintf(output_file, sizeof(output_file), "%s/%s-%d.bin",
         output_dir, strtok(plate_file, "."), k);
@@ -77,6 +78,8 @@ void process_job_file(const char *job_file, const char *output_dir) {
         // Calcular el tiempo total transcurrido en la simulación
         time_t total_time = k * dtime;
         // Formatear el tiempo en un formato legible (YYYY/MM/DD hh:mm:ss)
+        printf("File: %s, dtime: %lf, alpha: %lf, height: %lf, epsilon: %lf, k: %d, total_time: %ld\n", 
+        plate_file, dtime, alpha, height, epsilon, k, (long)total_time);
         char formatted_time[48];
         format_time(total_time, formatted_time, sizeof(formatted_time));
         // Escribir los resultados en el archivo de reporte .tsv
