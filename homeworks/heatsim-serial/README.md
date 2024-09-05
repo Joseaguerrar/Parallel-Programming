@@ -25,6 +25,9 @@ El objetivo de la simulación es continuar actualizando las temperaturas de las 
 Cada simulación involucra la lectura de una matriz de temperaturas desde un archivo binario, la actualización de las temperaturas hasta que se alcanza el equilibrio térmico, y la generación de un reporte con los resultados.
 
 Comandos Básicos:
+
+Para compilar el comando es:
+    "make"
 Para ejecutar una simulación, el comando básico es:
 
 ./bin/heatsim-serial <ruta_al_archivo_de_trabajo> <ruta_de_salida>
