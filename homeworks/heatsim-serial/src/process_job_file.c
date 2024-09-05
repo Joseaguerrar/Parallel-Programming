@@ -6,7 +6,8 @@
 #include <stdio.h>
 #include <read.h>
 #include <matrix_operations.h>
-#include <simulation_reader.h>  // Incluir el nuevo header para leer el archivo de simulaciones
+#include <simulation_reader.h>
+#include <sys/stat.h>  // Para verificar si es un directorio
 
 /**
  * @brief Procesa un archivo de trabajo y ejecuta simulaciones basadas en sus especificaciones.
@@ -17,14 +18,47 @@
  * binario y se escribe un reporte en un archivo .tsv.
  * 
  * @param job_file Ruta al archivo de trabajo que contiene las simulaciones a realizar.
- * @param output_dir Directorio donde se guardarán los archivos de salida (resultados y reporte).
+ * @param output_path Ruta del archivo de salida o directorio donde se guardarán los archivos de salida.
  */
-void process_job_file(const char *job_file, const char *output_dir) {
+void process_job_file(const char *job_file, const char *output_path) {
+    struct stat path_stat;
+    stat(output_path, &path_stat);
+
+    char output_file[512];
+
+    // Extraer el directorio del archivo de trabajo (job_file)
+    char job_dir[256];
+    strncpy(job_dir, job_file, sizeof(job_dir));
+    char *last_slash = strrchr(job_dir, '/');
+    if (last_slash) {
+        *last_slash = '\0';  // Terminar la cadena en el último '/'
+    } else {
+        strcpy(job_dir, ".");  //NOLINT
+        // Si no hay '/', usar el directorio actual
+    }
+
+    // Abrir archivo de reporte para escritura
+    if (S_ISDIR(path_stat.st_mode)) {
+       /* Si output_path es un directorio,
+        crea el nombre del archivo de reporte en él*/
+       snprintf(output_file, sizeof(output_file), "%s/report.tsv", output_path);
+    } else {
+        // Si output_path es un archivo, úsalo como el archivo de reporte
+        strncpy(output_file, output_path, sizeof(output_file));
+    }
+
+    FILE *report_fp = fopen(output_file, "w");
+    if (!report_fp) {
+        perror("Error al abrir el archivo de reporte");
+        return;
+    }
+
     // Inicialmente, reservar memoria para un número pequeño de simulaciones
     int capacity = 10;
     SimulationParams *params = malloc(capacity * sizeof(SimulationParams));
     if (!params) {
         perror("Error al asignar memoria");
+        fclose(report_fp);
         return;
     }
 
@@ -34,6 +68,7 @@ void process_job_file(const char *job_file, const char *output_dir) {
     if (!file) {
         perror("Error al abrir el archivo de simulación");
         free(params);
+        fclose(report_fp);
         return;
     }
 
@@ -46,6 +81,7 @@ void process_job_file(const char *job_file, const char *output_dir) {
             if (!params) {
                 perror("Error al reasignar memoria");
                 fclose(file);
+                fclose(report_fp);
                 return;
             }
         }
@@ -61,32 +97,20 @@ void process_job_file(const char *job_file, const char *output_dir) {
 
     fclose(file);  // Cerrar el archivo de simulación después de la lectura
 
-    /* Crear el nombre del archivo de reporte .tsv basado
-    en el nombre del archivo de trabajo*/
-    char output_file[256];
-    snprintf(output_file, sizeof(output_file), "%s/%s.tsv", output_dir,
-             strrchr(job_file, '/') ? strrchr(job_file, '/') + 1 : job_file);
-
-    // Abrir archivo de reporte para escritura
-    FILE *report_fp = fopen(output_file, "w");
-    if (!report_fp) {
-        perror("Error al abrir el archivo de reporte");
-        free(params);
-        return;
-    }
-
     // Procesar cada simulación leída del archivo
     for (int i = 0; i < num_simulations; i++) {
-        printf("Procesando Simulación %d:\n", i + 1);
-        printf("Archivo: %s\n", params[i].plate_file);
-        printf("Δt: %lf\n", params[i].dtime);
-        printf("α: %lf\n", params[i].alpha);
-        printf("h: %lf\n", params[i].height);
-        printf("ε: %lf\n", params[i].epsilon);
+        // Construir la ruta completa para el archivo binario
+        char plate_path[256];
+        snprintf(plate_path, sizeof(plate_path), "%s/%s", job_dir,
+        params[i].plate_file);
+
+        /* Imprimir la ruta completa antes de intentar abrir el archivo
+        para comprobar si se está haciendo bien
+        printf("Intentando abrir el archivo: %s\n", plate_path);*/
 
         // Leer la matriz inicial y los parámetros desde el archivo binario
         int filas, columnas;
-        double **matriz = read_file(params[i].plate_file, &filas, &columnas,
+        double **matriz = read_file(plate_path, &filas, &columnas,
                                     &params[i].epsilon, &params[i].dtime,
                                     &params[i].alpha, &params[i].height);
 
@@ -100,8 +124,9 @@ void process_job_file(const char *job_file, const char *output_dir) {
         } while (max_change > params[i].epsilon);
 
         // Crear el nombre del archivo para guardar el estado final de la matriz
-        snprintf(output_file, sizeof(output_file), "%s/%s-%d.bin",
-        output_dir, strtok(params[i].plate_file, "."), k);
+        snprintf(output_file, sizeof(output_file), "%s/%s-%d.output",
+        job_dir, strtok(params[i].plate_file, "."), k);
+
         // Guardar la matriz final en un archivo binario
         print_result(output_file, matriz, filas, columnas);
 
@@ -128,7 +153,7 @@ void process_job_file(const char *job_file, const char *output_dir) {
 }
 
 /**
- * @brief Convierte un tiempo en segundos a un formato legible (YYYY/MM/DD hh:mm:ss).
+ * @brief Convierte un tiempo en segundos a un formato legible (hh:mm:ss).
  * 
  * @param seconds Tiempo en segundos.
  * @param text Buffer donde se almacenará el tiempo formateado.
@@ -136,9 +161,9 @@ void process_job_file(const char *job_file, const char *output_dir) {
  * @return char* El mismo puntero `text`, que contiene el tiempo formateado.
  */
 char* format_time(const time_t seconds, char* text, const size_t capacity) {
-    const struct tm* gmt = gmtime(&seconds); //NOLINT
-    snprintf(text, capacity, "%04d/%02d/%02d\t%02d:%02d:%02d",
-             gmt->tm_year + 1900, gmt->tm_mon + 1, gmt->tm_mday,
-             gmt->tm_hour, gmt->tm_min, gmt->tm_sec);
+    int hours = seconds / 3600;
+    int minutes = (seconds % 3600) / 60;
+    int secs = seconds % 60;
+    snprintf(text, capacity, "%02d:%02d:%02d", hours, minutes, secs);
     return text;
 }
