@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <read.h>
 #include <matrix_operations.h>
+#include <simulation_reader.h>  // Incluir el nuevo header para leer el archivo de simulaciones
 
 /**
  * @brief Procesa un archivo de trabajo y ejecuta simulaciones basadas en sus especificaciones.
@@ -19,78 +20,111 @@
  * @param output_dir Directorio donde se guardarán los archivos de salida (resultados y reporte).
  */
 void process_job_file(const char *job_file, const char *output_dir) {
-    //  Buffer para leer cada línea del archivo de trabajo
-    char line[256];
-    //  Nombre del archivo que contiene la matriz inicial
-    char plate_file[64];
-    //  Parámetros de simulación: Δt, α, h, ε
-    double dtime, alpha, height, epsilon;
-    //  Dimensiones de la matriz y contador de iteraciones
-    int filas, columnas, k;
-    //  Variable para almacenar el cambio máximo en cada iteración
-    double max_change;
-    //  Buffer para almacenar la ruta del archivo de salida
-    char output_file[256];
-
-    // Abrir el archivo de trabajo para lectura
-    FILE *fp = fopen(job_file, "r");
-    /*Crear el nombre del archivo de reporte .tsv
-    basado en el nombre del archivo de trabajo*/
-    snprintf(output_file, sizeof(output_file), "%s/%s.tsv", output_dir,
-             strrchr(job_file, '/') ? strrchr(job_file, '/') + 1 : job_file);
-    // Abrir archivo de reporte para escritura
-    FILE *report_fp = fopen(output_file, "w");
-    // Verificar que ambos archivos se abrieron correctamente
-    if (!fp || !report_fp) {
-        perror("Error al abrir el archivo de trabajo o el archivo de reporte");
-        exit(EXIT_FAILURE);
+    // Inicialmente, reservar memoria para un número pequeño de simulaciones
+    int capacity = 10;
+    SimulationParams *params = malloc(capacity * sizeof(SimulationParams));
+    if (!params) {
+        perror("Error al asignar memoria");
+        return;
     }
 
-    // Leer cada línea del archivo de trabajo
-    while (fgets(line, sizeof(line), fp)) {
-        // Extraer los parámetros de simulación de la línea leída
-        sscanf(line, "%s %lf %lf %lf %lf", plate_file, &dtime,
-        &alpha, &height, &epsilon);
+    // Leer el archivo de simulaciones y llenar el array de estructuras
+    int num_simulations = 0;
+    FILE *file = fopen(job_file, "r");
+    if (!file) {
+        perror("Error al abrir el archivo de simulación");
+        free(params);
+        return;
+    }
 
-        // Crear la ruta completa para el archivo de la matriz inicial
-        char plate_path[256];
-        snprintf(plate_path, sizeof(plate_path), "%s/%s",
-        output_dir, plate_file);
+    char line[256];
+    while (fgets(line, sizeof(line), file)) {
+        if (num_simulations >= capacity) {
+            // Incrementar la capacidad cuando se alcance el límite actual
+            capacity *= 2;
+            params = realloc(params, capacity * sizeof(SimulationParams));
+            if (!params) {
+                perror("Error al reasignar memoria");
+                fclose(file);
+                return;
+            }
+        }
+        // Llenar el parámetro de simulación actual
+        sscanf(line, "%s %lf %lf %lf %lf",
+               params[num_simulations].plate_file,
+               &params[num_simulations].dtime,
+               &params[num_simulations].alpha,
+               &params[num_simulations].height,
+               &params[num_simulations].epsilon);
+        num_simulations++;
+    }
+
+    fclose(file);  // Cerrar el archivo de simulación después de la lectura
+
+    /* Crear el nombre del archivo de reporte .tsv basado
+    en el nombre del archivo de trabajo*/
+    char output_file[256];
+    snprintf(output_file, sizeof(output_file), "%s/%s.tsv", output_dir,
+             strrchr(job_file, '/') ? strrchr(job_file, '/') + 1 : job_file);
+
+    // Abrir archivo de reporte para escritura
+    FILE *report_fp = fopen(output_file, "w");
+    if (!report_fp) {
+        perror("Error al abrir el archivo de reporte");
+        free(params);
+        return;
+    }
+
+    // Procesar cada simulación leída del archivo
+    for (int i = 0; i < num_simulations; i++) {
+        printf("Procesando Simulación %d:\n", i + 1);
+        printf("Archivo: %s\n", params[i].plate_file);
+        printf("Δt: %lf\n", params[i].dtime);
+        printf("α: %lf\n", params[i].alpha);
+        printf("h: %lf\n", params[i].height);
+        printf("ε: %lf\n", params[i].epsilon);
+
         // Leer la matriz inicial y los parámetros desde el archivo binario
-        double **matriz = read_file(plate_path, &filas, &columnas,
-        &epsilon, &dtime, &alpha, &height);
-        // Realizar la simulación de transferencia de calor
-        k = 0;
-        max_change = 0.0;
-        // Continuar iterando hasta que el cambio máximo sea menor que ε
-        do {
-            max_change = update_temp(matriz, filas, columnas, dtime, alpha, height);
-            k++;
-        } while (max_change > epsilon);
+        int filas, columnas;
+        double **matriz = read_file(params[i].plate_file, &filas, &columnas,
+                                    &params[i].epsilon, &params[i].dtime,
+                                    &params[i].alpha, &params[i].height);
 
-       
+        // Realizar la simulación de transferencia de calor
+        int k = 0;
+        double max_change = 0.0;
+        do {
+            max_change = update_temp(matriz, filas, columnas, params[i].dtime,
+            params[i].alpha, params[i].height);
+            k++;
+        } while (max_change > params[i].epsilon);
+
         // Crear el nombre del archivo para guardar el estado final de la matriz
         snprintf(output_file, sizeof(output_file), "%s/%s-%d.bin",
-        output_dir, strtok(plate_file, "."), k);
+        output_dir, strtok(params[i].plate_file, "."), k);
         // Guardar la matriz final en un archivo binario
         print_result(output_file, matriz, filas, columnas);
 
         // Calcular el tiempo total transcurrido en la simulación
-        time_t total_time = k * dtime;
+        time_t total_time = k * params[i].dtime;
         // Formatear el tiempo en un formato legible (YYYY/MM/DD hh:mm:ss)
-        printf("File: %s, dtime: %lf, alpha: %lf, height: %lf, epsilon: %lf, k: %d, total_time: %ld\n", 
-        plate_file, dtime, alpha, height, epsilon, k, (long)total_time);
         char formatted_time[48];
         format_time(total_time, formatted_time, sizeof(formatted_time));
+
         // Escribir los resultados en el archivo de reporte .tsv
-        fprintf(report_fp, "%s\t%lf\t%lf\t%lf\t%lf\t%d\t%s\n", plate_file,
-        dtime, alpha, height, epsilon, k, formatted_time);
+        fprintf(report_fp, "%s\t%lf\t%lf\t%lf\t%lf\t%d\t%s\n",
+        params[i].plate_file, params[i].dtime, params[i].alpha,
+        params[i].height, params[i].epsilon, k, formatted_time);
+
         // Liberar la memoria asignada para la matriz
         free_matrix(matriz, filas);
     }
-    // Cerrar los archivos después de completar todas las simulaciones
-    fclose(fp);
+
+    // Cerrar el archivo de reporte después de completar todas las simulaciones
     fclose(report_fp);
+
+    // Liberar la memoria asignada para las simulaciones
+    free(params);
 }
 
 /**
@@ -102,9 +136,9 @@ void process_job_file(const char *job_file, const char *output_dir) {
  * @return char* El mismo puntero `text`, que contiene el tiempo formateado.
  */
 char* format_time(const time_t seconds, char* text, const size_t capacity) {
-    const struct tm* gmt = gmtime(&seconds); //  NOLINT
+    const struct tm* gmt = gmtime(&seconds); //NOLINT
     snprintf(text, capacity, "%04d/%02d/%02d\t%02d:%02d:%02d",
-    gmt->tm_year + 1900, gmt->tm_mon + 1, gmt->tm_mday,
-    gmt->tm_hour, gmt->tm_min, gmt->tm_sec);
+             gmt->tm_year + 1900, gmt->tm_mon + 1, gmt->tm_mday,
+             gmt->tm_hour, gmt->tm_min, gmt->tm_sec);
     return text;
 }
