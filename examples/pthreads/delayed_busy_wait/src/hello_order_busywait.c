@@ -167,11 +167,11 @@ void* greet(void* data) {
   while (shared_data->next_thread < private_data->thread_number) {
     // busy-waiting
     // Vamos a agregar un retraso de 50 microsegundos.
-    usleep(100);
+    usleep(50);
 
     // Vamos a usar retraso pseudoaleatorio.
-    // const unsigned my_delay = rand_r(&nSeed) % shared_data->max_delay;
-    // usleep(my_delay);
+    //const unsigned my_delay = rand_r(&nSeed) % shared_data->max_delay;
+     //usleep(my_delay);
   }  // end while
 
   // print "Hello from secondary thread"
