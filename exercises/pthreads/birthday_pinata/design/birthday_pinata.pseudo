@@ -1,0 +1,32 @@
+shared_data{
+    available_hits
+    thread_count
+    create_mutex
+}
+private_data{
+    thread_number
+    #tohit
+    shared_data*
+}
+
+
+procedure main(argc, argv[]){
+    create_threads(hit_pinata)
+    joint threads
+
+}
+
+void *hit_pinata(thread p){
+    if(shared_data.hits!=0){
+        mutex_lock
+        available_hits - p.#tohit
+        if(shared_data.hits==0){
+            print("hits:###","I broke the pinata", "my thread number")
+        }
+        else{
+            print("hits:###", "my thread number")
+        }
+        mutex.unlock
+    }
+    
+}// end procedure

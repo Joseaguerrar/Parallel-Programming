@@ -9,3 +9,11 @@ Thread 2/10: 5 hits, I broke the pinata
 Thread 0/10: 1 hits
 Thread 1/10: 4 hits
 Recuerde como siempre verificar la calidad del código fuente y ejecutable. Su solución no debe producir conduciones de carrera.
+
+Para compilar:
+    make clean
+    make
+Para ejecutar:
+    ./bin/birthday_pinata #de hilos a pegar
+extra:
+    para que puedan pegar más y se note, sumar a la cantidad creada en este caso es +5, pero se puede aumentar el valor
