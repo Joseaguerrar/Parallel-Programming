@@ -21,11 +21,11 @@ int main(int argc, char* argv[]) {
 
   // Crear la simulación
   simulation_t* simulation = simulation_create();
-  
+
   if (simulation) {
     // Ejecutar la simulación
     error = simulation_run(simulation, argc, argv);
-    
+
     // Destruir la simulación y liberar recursos
     simulation_destroy(simulation);
   } else {

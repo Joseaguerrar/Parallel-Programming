@@ -14,10 +14,10 @@
  * y un puntero al siguiente nodo en la cola.
  */
 typedef struct queue_node {
-  size_t data;                
+  size_t data;
   // Dato almacenado en el nodo.
 
-  struct queue_node* next;    
+  struct queue_node* next;
   // Puntero al siguiente nodo de la cola.
 } queue_node_t;
 
@@ -29,13 +29,13 @@ typedef struct queue_node {
  * concurrente.
  */
 typedef struct {
-  pthread_mutex_t can_access_queue;  
+  pthread_mutex_t can_access_queue;
   // Mutex para controlar el acceso a la cola.
 
-  queue_node_t* head;                
+  queue_node_t* head;
   // Puntero al primer nodo (cabeza) de la cola.
 
-  queue_node_t* tail;                
+  queue_node_t* tail;
   // Puntero al último nodo (cola) de la cola.
 } queue_t;
 

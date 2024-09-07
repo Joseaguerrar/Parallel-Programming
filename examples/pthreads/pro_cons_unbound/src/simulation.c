@@ -89,10 +89,12 @@ simulation_t* simulation_create() {
     // Inicializa el índice de la próxima unidad a producir.
 
     sem_init(&simulation->can_consume, /* pshared */ 0, /* value */ 0);
-    // Inicializa el semáforo para controlar cuándo los consumidores pueden consumir.
+    /* Inicializa el semáforo para controlar
+    cuándo los consumidores pueden consumir.*/
 
     pthread_mutex_init(&simulation->can_access_consumed_count, /* attr */ NULL);
-    // Inicializa el mutex para controlar el acceso al conteo de unidades consumidas.
+    /* Inicializa el mutex para controlar
+    el acceso al conteo de unidades consumidas.*/
 
     simulation->consumed_count = 0;
     // Inicializa el contador de unidades consumidas.
