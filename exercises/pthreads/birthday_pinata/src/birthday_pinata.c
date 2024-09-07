@@ -91,7 +91,7 @@ int main(int argc, char* argv[]) {
   if (shared_data) {
     shared_data->position = 0;
     shared_data->hits_available = hits_available;
-    error = pthread_mutex_init(&shared_data->can_access_position, /*attr*/ NULL);
+    error = pthread_mutex_init(&shared_data->can_access_position, NULL);
     if (error == EXIT_SUCCESS) {
       shared_data->thread_count = thread_count;
 
@@ -212,7 +212,8 @@ void* hit(void* data) {
     printf("Thread %" PRIu64 " hits: %" PRIu64 ": I destroyed the pinata!\n",
            private_data->thread_number, private_data->hits);
   } else {
-    printf("Thread %" PRIu64 " hits: %" PRIu64 ": Pinata still has hits left!\n",
+    printf("Thread %" PRIu64 " hits: %" PRIu64
+    ": Pinata still has hits left!\n",
            private_data->thread_number, private_data->hits);
   }
 
