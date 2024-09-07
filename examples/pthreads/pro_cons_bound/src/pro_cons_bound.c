@@ -178,32 +178,44 @@ int main(int argc, char* argv[]) {
   return error;
 }
 
+/**
+ * @brief Analiza los argumentos de la línea de comandos para inicializar los datos compartidos.
+ * 
+ * Esta función verifica y asigna los valores proporcionados por el usuario a la estructura
+ * de datos compartidos. Comprueba que todos los argumentos son válidos y, si no lo son,
+ * informa del error correspondiente.
+ * 
+ * @param argc Número de argumentos proporcionados.
+ * @param argv Array de cadenas de los argumentos.
+ * @param shared_data Puntero a la estructura de datos compartidos a inicializar.
+ * @return int Devuelve EXIT_SUCCESS si los argumentos son válidos, de lo contrario devuelve un código de error.
+ */
 int analyze_arguments(int argc, char* argv[], shared_data_t* shared_data) {
   int error = EXIT_SUCCESS;
   if (argc == 7) {
     if (sscanf(argv[1], "%zu", &shared_data->buffer_capacity) != 1
       || shared_data->buffer_capacity == 0) {
-        fprintf(stderr, "error: invalid buffer capacity\n");
+        fprintf(stderr, "error: capacidad de búfer inválida\n");
         error = ERR_BUFFER_CAPACITY;
     } else if (sscanf(argv[2], "%zu", &shared_data->rounds) != 1
       || shared_data->rounds == 0) {
-        fprintf(stderr, "error: invalid round count\n");
+        fprintf(stderr, "error: número de rondas inválido\n");
         error = ERR_ROUND_COUNT;
     } else if (sscanf(argv[3], "%u", &shared_data->producer_min_delay) != 1) {
-        fprintf(stderr, "error: invalid min producer delay\n");
+        fprintf(stderr, "error: retardo mínimo del productor inválido\n");
         error = ERR_MIN_PROD_DELAY;
     } else if (sscanf(argv[4], "%u", &shared_data->producer_max_delay) != 1) {
-        fprintf(stderr, "error: invalid max producer delay\n");
+        fprintf(stderr, "error: retardo máximo del productor inválido\n");
         error = ERR_MAX_PROD_DELAY;
     } else if (sscanf(argv[5], "%u", &shared_data->consumer_min_delay) != 1) {
-        fprintf(stderr, "error: invalid min consumer delay\n");
+        fprintf(stderr, "error: retardo mínimo del consumidor inválido\n");
         error = ERR_MIN_CONS_DELAY;
     } else if (sscanf(argv[6], "%u", &shared_data->consumer_max_delay) != 1) {
-        fprintf(stderr, "error: invalid max consumer delay\n");
+        fprintf(stderr, "error: retardo máximo del consumidor inválido\n");
         error = ERR_MAX_CONS_DELAY;
     }
   } else {
-    fprintf(stderr, "usage: prod_cons_bound buffer_capacity rounds"
+    fprintf(stderr, "Uso: prod_cons_bound buffer_capacity rounds"
       " producer_min_delay producer_max_delay"
       " consumer_min_delay consumer_max_delay\n");
       error = ERR_NO_ARGS;
@@ -211,6 +223,16 @@ int analyze_arguments(int argc, char* argv[], shared_data_t* shared_data) {
   return error;
 }
 
+/**
+ * @brief Crea los hilos productor y consumidor.
+ * 
+ * Esta función se encarga de crear los hilos para el productor y el consumidor,
+ * manejando posibles errores en la creación de los hilos y esperando a que ambos
+ * terminen su ejecución con `pthread_join`.
+ * 
+ * @param shared_data Puntero a la estructura de datos compartidos.
+ * @return int Devuelve EXIT_SUCCESS si los hilos se crean y sincronizan correctamente, de lo contrario devuelve un código de error.
+ */
 int create_threads(shared_data_t* shared_data) {
   assert(shared_data);
   int error = EXIT_SUCCESS;
@@ -220,11 +242,11 @@ int create_threads(shared_data_t* shared_data) {
   if (error == EXIT_SUCCESS) {
     error = pthread_create(&consumer, /*attr*/ NULL, consume, shared_data);
     if (error != EXIT_SUCCESS) {
-      fprintf(stderr, "error: could not create consumer\n");
+      fprintf(stderr, "error: no se pudo crear el hilo consumidor\n");
       error = ERR_CREATE_THREAD;
     }
   } else {
-    fprintf(stderr, "error: could not create producer\n");
+    fprintf(stderr, "error: no se pudo crear el hilo productor\n");
     error = ERR_CREATE_THREAD;
   }
 
