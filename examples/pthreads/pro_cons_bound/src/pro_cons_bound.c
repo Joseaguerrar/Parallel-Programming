@@ -28,13 +28,13 @@ enum {
   ERR_ROUND_COUNT,                     
   // Error cuando el número de rondas es inválido.
   ERR_MIN_PROD_DELAY,                  
-  // Error cuando el retardo mínimo del productor es inválido.
+  // Error cuando el retraso mínimo del productor es inválido.
   ERR_MAX_PROD_DELAY,                  
-  // Error cuando el retardo máximo del productor es inválido.
+  // Error cuando el retraso máximo del productor es inválido.
   ERR_MIN_CONS_DELAY,                  
-  // Error cuando el retardo mínimo del consumidor es inválido.
+  // Error cuando el retraso mínimo del consumidor es inválido.
   ERR_MAX_CONS_DELAY,                  
-  // Error cuando el retardo máximo del consumidor es inválido.
+  // Error cuando el retraso máximo del consumidor es inválido.
   ERR_CREATE_THREAD                    
   // Error al no poder crear un hilo.
 };
@@ -52,13 +52,13 @@ typedef struct {
   size_t rounds;
   // Número de rondas de producción/consumo.
   useconds_t producer_min_delay;
-  // Retardo mínimo para los hilos productores.
+  // Retraso mínimo para los hilos productores.
   useconds_t producer_max_delay;
-  // Retardo máximo para los hilos productores.
+  // Retraso máximo para los hilos productores.
   useconds_t consumer_min_delay;
-  // Retardo mínimo para los hilos consumidores.
+  // Retraso mínimo para los hilos consumidores.
   useconds_t consumer_max_delay;
-  // Retardo máximo para los hilos consumidores.
+  // Retraso máximo para los hilos consumidores.
 } shared_data_t;
 
 /**
@@ -202,16 +202,16 @@ int analyze_arguments(int argc, char* argv[], shared_data_t* shared_data) {
         fprintf(stderr, "error: número de rondas inválido\n");
         error = ERR_ROUND_COUNT;
     } else if (sscanf(argv[3], "%u", &shared_data->producer_min_delay) != 1) {
-        fprintf(stderr, "error: retardo mínimo del productor inválido\n");
+        fprintf(stderr, "error: retraso mínimo del productor inválido\n");
         error = ERR_MIN_PROD_DELAY;
     } else if (sscanf(argv[4], "%u", &shared_data->producer_max_delay) != 1) {
-        fprintf(stderr, "error: retardo máximo del productor inválido\n");
+        fprintf(stderr, "error: retraso máximo del productor inválido\n");
         error = ERR_MAX_PROD_DELAY;
     } else if (sscanf(argv[5], "%u", &shared_data->consumer_min_delay) != 1) {
-        fprintf(stderr, "error: retardo mínimo del consumidor inválido\n");
+        fprintf(stderr, "error: retraso mínimo del consumidor inválido\n");
         error = ERR_MIN_CONS_DELAY;
     } else if (sscanf(argv[6], "%u", &shared_data->consumer_max_delay) != 1) {
-        fprintf(stderr, "error: retardo máximo del consumidor inválido\n");
+        fprintf(stderr, "error: retraso máximo del consumidor inválido\n");
         error = ERR_MAX_CONS_DELAY;
     }
   } else {
@@ -258,37 +258,73 @@ int create_threads(shared_data_t* shared_data) {
   return error;
 }
 
+/**
+ * @brief Función que ejecuta el hilo productor.
+ * 
+ * Esta función simula la producción de elementos. El productor llena el búfer compartido
+ * con valores incrementales durante un número determinado de rondas. En cada iteración, 
+ * el productor se detiene por un tiempo aleatorio entre los retrasos mínimo y máximo 
+ * antes de producir un nuevo valor.
+ * 
+ * @param data Puntero a la estructura de datos compartidos (shared_data_t).
+ * @return void* Siempre devuelve NULL.
+ */
 void* produce(void* data) {
-  // const private_data_t* private_data = (private_data_t*)data;
   shared_data_t* shared_data = (shared_data_t*)data;
   size_t count = 0;
   for (size_t round = 0; round < shared_data->rounds; ++round) {
     for (size_t index = 0; index < shared_data->buffer_capacity; ++index) {
-      usleep(1000 * random_between(shared_data->producer_min_delay
-        , shared_data->producer_max_delay));
+      // Pausar durante un tiempo aleatorio entre los retrasos mínimo y máximo del productor
+      usleep(1000 * random_between(shared_data->producer_min_delay,
+        shared_data->producer_max_delay));
+      // Producir el siguiente valor
       shared_data->buffer[index] = ++count;
-      printf("Produced %lg\n", shared_data->buffer[index]);
+      printf("Producido %lg\n", shared_data->buffer[index]);
     }
   }
 
   return NULL;
 }
 
+/**
+ * @brief Función que ejecuta el hilo consumidor.
+ * 
+ * Esta función simula la consumición de elementos. El consumidor toma los valores 
+ * del búfer compartido y los procesa durante un número determinado de rondas. 
+ * En cada iteración, el consumidor se detiene por un tiempo aleatorio entre los 
+ * retrasos mínimo y máximo antes de consumir un valor.
+ * 
+ * @param data Puntero a la estructura de datos compartidos (shared_data_t).
+ * @return void* Siempre devuelve NULL.
+ */
 void* consume(void* data) {
-  // const private_data_t* private_data = (private_data_t*)data;
   shared_data_t* shared_data = (shared_data_t*)data;
   for (size_t round = 0; round < shared_data->rounds; ++round) {
     for (size_t index = 0; index < shared_data->buffer_capacity; ++index) {
+      // Obtener el valor del búfer
       double value = shared_data->buffer[index];
-      usleep(1000 * random_between(shared_data->consumer_min_delay
-        , shared_data->consumer_max_delay));
-      printf("\tConsumed %lg\n", value);
+      // Pausar durante un tiempo aleatorio entre los retrasos mínimo y máximo del consumidor
+      usleep(1000 * random_between(shared_data->consumer_min_delay,
+        shared_data->consumer_max_delay));
+      // Consumir el valor
+      printf("\tConsumido %lg\n", value);
     }
   }
 
   return NULL;
 }
 
+/**
+ * @brief Genera un valor aleatorio entre dos límites.
+ * 
+ * Esta función devuelve un valor aleatorio entre los límites especificados
+ * (mínimo y máximo). Si el valor máximo es mayor que el mínimo, se genera 
+ * un valor aleatorio en ese rango; de lo contrario, se devuelve el mínimo.
+ * 
+ * @param min Retardo mínimo en microsegundos.
+ * @param max Retardo máximo en microsegundos.
+ * @return useconds_t Valor aleatorio entre min y max.
+ */
 useconds_t random_between(useconds_t min, useconds_t max) {
   return min + (max > min ? (random() % (max - min)) : 0);
 }
