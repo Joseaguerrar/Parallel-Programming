@@ -1,4 +1,4 @@
-# C/C++ Makefile v2.2.1 2021-Aug-22 Jeisson Hidalgo ECCI-UCR CC-BY 4.0
+# C/C++ Makefile v2.2.2 2021-Set-17 Jeisson Hidalgo ECCI-UCR CC-BY 4.0
 
 # Compiler and tool flags
 CC=cc
@@ -11,6 +11,7 @@ LIBS=
 LINTF=-build/header_guard,-build/include_subdir
 LINTC=$(LINTF),-readability/casting
 LINTX=$(LINTF),-build/c++11,-runtime/references
+ARGS=5 2 3 0 100 0 750
 
 # Directories
 BIN_DIR=bin
@@ -43,7 +44,7 @@ INCLUDE=$(DIRS:%=-I%)
 DEPENDS=$(OBJECTS:%.o=%.d)
 IGNORES=$(BIN_DIR) $(OBJ_DIR) $(DOC_DIR)
 EXEFILE=$(BIN_DIR)/$(APPNAME)
-APPARGS=3 2 0 100 0 750
+EXEARGS=$(strip $(EXEFILE) $(ARGS))
 LD=$(if $(SOURCEC),$(CC),$(XC))
 
 # Targets
@@ -90,14 +91,14 @@ test: $(EXEFILE) $(TESTOUT)
 
 $(OBJ_DIR)/output%.txt: SHELL:=/bin/bash
 $(OBJ_DIR)/output%.txt: $(TST_DIR)/input%.txt $(TST_DIR)/output%.txt
-	icdiff --no-headers $(word 2,$^) <($(EXEFILE) < $<)
+	icdiff --no-headers $(word 2,$^) <($(EXEARGS) < $<)
 
 # Documentation
 doc: $(INPUTCX)
 	doxygen
 
 # Utility rules
-.PHONY: lint memcheck helgrind gitignore clean instdeps
+.PHONY: lint run memcheck helgrind gitignore clean instdeps
 
 lint:
 ifneq ($(INPUTFC),)
@@ -107,11 +108,14 @@ ifneq ($(INPUTFX),)
 	cpplint --filter=$(LINTX) $(INPUTFX)
 endif
 
-memcheck:
-	valgrind --tool=memcheck $(strip $(EXEFILE) $(APPARGS))
+run: $(EXEFILE)
+	$(EXEARGS)
 
-helgrind:
-	valgrind --quiet --tool=helgrind $(strip $(EXEFILE) $(APPARGS))
+memcheck: $(EXEFILE)
+	valgrind --tool=memcheck $(EXEARGS)
+
+helgrind: $(EXEFILE)
+	valgrind --quiet --tool=helgrind $(EXEARGS)
 
 gitignore:
 	echo $(IGNORES) | tr " " "\n" > .gitignore
@@ -140,6 +144,7 @@ help:
 	@echo "  memcheck  Run executable for detecting memory errors with Valgrind"
 	@echo "  msan      Build for detecting uninitialized memory usage"
 	@echo "  release   Build an optimized executable"
+	@echo "  run       Run executable using ARGS value as arguments"
 	@echo "  test      Run executable against test cases in folder tests/"
 	@echo "  tsan      Build for detecting thread errors, e.g race conditions"
 	@echo "  ubsan     Build for detecting undefined behavior"
