@@ -219,6 +219,7 @@ Doxyfile:
 	sed -i.bak -E 's/(RECURSIVE *)= NO/\1= YES/' $@
 	sed -i.bak -E 's/(EXTRACT_ALL *)= NO/\1= YES/' $@
 	sed -i.bak -E 's/(QUIET *)= NO/\1= YES/' $@
+	sed -i.bak -E 's/(OPTIMIZE_OUTPUT_FOR_C *)= NO/\1= YES/' $@
 	rm -f $@.bak
 
 lint:  ## Check code style conformance using Cpplint
