@@ -64,24 +64,34 @@ int create_threads(shared_data_t* shared_data);
  * @return int Retorna EXIT_SUCCESS si todo sale bien o un código de error en caso contrario.
  * 
  * La función principal inicializa la semilla aleatoria, establece el número de hilos 
- * y crea los hilos que competirán por los hits disponibles.
+ * y la cantidad de golpes disponibles, luego crea los hilos que competirán por los hits disponibles.
  */
 int main(int argc, char* argv[]) {
   srand(time(NULL));  // Inicializa la semilla aleatoria
 
   int error = EXIT_SUCCESS;
   uint64_t thread_count = sysconf(_SC_NPROCESSORS_ONLN);
-  if (argc == 2) {
+  uint64_t hits_available = 10;  // Valor por defecto para los hits disponibles
+
+  if (argc >= 2) {
     if (sscanf(argv[1], "%" SCNu64, &thread_count) != 1) {
       fprintf(stderr, "Error: invalid thread count\n");
       return 11;
     }
   }
 
+  if (argc >= 3) {
+    if (sscanf(argv[2], "%" SCNu64, &hits_available) != 1) {
+      fprintf(stderr, "Error: invalid hits count\n");
+      return 12;
+    }
+  }
+
   shared_data_t* shared_data = (shared_data_t*)calloc(1, sizeof(shared_data_t));
   if (shared_data) {
     shared_data->position = 0;
-    error = pthread_mutex_init(&shared_data->can_access_position, /*attr*/NULL);
+    shared_data->hits_available = hits_available;
+    error = pthread_mutex_init(&shared_data->can_access_position, /*attr*/ NULL);
     if (error == EXIT_SUCCESS) {
       shared_data->thread_count = thread_count;
 
@@ -124,8 +134,6 @@ int create_threads(shared_data_t* shared_data) {
   sizeof(pthread_t));
   private_data_t* private_data = (private_data_t*)calloc
   (shared_data->thread_count, sizeof(private_data_t));
-  shared_data->hits_available = rand() % 10 + 5; //NOLINT
-  // Cambiar el rango según sus necesidades
 
   if (threads && private_data) {
     printf("Time to get candy! Hits available: %" PRIu64 "\n",
@@ -201,10 +209,10 @@ void* hit(void* data) {
   ++shared_data->position;
 
   if (shared_data->hits_available == 0) {
-    printf("Thread %" PRIu64 " hit: %" PRIu64 ": I destroyed the pinata!\n",
+    printf("Thread %" PRIu64 " hits: %" PRIu64 ": I destroyed the pinata!\n",
            private_data->thread_number, private_data->hits);
   } else {
-    printf("Thread %" PRIu64 " hit: %" PRIu64 ": Pinata still has hits left!\n",
+    printf("Thread %" PRIu64 " hits: %" PRIu64 ": Pinata still has hits left!\n",
            private_data->thread_number, private_data->hits);
   }
 
