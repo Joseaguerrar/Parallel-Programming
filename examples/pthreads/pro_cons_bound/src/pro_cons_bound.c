@@ -39,66 +39,139 @@ enum {
   // Error al no poder crear un hilo.
 };
 
+/**
+ * @brief Estructura que almacena los datos compartidos entre los hilos.
+ */
 typedef struct {
   size_t thread_count;
+  // Número de hilos a crear.
   size_t buffer_capacity;
+  // Capacidad del búfer compartido.
   double* buffer;
+  // Puntero al búfer compartido.
   size_t rounds;
+  // Número de rondas de producción/consumo.
   useconds_t producer_min_delay;
+  // Retardo mínimo para los hilos productores.
   useconds_t producer_max_delay;
+  // Retardo máximo para los hilos productores.
   useconds_t consumer_min_delay;
+  // Retardo mínimo para los hilos consumidores.
   useconds_t consumer_max_delay;
+  // Retardo máximo para los hilos consumidores.
 } shared_data_t;
 
-typedef struct  {
+/**
+ * @brief Estructura que almacena los datos privados de cada hilo.
+ */
+typedef struct {
   size_t thread_number;
+  // Número del hilo.
   shared_data_t* shared_data;
+  // Puntero a la estructura de datos compartidos.
 } private_data_t;
 
+/**
+ * @brief Analiza los argumentos de línea de comandos para inicializar los datos compartidos.
+ * 
+ * @param argc Número de argumentos en la línea de comandos.
+ * @param argv Array de argumentos de la línea de comandos.
+ * @param shared_data Puntero a la estructura de datos compartidos.
+ * @return int Devuelve EXIT_SUCCESS si los argumentos son válidos, en caso contrario devuelve un código de error.
+ */
 int analyze_arguments(int argc, char* argv[], shared_data_t* shared_data);
+
+/**
+ * @brief Crea los hilos productores y consumidores.
+ * 
+ * @param shared_data Puntero a la estructura de datos compartidos.
+ * @return int Devuelve EXIT_SUCCESS si los hilos se crean correctamente, en caso contrario devuelve un código de error.
+ */
 int create_threads(shared_data_t* shared_data);
+
+/**
+ * @brief Función que ejecuta el hilo productor.
+ * 
+ * @param data Puntero a los datos privados del hilo.
+ * @return void* Siempre devuelve NULL.
+ */
 void* produce(void* data);
+
+/**
+ * @brief Función que ejecuta el hilo consumidor.
+ * 
+ * @param data Puntero a los datos privados del hilo.
+ * @return void* Siempre devuelve NULL.
+ */
 void* consume(void* data);
+
+/**
+ * @brief Genera un valor aleatorio entre dos límites dados.
+ * 
+ * @param min Valor mínimo.
+ * @param max Valor máximo.
+ * @return useconds_t Valor aleatorio entre min y max.
+ */
 useconds_t random_between(useconds_t min, useconds_t max);
 
+/**
+ * @brief Función principal que coordina la simulación productor-consumidor.
+ * 
+ * Esta función se encarga de asignar la memoria compartida, analizar los argumentos 
+ * de la línea de comandos, crear los hilos y medir el tiempo de ejecución.
+ * 
+ * @param argc Número de argumentos en la línea de comandos.
+ * @param argv Array de argumentos de la línea de comandos.
+ * @return int Devuelve EXIT_SUCCESS si la ejecución es exitosa, en caso contrario devuelve un código de error.
+ */
 int main(int argc, char* argv[]) {
   int error = EXIT_SUCCESS;
 
+  // Asignar estructura de datos compartidos
   shared_data_t* shared_data = (shared_data_t*)
     calloc(1, sizeof(shared_data_t));
 
   if (shared_data) {
+    // Analizar los argumentos de la línea de comandos
     error = analyze_arguments(argc, argv, shared_data);
     if (error == EXIT_SUCCESS) {
+      // Asignar el búfer para los datos compartidos
       shared_data->buffer = (double*)
         calloc(shared_data->buffer_capacity, sizeof(double));
       if (shared_data->buffer) {
+        // Sembrar el generador de números aleatorios
         unsigned int seed = 0u;
         getrandom(&seed, sizeof(seed), GRND_NONBLOCK);
         srandom(seed);
 
+        // Registrar el tiempo de inicio de la ejecución
         struct timespec start_time;
-        clock_gettime(/*clk_id*/CLOCK_MONOTONIC, &start_time);
+        clock_gettime(CLOCK_MONOTONIC, &start_time);
 
+        // Crear los hilos productores y consumidores
         error = create_threads(shared_data);
 
+        // Registrar el tiempo de finalización de la ejecución
         struct timespec finish_time;
-        clock_gettime(/*clk_id*/CLOCK_MONOTONIC, &finish_time);
+        clock_gettime(CLOCK_MONOTONIC, &finish_time);
 
+        // Calcular y mostrar el tiempo de ejecución
         double elapsed = (finish_time.tv_sec - start_time.tv_sec) +
           (finish_time.tv_nsec - start_time.tv_nsec) * 1e-9;
-        printf("execution time: %.9lfs\n", elapsed);
+        printf("Tiempo de ejecución: %.9lfs\n", elapsed);
 
+        // Liberar el búfer asignado
         free(shared_data->buffer);
       } else {
-        fprintf(stderr, "error: could not create buffer\n");
+        fprintf(stderr, "error: no se pudo crear el búfer\n");
         error = ERR_NOMEM_BUFFER;
       }
     }
 
+    // Liberar la estructura de datos compartidos
     free(shared_data);
   } else {
-    fprintf(stderr, "Error: could not allocate shared data\n");
+    fprintf(stderr, "Error: no se pudieron asignar los datos compartidos\n");
     error = ERR_NOMEM_SHARED;
   }
 
