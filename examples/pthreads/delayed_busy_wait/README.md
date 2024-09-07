@@ -68,4 +68,7 @@ Comparación de las esperas. ¿Mejora el tiempo de ejecución de los dos tipos d
 
 100µs : max= Execution time: 0.002084065s
 
+
+# gráfico:
+  ![Tabla resultados](image.png)
 # Mi compañero: Jerson Bonilla Fernandez
