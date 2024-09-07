@@ -12,61 +12,161 @@
 #include "producer.h"
 #include "simulation.h"
 
+/**
+ * @brief Analiza los argumentos proporcionados en la línea de comandos.
+ * 
+ * Esta función valida y asigna los argumentos necesarios para la simulación, como el número
+ * de productores, consumidores, y las unidades a procesar. 
+ * 
+ * @param simulation Puntero a la estructura de simulación.
+ * @param argc Número de argumentos en la línea de comandos.
+ * @param argv Array de cadenas que contiene los argumentos de la línea de comandos.
+ * @return int Devuelve 0 si los argumentos son válidos, de lo contrario devuelve un código de error.
+ */
 int analyze_arguments(simulation_t* simulation, int argc, char* argv[]);
+
+/**
+ * @brief Crea hilos de productores y consumidores.
+ * 
+ * Esta función se encarga de crear los hilos correspondientes a los productores
+ * y consumidores en función de la configuración de la simulación.
+ * 
+ * @param simulation Puntero a la estructura de simulación.
+ * @return int Devuelve 0 si los hilos se crean correctamente, de lo contrario devuelve un código de error.
+ */
 int create_consumers_producers(simulation_t* simulation);
+
+/**
+ * @brief Une los hilos creados.
+ * 
+ * Esta función espera a que todos los hilos de productores y consumidores terminen su ejecución.
+ * 
+ * @param count Número de hilos a unir.
+ * @param threads Array de hilos.
+ * @return int Devuelve 0 si todos los hilos se unen correctamente, de lo contrario devuelve un código de error.
+ */
 int join_threads(size_t count, pthread_t* threads);
 
+/**
+ * @brief Crea e inicializa una nueva simulación.
+ * 
+ * Esta función asigna memoria y recursos para ejecutar una simulación. Inicializa las estructuras
+ * y los mutexes y semáforos necesarios para la sincronización entre hilos.
+ * 
+ * @return simulation_t* Devuelve un puntero a la estructura de simulación creada, o NULL si falla.
+ */
 simulation_t* simulation_create() {
   simulation_t* simulation = (simulation_t*) calloc(1, sizeof(simulation_t));
   if (simulation) {
     simulation->unit_count = 0;
+    // Inicializa el número de unidades a procesar.
+
     simulation->producer_count = 0;
+    // Inicializa el número de productores.
+
     simulation->consumer_count = 0;
+    // Inicializa el número de consumidores.
+
     simulation->producer_min_delay = 0;
+    // Inicializa el retardo mínimo para los productores.
+
     simulation->producer_max_delay = 0;
+    // Inicializa el retardo máximo para los productores.
+
     simulation->consumer_min_delay = 0;
+    // Inicializa el retardo mínimo para los consumidores.
+
     simulation->consumer_max_delay = 0;
+    // Inicializa el retardo máximo para los consumidores.
+
     queue_init(&simulation->queue);
+    // Inicializa la cola compartida entre productores y consumidores.
+
     pthread_mutex_init(&simulation->can_access_next_unit, /* attr */ NULL);
+    // Inicializa el mutex para acceder a la siguiente unidad a producir.
+
     simulation->next_unit = 0;
+    // Inicializa el índice de la próxima unidad a producir.
+
     sem_init(&simulation->can_consume, /* pshared */ 0, /* value */ 0);
+    // Inicializa el semáforo para controlar cuándo los consumidores pueden consumir.
+
     pthread_mutex_init(&simulation->can_access_consumed_count, /* attr */ NULL);
+    // Inicializa el mutex para controlar el acceso al conteo de unidades consumidas.
+
     simulation->consumed_count = 0;
+    // Inicializa el contador de unidades consumidas.
   }
   return simulation;
 }
 
+/**
+ * @brief Destruye la simulación y libera los recursos.
+ * 
+ * Esta función libera la memoria y destruye los mutexes y semáforos utilizados durante la simulación.
+ * 
+ * @param simulation Puntero a la estructura de simulación que se va a destruir.
+ */
 void simulation_destroy(simulation_t* simulation) {
   assert(simulation);
   pthread_mutex_destroy(&simulation->can_access_consumed_count);
+  // Destruye el mutex para el conteo de unidades consumidas.
+
   sem_destroy(&simulation->can_consume);
+  // Destruye el semáforo que controla el consumo.
+
   pthread_mutex_destroy(&simulation->can_access_next_unit);
+  // Destruye el mutex para acceder a la siguiente unidad.
+
   queue_destroy(&simulation->queue);
+  // Destruye la cola compartida.
+
   free(simulation);
+  // Libera la memoria asignada para la simulación.
 }
 
+/**
+ * @brief Ejecuta la simulación.
+ * 
+ * Esta función controla el ciclo de ejecución de la simulación, midiendo el tiempo
+ * de ejecución y coordinando la creación de hilos para productores y consumidores.
+ * 
+ * @param simulation Puntero a la estructura de simulación.
+ * @param argc Número de argumentos proporcionados en la línea de comandos.
+ * @param argv Array de cadenas con los argumentos de la línea de comandos.
+ * @return int Devuelve 0 si la simulación se ejecuta correctamente, de lo contrario devuelve un código de error.
+ */
 int simulation_run(simulation_t* simulation, int argc, char* argv[]) {
   int error = analyze_arguments(simulation, argc, argv);
+  // Analiza y valida los argumentos proporcionados.
+
   if (error == EXIT_SUCCESS) {
     unsigned int seed = 0;
     getrandom(&seed, sizeof(seed), GRND_NONBLOCK);
+    // Genera una semilla aleatoria para los retardos.
+
     srandom(seed);
 
     struct timespec start_time;
     clock_gettime(/*clk_id*/CLOCK_MONOTONIC, &start_time);
+    // Registra el tiempo de inicio de la simulación.
 
     error = create_consumers_producers(simulation);
+    // Crea los hilos de productores y consumidores.
 
     struct timespec finish_time;
     clock_gettime(/*clk_id*/CLOCK_MONOTONIC, &finish_time);
+    // Registra el tiempo de finalización de la simulación.
 
     double elapsed = (finish_time.tv_sec - start_time.tv_sec) +
       (finish_time.tv_nsec - start_time.tv_nsec) * 1e-9;
+    // Calcula el tiempo total de ejecución de la simulación.
+
     printf("execution time: %.9lfs\n", elapsed);
+    // Imprime el tiempo de ejecución.
   }
   return error;
 }
-
 int analyze_arguments(simulation_t* simulation, int argc, char* argv[]) {
   int error = EXIT_SUCCESS;
   if (argc == 8) {
