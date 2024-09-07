@@ -17,25 +17,25 @@
  * @brief Códigos de error utilizados por el programa.
  */
 enum {
-  ERR_NOMEM_SHARED = EXIT_FAILURE + 1, 
+  ERR_NOMEM_SHARED = EXIT_FAILURE + 1,
   // Error al no poder asignar memoria compartida.
-  ERR_NOMEM_BUFFER,                    
+  ERR_NOMEM_BUFFER,
   // Error al no poder asignar memoria para el búfer.
-  ERR_NO_ARGS,                         
+  ERR_NO_ARGS,
   // Error cuando no se proporcionan argumentos.
-  ERR_BUFFER_CAPACITY,                 
+  ERR_BUFFER_CAPACITY,
   // Error cuando la capacidad del búfer es inválida.
-  ERR_ROUND_COUNT,                     
+  ERR_ROUND_COUNT,
   // Error cuando el número de rondas es inválido.
-  ERR_MIN_PROD_DELAY,                  
+  ERR_MIN_PROD_DELAY,
   // Error cuando el retraso mínimo del productor es inválido.
-  ERR_MAX_PROD_DELAY,                  
+  ERR_MAX_PROD_DELAY,
   // Error cuando el retraso máximo del productor es inválido.
-  ERR_MIN_CONS_DELAY,                  
+  ERR_MIN_CONS_DELAY,
   // Error cuando el retraso mínimo del consumidor es inválido.
-  ERR_MAX_CONS_DELAY,                  
+  ERR_MAX_CONS_DELAY,
   // Error cuando el retraso máximo del consumidor es inválido.
-  ERR_CREATE_THREAD                    
+  ERR_CREATE_THREAD
   // Error al no poder crear un hilo.
 };
 
@@ -274,7 +274,8 @@ void* produce(void* data) {
   size_t count = 0;
   for (size_t round = 0; round < shared_data->rounds; ++round) {
     for (size_t index = 0; index < shared_data->buffer_capacity; ++index) {
-      // Pausar durante un tiempo aleatorio entre los retrasos mínimo y máximo del productor
+      /* Pausar durante un tiempo aleatorio entre
+      los retrasos mínimo y máximo del productor*/
       usleep(1000 * random_between(shared_data->producer_min_delay,
         shared_data->producer_max_delay));
       // Producir el siguiente valor
@@ -303,7 +304,8 @@ void* consume(void* data) {
     for (size_t index = 0; index < shared_data->buffer_capacity; ++index) {
       // Obtener el valor del búfer
       double value = shared_data->buffer[index];
-      // Pausar durante un tiempo aleatorio entre los retrasos mínimo y máximo del consumidor
+      /* Pausar durante un tiempo aleatorio entre
+      los retrasos mínimo y máximo del consumidor*/
       usleep(1000 * random_between(shared_data->consumer_min_delay,
         shared_data->consumer_max_delay));
       // Consumir el valor
