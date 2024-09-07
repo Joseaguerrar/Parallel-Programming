@@ -13,17 +13,30 @@
 #include <sys/random.h>
 #include <unistd.h>
 
+/**
+ * @brief Códigos de error utilizados por el programa.
+ */
 enum {
-  ERR_NOMEM_SHARED = EXIT_FAILURE + 1,
-  ERR_NOMEM_BUFFER,
-  ERR_NO_ARGS,
-  ERR_BUFFER_CAPACITY,
-  ERR_ROUND_COUNT,
-  ERR_MIN_PROD_DELAY,
-  ERR_MAX_PROD_DELAY,
-  ERR_MIN_CONS_DELAY,
-  ERR_MAX_CONS_DELAY,
-  ERR_CREATE_THREAD,
+  ERR_NOMEM_SHARED = EXIT_FAILURE + 1, 
+  // Error al no poder asignar memoria compartida.
+  ERR_NOMEM_BUFFER,                    
+  // Error al no poder asignar memoria para el búfer.
+  ERR_NO_ARGS,                         
+  // Error cuando no se proporcionan argumentos.
+  ERR_BUFFER_CAPACITY,                 
+  // Error cuando la capacidad del búfer es inválida.
+  ERR_ROUND_COUNT,                     
+  // Error cuando el número de rondas es inválido.
+  ERR_MIN_PROD_DELAY,                  
+  // Error cuando el retardo mínimo del productor es inválido.
+  ERR_MAX_PROD_DELAY,                  
+  // Error cuando el retardo máximo del productor es inválido.
+  ERR_MIN_CONS_DELAY,                  
+  // Error cuando el retardo mínimo del consumidor es inválido.
+  ERR_MAX_CONS_DELAY,                  
+  // Error cuando el retardo máximo del consumidor es inválido.
+  ERR_CREATE_THREAD                    
+  // Error al no poder crear un hilo.
 };
 
 typedef struct {
