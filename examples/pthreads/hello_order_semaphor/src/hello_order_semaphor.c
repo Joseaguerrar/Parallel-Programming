@@ -10,54 +10,93 @@
 #include <time.h>
 #include <unistd.h>
 
-// thread_shared_data_t
+/**
+ * @brief Estructura que contiene los datos compartidos entre los hilos.
+ * 
+ * Esta estructura incluye un arreglo de semáforos para controlar cuándo cada hilo puede saludar
+ * y el número total de hilos creados.
+ */
 typedef struct shared_data {
+  /* Arreglo de semáforos que permiten controlar 
+  el turno de saludo de cada hilo. */
   sem_t* can_greet;
+  /* Número total de hilos a crear. */
   uint64_t thread_count;
 } shared_data_t;
 
-// thread_private_data_t
+/**
+ * @brief Estructura que contiene los datos privados de cada hilo.
+ * 
+ * Esta estructura incluye el número de hilo (rank) y un puntero a los datos compartidos.
+ */
 typedef struct private_data {
-  uint64_t thread_number;  // rank
-  shared_data_t* shared_data;
+  uint64_t thread_number; /* Número de hilo (rank) asignado a cada hilo. */
+  shared_data_t* shared_data; /*Puntero a la estructura de datos compartidos. */
 } private_data_t;
 
 /**
- * @brief ...
+ * @brief Función ejecutada por cada hilo para realizar el saludo.
+ * 
+ * @param data Puntero a los datos privados del hilo.
+ * @return void* Retorna NULL al finalizar.
+ * 
+ * Esta función espera su turno (controlado por semáforos) y luego imprime un saludo.
  */
 void* greet(void* data);
+
+/**
+ * @brief Crea los hilos y les asigna la tarea de saludar.
+ * 
+ * @param shared_data Puntero a la estructura de datos compartidos entre los hilos.
+ * @return int Retorna EXIT_SUCCESS si no hubo errores, o un código de error en caso contrario.
+ * 
+ * Esta función inicializa los hilos, ejecuta la tarea de saludo y luego espera a que todos terminen.
+ */
 int create_threads(shared_data_t* shared_data);
 
-// procedure main(argc, argv[])
+/**
+ * @brief Función principal del programa.
+ * 
+ * @param argc Número de argumentos de la línea de comandos.
+ * @param argv Arreglo de argumentos de la línea de comandos.
+ * @return int Retorna EXIT_SUCCESS si el programa se ejecuta correctamente, o un código de error en caso contrario.
+ * 
+ * Esta función inicializa los semáforos y los hilos, mide el tiempo de ejecución y libera los recursos al final.
+ */
 int main(int argc, char* argv[]) {
   int error = EXIT_SUCCESS;
-  // create thread_count as result of converting argv[1] to integer
-  // thread_count := integer(argv[1])
+
+  /* Determina la cantidad de hilos según el argumento de la línea
+   de comandos o el número de procesadores disponibles*/
   uint64_t thread_count = sysconf(_SC_NPROCESSORS_ONLN);
   if (argc == 2) {
-    if (sscanf(argv[1], "%" SCNu64, &thread_count) == 1) {
-    } else {
+    if (sscanf(argv[1], "%" SCNu64, &thread_count) != 1) {
       fprintf(stderr, "Error: invalid thread count\n");
       return 11;
     }
   }
 
+  // Asigna memoria para la estructura de datos compartidos
   shared_data_t* shared_data = (shared_data_t*)calloc(1, sizeof(shared_data_t));
   if (shared_data) {
+    // Asigna memoria para los semáforos y define la cantidad de hilos
     shared_data->can_greet = (sem_t*) calloc(thread_count, sizeof(sem_t));
     shared_data->thread_count = thread_count;
 
-    for (uint64_t thread_number = 0; thread_number < shared_data->thread_count
-        ; ++thread_number) {
-      // can_greet[thread_number] := create_semaphore(not thread_number)
-      error = sem_init(&shared_data->can_greet[thread_number], /*pshared*/ 0
-        , /*value*/ !thread_number);
+    // Inicializa los semáforos para cada hilo
+    for (uint64_t thread_number = 0; thread_number < shared_data->thread_count;
+    ++thread_number) {
+      /* Inicializa el semáforo de cada hilo 
+      con valor 0 excepto para el primer hilo*/
+      error = sem_init(&shared_data->can_greet[thread_number], /*pshared*/ 0,
+      /*value*/ !thread_number);
     }
 
     if (shared_data->can_greet) {
       struct timespec start_time, finish_time;
       clock_gettime(CLOCK_MONOTONIC, &start_time);
 
+      // Crea y ejecuta los hilos
       error = create_threads(shared_data);
 
       clock_gettime(CLOCK_MONOTONIC, &finish_time);
@@ -66,6 +105,7 @@ int main(int argc, char* argv[]) {
 
       printf("Execution time: %.9lfs\n", elapsed_time);
 
+      // Libera los semáforos y la memoria de datos compartidos
       free(shared_data->can_greet);
     } else {
       fprintf(stderr, "Error: could not allocate semaphores\n");
