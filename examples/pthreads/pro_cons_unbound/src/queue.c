@@ -5,9 +5,15 @@
 
 #include "queue.h"
 
-void queue_remove_first_unsafe(queue_t* queue);
-bool queue_is_empty_unsafe(queue_t* queue);
-
+/**
+ * @brief Inicializa una cola.
+ * 
+ * Esta función inicializa los componentes de una cola, incluyendo el mutex que asegura
+ * el acceso concurrente. La cola comienza vacía (sin nodos en la cabeza ni en la cola).
+ * 
+ * @param queue Puntero a la estructura de la cola que se va a inicializar.
+ * @return int Devuelve 0 si la inicialización es exitosa, o un código de error si falla.
+ */
 int queue_init(queue_t* queue) {
   assert(queue);
   int error = pthread_mutex_init(&queue->can_access_queue, /*attr*/ NULL);
@@ -16,11 +22,29 @@ int queue_init(queue_t* queue) {
   return error;
 }
 
+/**
+ * @brief Destruye una cola.
+ * 
+ * Esta función limpia el contenido de la cola y destruye el mutex utilizado para
+ * la sincronización de acceso concurrente.
+ * 
+ * @param queue Puntero a la estructura de la cola que se va a destruir.
+ * @return int Devuelve 0 si la destrucción es exitosa, o un código de error si falla.
+ */
 int queue_destroy(queue_t* queue) {
   queue_clear(queue);
   return pthread_mutex_destroy(&queue->can_access_queue);
 }
 
+/**
+ * @brief Verifica si una cola está vacía de manera segura.
+ * 
+ * Esta función comprueba si la cola está vacía, utilizando un mutex para asegurar
+ * que el acceso sea seguro en un entorno de múltiples hilos.
+ * 
+ * @param queue Puntero a la estructura de la cola que se va a verificar.
+ * @return bool Devuelve `true` si la cola está vacía, `false` en caso contrario.
+ */
 bool queue_is_empty(queue_t* queue) {
   assert(queue);
   pthread_mutex_lock(&queue->can_access_queue);
@@ -29,6 +53,16 @@ bool queue_is_empty(queue_t* queue) {
   return result;
 }
 
+/**
+ * @brief Verifica si una cola está vacía sin bloqueo (inseguro).
+ * 
+ * Esta función comprueba si la cola está vacía sin utilizar un mutex, lo que la hace
+ * insegura para su uso en entornos concurrentes. Debe usarse solo cuando se asegura
+ * que no hay concurrencia.
+ * 
+ * @param queue Puntero a la estructura de la cola que se va a verificar.
+ * @return bool Devuelve `true` si la cola está vacía, `false` en caso contrario.
+ */
 bool queue_is_empty_unsafe(queue_t* queue) {
   assert(queue);
   return queue->head == NULL;
