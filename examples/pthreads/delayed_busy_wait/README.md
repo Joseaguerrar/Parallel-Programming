@@ -56,14 +56,14 @@ R/ La mejora no está garantizada al utilizar el pseudoaleatorio. Pero es una ca
 
 Comparación de las esperas. ¿Mejora el tiempo de ejecución de los dos tipos de esperas (constante y pseudoaleatoria) si disminuye o incrementa la espera máxima de los hilos? Haga al menos un par de ejecuciones con al menos los siguientes tiempos de espera:
 
-1µs
+1µs : max= Execution time: 0.001026250s
 
-5µs
+5µs : max= Execution time: 0.001061741s
 
-25µs
+25µs : max= Execution time: 0.001051621s
 
-50µs
+50µs : max= Execution time: 0.001166323s
 
-75µs
+75µs : max= Execution time: 0.009270971s
 
-100µs
+100µs : max= Execution time: 0.002084065s
