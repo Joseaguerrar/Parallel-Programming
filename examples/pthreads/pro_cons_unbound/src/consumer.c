@@ -56,7 +56,8 @@ void* consume(void* data) {
 
     usleep(1000 * random_between(simulation->consumer_min_delay,
       simulation->consumer_max_delay));
-    // Espera un tiempo aleatorio entre el retardo mínimo y máximo del consumidor.
+    /* Espera un tiempo aleatorio entre el retardo
+    mínimo y máximo del consumidor.*/
   }
 
   return NULL;

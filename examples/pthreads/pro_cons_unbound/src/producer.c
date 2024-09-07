@@ -25,7 +25,8 @@ void* produce(void* data) {
 
     // lock(can_access_next_unit)
     pthread_mutex_lock(&simulation->can_access_next_unit);
-    // Bloquea el acceso a la siguiente unidad para evitar condiciones de carrera.
+    /* Bloquea el acceso a la siguiente unidad
+    para evitar condiciones de carrera.*/
 
     // If is there pending work, take a unit for producing
     if (simulation->next_unit < simulation->unit_count) {

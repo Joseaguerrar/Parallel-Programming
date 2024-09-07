@@ -18,7 +18,7 @@
  * La estructura `simulation_t` se define como opaca para que los detalles de su
  * implementación estén ocultos fuera del archivo fuente correspondiente.
  */
-typedef struct simulation simulation_t;  
+typedef struct simulation simulation_t;
 // Tipo de dato opaco para representar una simulación.
 
 /**
