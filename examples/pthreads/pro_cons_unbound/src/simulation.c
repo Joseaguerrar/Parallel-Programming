@@ -167,6 +167,18 @@ int simulation_run(simulation_t* simulation, int argc, char* argv[]) {
   }
   return error;
 }
+/**
+ * @brief Analiza los argumentos proporcionados en la línea de comandos.
+ * 
+ * Esta función valida los argumentos proporcionados por el usuario, como el número de unidades,
+ * productores, consumidores y retardos. Si los argumentos no son válidos, se imprime un mensaje
+ * de error y se devuelve un código de error.
+ * 
+ * @param simulation Puntero a la estructura de simulación.
+ * @param argc Número de argumentos en la línea de comandos.
+ * @param argv Array de cadenas que contiene los argumentos de la línea de comandos.
+ * @return int Devuelve 0 si los argumentos son válidos, o un código de error si fallan.
+ */
 int analyze_arguments(simulation_t* simulation, int argc, char* argv[]) {
   int error = EXIT_SUCCESS;
   if (argc == 8) {
@@ -174,45 +186,68 @@ int analyze_arguments(simulation_t* simulation, int argc, char* argv[]) {
       || simulation->unit_count == 0) {
         fprintf(stderr, "error: invalid unit count\n");
         error = ERR_UNIT_COUNT;
+        // Error si el número de unidades es inválido o igual a cero.
     } else if (sscanf(argv[2], "%zu", &simulation->producer_count) != 1
       || simulation->producer_count == 0) {
         fprintf(stderr, "error: invalid producer count\n");
         error = ERR_PRODUCER_COUNT;
+        // Error si el número de productores es inválido o igual a cero.
     } else if (sscanf(argv[3], "%zu", &simulation->consumer_count) != 1
       || simulation->consumer_count == 0) {
         fprintf(stderr, "error: invalid consumer count\n");
         error = ERR_CONSUMER_COUNT;
+        // Error si el número de consumidores es inválido o igual a cero.
     } else if (sscanf(argv[4], "%u", &simulation->producer_min_delay) != 1) {
         fprintf(stderr, "error: invalid min producer delay\n");
         error = ERR_MIN_PROD_DELAY;
+        // Error si el retraso mínimo del productor es inválido.
     } else if (sscanf(argv[5], "%u", &simulation->producer_max_delay) != 1) {
         fprintf(stderr, "error: invalid max producer delay\n");
         error = ERR_MAX_PROD_DELAY;
+        // Error si el retraso máximo del productor es inválido.
     } else if (sscanf(argv[6], "%u", &simulation->consumer_min_delay) != 1) {
         fprintf(stderr, "error: invalid min consumer delay\n");
         error = ERR_MIN_CONS_DELAY;
+        // Error si el retraso mínimo del consumidor es inválido.
     } else if (sscanf(argv[7], "%u", &simulation->consumer_max_delay) != 1) {
         fprintf(stderr, "error: invalid max consumer delay\n");
         error = ERR_MAX_CONS_DELAY;
+        // Error si el retraso máximo del consumidor es inválido.
     }
   } else {
     fprintf(stderr, "usage: producer_consumer buffer_capacity rounds"
       " producer_min_delay producer_max_delay"
       " consumer_min_delay consumer_max_delay\n");
-      error = ERR_NO_ARGS;
+    // Muestra el formato correcto de los argumentos esperados.
+    error = ERR_NO_ARGS;
   }
   return error;
 }
 
+/**
+ * @brief Crea un grupo de hilos.
+ * 
+ * Esta función crea un grupo de hilos que ejecutan una subrutina específica. Si ocurre
+ * un error al crear uno de los hilos, la función unirá los hilos ya creados y devolverá NULL.
+ * 
+ * @param count Número de hilos a crear.
+ * @param subroutine Función que cada hilo ejecutará.
+ * @param data Puntero a los datos que se pasarán a cada hilo.
+ * @return pthread_t* Devuelve un puntero al array de hilos creados, o NULL si ocurre un error.
+ */
 pthread_t* create_threads(size_t count, void*(*subroutine)(void*), void* data) {
   pthread_t* threads = (pthread_t*) calloc(count, sizeof(pthread_t));
+  // Reserva memoria para los hilos.
+
   if (threads) {
     for (size_t index = 0; index < count; ++index) {
       if (pthread_create(&threads[index], /*attr*/ NULL, subroutine, data)
          == EXIT_SUCCESS) {
+        // Crea cada hilo con la subrutina especificada.
       } else {
         fprintf(stderr, "error: could not create thread %zu\n", index);
         join_threads(index, threads);
+        // Si no se puede crear un hilo, se unen los hilos creados previamente.
         return NULL;
       }
     }
@@ -220,31 +255,58 @@ pthread_t* create_threads(size_t count, void*(*subroutine)(void*), void* data) {
   return threads;
 }
 
+/**
+ * @brief Une los hilos creados.
+ * 
+ * Esta función espera a que todos los hilos del array proporcionado terminen su ejecución.
+ * 
+ * @param count Número de hilos a unir.
+ * @param threads Array de hilos.
+ * @return int Devuelve 0 si todos los hilos se unen correctamente, o un código de error si falla.
+ */
 int join_threads(size_t count, pthread_t* threads) {
   int error = EXIT_SUCCESS;
   for (size_t index = 0; index < count; ++index) {
     // todo: sum could not be right
     error += pthread_join(threads[index], /*value_ptr*/ NULL);
+    // Une el hilo en el índice actual.
   }
   free(threads);
+  // Libera la memoria asignada para los hilos.
   return error;
 }
 
+/**
+ * @brief Crea los hilos de productores y consumidores.
+ * 
+ * Esta función crea los hilos de productores y consumidores para la simulación. Si los hilos
+ * no pueden ser creados, devuelve un error.
+ * 
+ * @param simulation Puntero a la estructura de simulación.
+ * @return int Devuelve 0 si los hilos se crean y se unen correctamente, o un código de error si falla.
+ */
 int create_consumers_producers(simulation_t* simulation) {
   assert(simulation);
   int error = EXIT_SUCCESS;
 
   pthread_t* producers = create_threads(simulation->producer_count, produce
     , simulation);
+  // Crea los hilos de los productores.
+
   pthread_t* consumers = create_threads(simulation->consumer_count, consume
     , simulation);
+  // Crea los hilos de los consumidores.
 
   if (producers && consumers) {
     join_threads(simulation->producer_count, producers);
+    // Une los hilos de los productores.
+
     join_threads(simulation->consumer_count, consumers);
+    // Une los hilos de los consumidores.
   } else {
     fprintf(stderr, "error: could not create threads\n");
     error = ERR_CREATE_THREAD;
+    // Error si no se pudieron crear los hilos.
   }
 
   return error;
