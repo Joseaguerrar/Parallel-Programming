@@ -1,3 +1,4 @@
+// Copyright [2024] <jose.guerrarodriguez@ucr.ac.cr>
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
@@ -112,11 +113,11 @@ int main() {
         {"Acabados exteriores", &sem_acabados_ext, {&sem_pintura_ext}, 1, 0},
         // No desbloquea a nadie
         {"Instalación eléctrica", &sem_instalacion_electrica,
-        {&sem_techo}, 1, 1}, // Desbloquea 1: Pintura interior
+        {&sem_techo}, 1, 1},  // Desbloquea 1: Pintura interior
         {"Plomería interior", &sem_plomeria_int, {&sem_plomeria_ext}, 1, 1},
         // Desbloquea 1: Pintura interior
         {"Pintura interior", &sem_pintura_int, {&sem_plomeria_int,
-        &sem_instalacion_electrica}, 2, 1}, // Desbloquea 1: Piso
+        &sem_instalacion_electrica}, 2, 1},  // Desbloquea 1: Piso
         {"Piso", &sem_piso, {&sem_pintura_int}, 1, 1},
         // Desbloquea 1: Acabados interiores
         {"Acabados interiores", &sem_acabados_int, {&sem_piso}, 1, 0}
@@ -149,7 +150,7 @@ int main() {
     for (size_t i = 0; i < sizeof(tareas) / sizeof(Tarea); i++) {
         pthread_join(hilos[i], NULL);
     }
-
+    printf("Trabajo completo :D\n");
     // Destruir semáforos y mutex
     /**
      * Destruye todos los semáforos y el mutex al final del programa
