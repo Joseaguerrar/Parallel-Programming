@@ -1,0 +1,45 @@
+procedure main(argc, argv[])
+  shared task_count := integer(argv[1])       // Cantidad de tareas en el grafo
+  shared task_dependencies as array of task_count semaphores
+  shared dependencies := [
+    [],       // Tarea 0 no tiene dependencias
+    [0],      // Tarea 1 depende de la tarea 0
+    [0],      // Tarea 2 depende de la tarea 0
+    [1, 2],   // Tarea 3 depende de las tareas 1 y 2
+    [3],      // Tarea 4 depende de la tarea 3
+    [3]       // Tarea 5 depende de la tarea 3
+  ]
+
+  // Inicializar semáforos para cada tarea
+  for task_number := 0 to task_count do
+    if dependencies[task_number].is_empty() then
+      task_dependencies[task_number] := create_semaphore(1)  // Tareas sin dependencias empiezan disponibles
+    else
+      task_dependencies[task_number] := create_semaphore(0)  // Tareas con dependencias empiezan bloqueadas
+    end if
+  end for
+
+  // Crear hilos de albañiles para cada tarea
+  for task_number := 0 to task_count do
+    create_thread(builder, task_number)
+  end for
+
+  print "Maestro de obras listo"
+end procedure
+
+procedure builder(task_number)
+  // Esperar hasta que todas las dependencias se completen
+  for dep in dependencies[task_number] do
+    wait(task_dependencies[dep])
+  end for
+
+  // Iniciar la tarea
+  print "Albañil", task_number, "ha comenzado su tarea."
+
+  // Simular el trabajo del albañil con una espera aleatoria
+  sleep(random(1, 3))
+
+  // Finalizar la tarea
+  print "Albañil", task_number, "ha terminado su tarea."
+  signal(task_dependencies[task_number])  // Desbloquear la tarea para los que dependen de ella
+//end procedure
