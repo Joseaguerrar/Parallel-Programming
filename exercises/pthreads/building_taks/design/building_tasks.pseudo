@@ -1,61 +1,74 @@
-procedure main(argc, argv[])
-  shared task_count := 9        // Total de tareas en el grafo
-  shared task_dependencies as array of task_count semaphores
-  
-  // Lista de dependencias:
-  // 0: Obra gris
-  // 1: Plomería exterior
-  // 2: Pintura exterior
-  // 3: Acabados exteriores
-  // 4: Plomería interior
-  // 5: Techo
-  // 6: Instalación eléctrica
-  // 7: Pintura interior (depende de plomería interior e instalación eléctrica)
-  // 8: Piso
-  // 9: Acabados interiores
-  shared dependencies := {
-    [],            // 0: Obra gris no depende de nada
-    [0],           // 1: Plomería exterior depende de obra gris
-    [1],           // 2: Pintura exterior depende de plomería exterior
-    [2],           // 3: Acabados exteriores dependen de pintura exterior
-    [1],           // 4: Plomería interior depende de plomería exterior
-    [0],           // 5: Techo depende de obra gris
-    [5],           // 6: Instalación eléctrica depende de techo
-    [4, 6],        // 7: Pintura interior depende de plomería interior e instalación eléctrica
-    [7],           // 8: Piso depende de pintura interior
-    [8]            // 9: Acabados interiores dependen de piso
-}
+procedure main()
+    // Inicializar los semáforos
+    create_semaphore(sem_obra_gris, 1)
+    create_semaphore(sem_plomeria_ext, 0)
+    create_semaphore(sem_techo, 0)
+    create_semaphore(sem_pintura_ext, 0)
+    create_semaphore(sem_acabados_ext, 0)
+    create_semaphore(sem_instalacion_electrica, 0)
+    create_semaphore(sem_plomeria_int, 0)
+    create_semaphore(sem_pintura_int, 0)
+    create_semaphore(sem_piso, 0)
+    create_semaphore(sem_acabados_int, 0)
+    create_mutex(mutex)
 
-  // Inicializar semáforos para cada tarea
-  for task_number := 0 to task_count do
-    if dependencies[task_number].is_empty() then
-      task_dependencies[task_number] := create_semaphore(1)  // Tareas sin dependencias comienzan disponibles
-    else
-      task_dependencies[task_number] := create_semaphore(0)  // Tareas con dependencias comienzan bloqueadas
-    end if
-  end for
+    // Crear lista de tareas
+    tareas := [
+        {"Obra gris", sem_obra_gris, [], 0, 2},
+        {"Plomería exterior", sem_plomeria_ext, [sem_obra_gris], 1, 2},
+        {"Techo", sem_techo, [sem_obra_gris], 1, 1},
+        {"Pintura exterior", sem_pintura_ext, [sem_plomeria_ext], 1, 1},
+        {"Acabados exteriores", sem_acabados_ext, [sem_pintura_ext], 1, 0},
+        {"Instalación eléctrica", sem_instalacion_electrica, [sem_techo], 1, 1},
+        {"Plomería interior", sem_plomeria_int, [sem_plomeria_ext], 1, 1},
+        {"Pintura interior", sem_pintura_int, [sem_plomeria_int, sem_instalacion_electrica], 2, 1},
+        {"Piso", sem_piso, [sem_pintura_int], 1, 1},
+        {"Acabados interiores", sem_acabados_int, [sem_piso], 1, 0}
+    ]
 
-  // Crear hilos de albañiles para cada tarea
-  for task_number := 0 to task_count do
-    create_thread(builder, task_number)
-  end for
+    // Crear hilos para cada tarea
+    for i := 0 to length(tareas) - 1 do
+        create_thread(ejecutar_tarea, tareas[i])
+    end for
 
-  print "Maestro de obras listo"
+    // Esperar a que todos los hilos terminen
+    for i := 0 to length(tareas) - 1 do
+        join_thread(tareas[i].hilo)
+    end for
+
+    // Destruir semáforos y mutex
+    destroy_semaphore(sem_obra_gris)
+    destroy_semaphore(sem_plomeria_ext)
+    destroy_semaphore(sem_techo)
+    destroy_semaphore(sem_pintura_ext)
+    destroy_semaphore(sem_acabados_ext)
+    destroy_semaphore(sem_instalacion_electrica)
+    destroy_semaphore(sem_plomeria_int)
+    destroy_semaphore(sem_pintura_int)
+    destroy_semaphore(sem_piso)
+    destroy_semaphore(sem_acabados_int)
+    destroy_mutex(mutex)
+
+    print "Trabajo completo :D"
 end procedure
 
-procedure builder(task_number)
-  // Esperar hasta que todas las dependencias se completen
-  for dep in dependencies[task_number] do
-    wait(task_dependencies[dep])
-  end for
+procedure ejecutar_tarea(tarea)
+    // Esperar a que todas las dependencias se completen
+    for i := 0 to tarea.num_dependencias - 1 do
+        wait_semaphore(tarea.dependencias[i])
+    end for
 
-  // Iniciar la tarea
-  print "Albañil", task_number, "ha comenzado su tarea."
+    // Iniciar la tarea con acceso exclusivo a la salida estándar
+    lock(mutex)
+    print tarea.nombre, "ha comenzado."
+    sleep(1)  // Simular trabajo
+    print tarea.nombre, "ha terminado."
+    unlock(mutex)
 
-  // Simular el trabajo del albañil con una espera aleatoria
-  sleep(random(1, 3))
+    // Desbloquear las tareas dependientes
+    for i := 0 to tarea.num_post - 1 do
+        post_semaphore(tarea.mi_semaforo)
+    end for
 
-  // Finalizar la tarea
-  print "Albañil", task_number, "ha terminado su tarea."
-  signal(task_dependencies[task_number])  // Desbloquear la tarea para los que dependen de ella
+    return NULL
 end procedure
