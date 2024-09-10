@@ -29,6 +29,20 @@ typedef struct {
 } Tarea;
 
 // Función que simula el trabajo de un albañil
+/**
+ * @brief Función que simula el trabajo de un albañil, esperando las dependencias 
+ *        y ejecutando su tarea una vez estén listas.
+ *
+ * @param arg Puntero genérico que será casteado a la estructura Tarea, 
+ *            que contiene toda la información sobre la tarea.
+ * 
+ * La función espera a que todas las dependencias de la tarea se completen
+ * (utilizando semáforos), luego simula el inicio y la ejecución de la tarea 
+ * con un bloqueo opcional mediante mutex para controlar el acceso concurrente.
+ * Al finalizar la tarea, desbloquea las tareas que dependen de esta.
+ * 
+ * @return NULL 
+ */
 void* ejecutar_tarea(void* arg) {
     Tarea* tarea = (Tarea*)arg;
 
@@ -37,9 +51,14 @@ void* ejecutar_tarea(void* arg) {
         sem_wait(tarea->dependencias[i]);
     }
 
-    /* Iniciar la tarea, en este caso le puse mutex para que saliera en orden
-    por temas de revisión, pero se puede comentar y observar que salen en orden
-    de prioridad pero no en orden de inicio y final*/
+    /**
+     * Iniciar la tarea. El mutex se utiliza para asegurar que las salidas
+     * de impresión (inicio y fin de la tarea) se ejecuten en orden.
+     * 
+     * Si se comenta el uso del mutex, las tareas seguirán respetando las
+     * prioridades y dependencias, pero el orden de inicio y finalización
+     * en la salida puede variar debido a la concurrencia.
+     */
     pthread_mutex_lock(&mutex);  // Bloqueo para asegurar salida controlada
     printf("%s ha comenzado.\n", tarea->nombre);
     sleep(1);  // Simular trabajo con una espera de 1 segundo
@@ -53,7 +72,6 @@ void* ejecutar_tarea(void* arg) {
 
     return NULL;
 }
-
 int main() {
     // Inicializar los semáforos con el valor inicial de 0 (bloqueado)
     sem_init(&sem_obra_gris, 0, 1);  // La primera tarea (obra gris) puede empezar inmediatamente
