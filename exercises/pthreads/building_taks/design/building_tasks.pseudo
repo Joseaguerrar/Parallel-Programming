@@ -1,21 +1,37 @@
 procedure main(argc, argv[])
-  shared task_count := integer(argv[1])       // Cantidad de tareas en el grafo
+  shared task_count := 9        // Total de tareas en el grafo
   shared task_dependencies as array of task_count semaphores
-  shared dependencies := [
-    [],       // Tarea 0 no tiene dependencias
-    [0],      // Tarea 1 depende de la tarea 0
-    [0],      // Tarea 2 depende de la tarea 0
-    [1, 2],   // Tarea 3 depende de las tareas 1 y 2
-    [3],      // Tarea 4 depende de la tarea 3
-    [3]       // Tarea 5 depende de la tarea 3
-  ]
+  
+  // Lista de dependencias:
+  // 0: Obra gris
+  // 1: Plomería exterior
+  // 2: Pintura exterior
+  // 3: Acabados exteriores
+  // 4: Plomería interior
+  // 5: Techo
+  // 6: Instalación eléctrica
+  // 7: Pintura interior (depende de plomería interior e instalación eléctrica)
+  // 8: Piso
+  // 9: Acabados interiores
+  shared dependencies := {
+    [],            // 0: Obra gris no depende de nada
+    [0],           // 1: Plomería exterior depende de obra gris
+    [1],           // 2: Pintura exterior depende de plomería exterior
+    [2],           // 3: Acabados exteriores dependen de pintura exterior
+    [1],           // 4: Plomería interior depende de plomería exterior
+    [0],           // 5: Techo depende de obra gris
+    [5],           // 6: Instalación eléctrica depende de techo
+    [4, 6],        // 7: Pintura interior depende de plomería interior e instalación eléctrica
+    [7],           // 8: Piso depende de pintura interior
+    [8]            // 9: Acabados interiores dependen de piso
+}
 
   // Inicializar semáforos para cada tarea
   for task_number := 0 to task_count do
     if dependencies[task_number].is_empty() then
-      task_dependencies[task_number] := create_semaphore(1)  // Tareas sin dependencias empiezan disponibles
+      task_dependencies[task_number] := create_semaphore(1)  // Tareas sin dependencias comienzan disponibles
     else
-      task_dependencies[task_number] := create_semaphore(0)  // Tareas con dependencias empiezan bloqueadas
+      task_dependencies[task_number] := create_semaphore(0)  // Tareas con dependencias comienzan bloqueadas
     end if
   end for
 
@@ -42,4 +58,4 @@ procedure builder(task_number)
   // Finalizar la tarea
   print "Albañil", task_number, "ha terminado su tarea."
   signal(task_dependencies[task_number])  // Desbloquear la tarea para los que dependen de ella
-//end procedure
+end procedure
