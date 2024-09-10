@@ -12,102 +12,32 @@ typedef struct {
     sem_t* mi_semaforo; // Semáforo propio que desbloqueará las tareas que dependen de esta
 } Tarea;
 
-// Nombres de las tareas
-const char* task_names[TASK_COUNT] = {
-    "Obra gris",
-    "Plomería exterior",
-    "Pintura exterior",
-    "Acabados exteriores",
-    "Plomería interior",
-    "Techo",
-    "Instalación eléctrica",
-    "Pintura interior",
-    "Piso",
-    "Acabados interiores"
-};
+int main() {
+    // Inicializar semáforos
+    sem_t sem_obra_gris, sem_plomeria_ext, sem_techo, sem_pintura_ext, sem_pintura_int, sem_piso, sem_acabados_ext, sem_acabados_int, sem_instalacion_electrica, sem_plomeria_int;
+    
+    sem_init(&sem_obra_gris, 0, 1);  // Obra gris puede empezar inmediatamente
+    sem_init(&sem_plomeria_ext, 0, 0);
+    sem_init(&sem_techo, 0, 0);
+    sem_init(&sem_pintura_ext, 0, 0);
+    sem_init(&sem_pintura_int, 0, 0);
+    sem_init(&sem_piso, 0, 0);
+    sem_init(&sem_acabados_ext, 0, 0);
+    sem_init(&sem_acabados_int, 0, 0);
+    sem_init(&sem_instalacion_electrica, 0, 0);
+    sem_init(&sem_plomeria_int, 0, 0);
 
-// Dependencias entre tareas (cada tarea puede depender de varias tareas)
-int dependencies[TASK_COUNT][3] = {
-    {},           // Tarea 0: No depende de ninguna
-    {0},          // Tarea 1: Depende de Obra gris
-    {1},          // Tarea 2: Depende de Plomería exterior
-    {2},          // Tarea 3: Depende de Pintura exterior
-    {1},          // Tarea 4: Depende de Plomería exterior
-    {0},          // Tarea 5: Depende de Obra gris
-    {5},          // Tarea 6: Depende de Techo
-    {4, 6},       // Tarea 7: Depende de Plomería interior e Instalación eléctrica
-    {7},          // Tarea 8: Depende de Pintura interior
-    {8}           // Tarea 9: Depende de Piso
-};
-
-// Función para simular el trabajo de cada albañil (hilo de trabajo)
-void* builder(void* arg);
-
-int main(int argc, char* argv[]) {
-    pthread_t builders[TASK_COUNT];
-    TaskInfo task_info[TASK_COUNT];
-
-    // Inicializar los semáforos para cada tarea
-    for (int i = 0; i < TASK_COUNT; i++) {
-        sem_init(&task_dependencies[i], 0, 0);
-    }
-
-    // Crear las dependencias para cada tarea
-    for (int i = 0; i < TASK_COUNT; i++) {
-        task_info[i].task_id = i;
-        task_info[i].num_dependencies = sizeof(dependencies[i]) / sizeof(int);
-        task_info[i].dependencies = malloc(task_info[i].num_dependencies * sizeof(int));
-
-        // Asignar dependencias
-        for (int j = 0; j < task_info[i].num_dependencies; j++) {
-            task_info[i].dependencies[j] = dependencies[i][j];
-        }
-    }
-
-    // Crear los hilos de albañiles para cada tarea
-    for (int i = 0; i < TASK_COUNT; i++) {
-        pthread_create(&builders[i], NULL, builder, (void*)&task_info[i]);
-    }
-
-    // La primera tarea (Obra gris) no tiene dependencias, así que puede empezar inmediatamente
-    sem_post(&task_dependencies[0]);
-
-    // Esperar a que todos los albañiles terminen sus tareas
-    for (int i = 0; i < TASK_COUNT; i++) {
-        pthread_join(builders[i], NULL);
-    }
-
-    // Destruir semáforos y liberar memoria
-    for (int i = 0; i < TASK_COUNT; i++) {
-        sem_destroy(&task_dependencies[i]);
-        free(task_info[i].dependencies);
-    }
-
-    printf("El trabajo se ha completado...\n");
-    return 0;
-}
-
-void* builder(void* arg) {
-    TaskInfo* task_info = (TaskInfo*) arg;
-    int task_id = task_info->task_id;
-
-    // Esperar hasta que todas las dependencias se completen
-    for (int i = 0; i < task_info->num_dependencies; i++) {
-        int dep_id = task_info->dependencies[i];
-        sem_wait(&task_dependencies[dep_id]);
-    }
-
-    // Iniciar la tarea
-    printf("El albañil ha comenzado su tarea: %s\n", task_names[task_id]);
-
-    // Simular el trabajo del albañil con una espera aleatoria
-    usleep(25);
-
-    // Finalizar la tarea
-    printf("El albañil ha terminado su tarea: %s\n", task_names[task_id]);
-
-    // Marcar la tarea como completada
-    sem_post(&task_dependencies[task_id]);
-
-    pthread_exit(NULL);
+    // Crear las tareas y definir sus dependencias
+    Tarea tareas[] = {
+        {"Obra gris", NULL, 0, &sem_obra_gris},
+        {"Plomería exterior", (sem_t[]){sem_obra_gris}, 1, &sem_plomeria_ext},
+        {"Techo", (sem_t[]){sem_obra_gris}, 1, &sem_techo},
+        {"Pintura exterior", (sem_t[]){sem_plomeria_ext}, 1, &sem_pintura_ext},
+        {"Acabados exteriores", (sem_t[]){sem_pintura_ext}, 1, &sem_acabados_ext},
+        {"Instalación eléctrica", (sem_t[]){sem_techo}, 1, &sem_instalacion_electrica},
+        {"Plomería interior", (sem_t[]){sem_plomeria_ext}, 1, &sem_plomeria_int},
+        {"Pintura interior", (sem_t[]){sem_plomeria_int, sem_instalacion_electrica}, 2, &sem_pintura_int},
+        {"Piso", (sem_t[]){sem_pintura_int}, 1, &sem_piso},
+        {"Acabados interiores", (sem_t[]){sem_piso}, 1, &sem_acabados_int}
+    };
 }
