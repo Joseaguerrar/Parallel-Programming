@@ -81,3 +81,29 @@ int main(int argc, char* argv[]) {
     return 0;
     
 }
+
+void* builder(void* arg){
+    TaskInfo* task_info=(TaskInfo*) arg;
+
+    int task_id= task_info->task_id;
+    for (int i = 0; i < task_info->num_dependencies; i++)
+    {
+        int dep_id=task_info->dependencies[i];
+        sem_wait(&task_dependencies[i]);
+    }
+    
+    //Iniciar la tarea
+    printf("El albañil empezó su tarea\n", task_id);
+
+    //Simular la espera por el trabajo
+    sleep(randr()% 3 +1);
+
+    //Finalizar la tarea
+    printf("El albañil terminó su trabajo\n", task_id);
+
+    //Marca el trabajo como completo
+    sem_post(&task_dependencies[task_id]);
+
+    pthread_exit(NULL);
+
+}
