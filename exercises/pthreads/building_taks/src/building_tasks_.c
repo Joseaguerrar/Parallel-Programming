@@ -53,4 +53,31 @@ int main(int argc, char* argv[]) {
             task_info[i].dependencies[j] = task_deps[i][j];
         }
     }
+
+    //  Crear los hilos de los albañiles para cada tarea
+
+    for (int i = 0; i < TASK_COUNT; i++)
+    {
+        pthread_create(&builders[i], NULL, builder, (void*)&task_info[i]);
+    }
+
+    sem_post(&task_dependencies[0]);
+
+    //  Esperar a que todos los albañiles terminen sus tareas
+    for (int i = 0; i < TASK_COUNT; i++)
+    {
+        pthread_join(builders[i], NULL);
+    }
+
+    //  Destruir semáforos y liberar memoria
+
+        for (int i = 0; i < TASK_COUNT; i++)
+        {
+            sem_destroy(&task_dependencies[i]);
+            free(task_info[i].dependencies);
+        }
+        
+    printf("El trabajo se ha completado...\n");
+    return 0;
+    
 }
