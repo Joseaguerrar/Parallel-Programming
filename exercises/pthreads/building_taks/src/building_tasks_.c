@@ -72,9 +72,22 @@ void* ejecutar_tarea(void* arg) {
 
     return NULL;
 }
+/**
+ * @brief Función principal que inicializa los semáforos y los hilos, 
+ *        y coordina la ejecución concurrente de las tareas.
+ *
+ * La función `main` se encarga de:
+ * - Inicializar los semáforos que controlan las dependencias entre las tareas.
+ * - Crear los hilos que ejecutarán cada tarea de forma concurrente.
+ * - Esperar a que todas las tareas finalicen.
+ * - Destruir los semáforos y liberar los recursos de sincronización al final.
+ * 
+ * @return int Código de salida del programa.
+ */
 int main() {
     // Inicializar los semáforos con el valor inicial de 0 (bloqueado)
-    sem_init(&sem_obra_gris, 0, 1);  // La primera tarea (obra gris) puede empezar inmediatamente
+    sem_init(&sem_obra_gris, 0, 1);
+    // La primera tarea (obra gris) puede empezar inmediatamente
     sem_init(&sem_plomeria_ext, 0, 0);
     sem_init(&sem_techo, 0, 0);
     sem_init(&sem_pintura_ext, 0, 0);
@@ -113,16 +126,35 @@ int main() {
     // Crear hilos para cada tarea
     pthread_t hilos[sizeof(tareas) / sizeof(Tarea)];
 
+    /**
+     * Recorre todas las tareas y crea un hilo para cada una, pasando la estructura
+     * de la tarea como argumento para la función `ejecutar_tarea`.
+     */
     for (size_t i = 0; i < sizeof(tareas) / sizeof(Tarea); i++) {
-        pthread_create(&hilos[i], NULL, ejecutar_tarea, &tareas[i]);
+        int ret = pthread_create(&hilos[i], NULL, ejecutar_tarea, &tareas[i]);
+        if (ret != 0) {
+            // Si hay un error al crear el hilo, mostrar un mensaje de error
+            fprintf(stderr, "Error al crear el hilo para la tarea: %s\n",
+            tareas[i].nombre);
+            exit(EXIT_FAILURE);
+            // Termina el programa si no se puede crear el hilo
+        }
     }
 
     // Esperar a que todos los hilos terminen
+    /**
+     * Espera a que todos los hilos terminen de ejecutar sus respectivas tareas,
+     * asegurando que el programa no termine antes de que todas las tareas finalicen.
+     */
     for (size_t i = 0; i < sizeof(tareas) / sizeof(Tarea); i++) {
         pthread_join(hilos[i], NULL);
     }
 
     // Destruir semáforos y mutex
+    /**
+     * Destruye todos los semáforos y el mutex al final del programa
+     * para liberar los recursos de sincronización.
+     */
     sem_destroy(&sem_obra_gris);
     sem_destroy(&sem_plomeria_ext);
     sem_destroy(&sem_techo);
