@@ -14,7 +14,9 @@ typedef struct {
 
 int main() {
     // Inicializar semáforos
-    sem_t sem_obra_gris, sem_plomeria_ext, sem_techo, sem_pintura_ext, sem_pintura_int, sem_piso, sem_acabados_ext, sem_acabados_int, sem_instalacion_electrica, sem_plomeria_int;
+    sem_t sem_obra_gris, sem_plomeria_ext, sem_techo, sem_pintura_ext,
+    sem_pintura_int, sem_piso, sem_acabados_ext, sem_acabados_int,
+    sem_instalacion_electrica, sem_plomeria_int;
     
     sem_init(&sem_obra_gris, 0, 1);  // Obra gris puede empezar inmediatamente
     sem_init(&sem_plomeria_ext, 0, 0);
@@ -40,4 +42,34 @@ int main() {
         {"Piso", (sem_t[]){sem_pintura_int}, 1, &sem_piso},
         {"Acabados interiores", (sem_t[]){sem_piso}, 1, &sem_acabados_int}
     };
+
+    // Crear hilos para cada tarea
+    pthread_t hilos[sizeof(tareas) / sizeof(Tarea)];
+    
+    for (int i = 0; i < sizeof(tareas) / sizeof(Tarea); i++) {
+        pthread_create(&hilos[i], NULL, ejecutar_tarea, &tareas[i]);
+    }
+
+    // Esperar a que todos los hilos terminen
+    for (int i = 0; i < sizeof(tareas) / sizeof(Tarea); i++) {
+        pthread_join(hilos[i], NULL);
+    }
+
+    // Destruir semáforos
+    sem_destroy(&sem_obra_gris);
+    sem_destroy(&sem_plomeria_ext);
+    sem_destroy(&sem_techo);
+    sem_destroy(&sem_pintura_ext);
+    sem_destroy(&sem_acabados_ext);
+    sem_destroy(&sem_instalacion_electrica);
+    sem_destroy(&sem_plomeria_int);
+    sem_destroy(&sem_pintura_int);
+    sem_destroy(&sem_piso);
+    sem_destroy(&sem_acabados_int);
+
+    return 0;
+}
+
+void* ejecutar_tarea(void*){
+
 }
