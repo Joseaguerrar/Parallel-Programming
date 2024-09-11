@@ -52,15 +52,29 @@ procedure main(argc, argv[]):
   * @brief Contador de la siguiente unidad a producir.
   */
     shared next_unit := 0
+  /**
+  * @brief Mutex para controlar el acceso a la variable next_unit.
+  */
     shared can_access_next_unit := create_mutex()
-
+  /**
+  * @brief Arreglo de hilos productores creados con el número de productores.
+  */
     declare producers := create_threads(producer_count, produce1)
+  /**
+  * @brief Arreglo de hilos consumidores creados con el número de consumidores.
+  */
     declare consumers := create_threads(consumer_count, consume3)
-
+  /**
+  * @brief Semáforo que indica cuándo se puede consumir un producto.
+  */
     shared can_consume := create_semaphore(0)
-
+  /**
+  * @brief Espera a que todos los hilos productores terminen.
+  */
     join_threads(producers)
-
+  /**
+  * @brief Añade una señal de terminación para cada consumidor, insertando un -1 en la cola.
+  */
     for index := 0 to consumer_count do
       lock(can_access_queue)
         enqueue(queue, -1)
@@ -71,12 +85,19 @@ procedure main(argc, argv[]):
     join_threads(consumers)
   end if
 end procedure
-
+/**
+ * @brief Procedimiento que ejecuta cada productor.
+ * 
+ * Los productores generan unidades, las colocan en la cola, y notifican a los consumidores.
+ */
 procedure produce1:
   while true do
     declare my_unit := 0
     lock(can_access_next_unit)
       if next_unit < unit_count then
+        /**
+         * @brief Incrementa el número de la siguiente unidad a producir y lo asigna.
+         */
         next_unit := next_unit + 1
         my_unit := next_unit
       else
@@ -84,31 +105,58 @@ procedure produce1:
         break while
       end if
     unlock(can_access_next_unit)
-  
+    /**
+     * @brief Retraso aleatorio entre la producción de unidades.
+     */
     delay(random_between(producer_min_delay, producer_max_delay))
+    /**
+     * @brief Coloca la unidad producida en la cola.
+     */
     lock(can_access_queue)
       enqueue(queue, my_unit)
     unlock(can_access_queue)
+    /**
+     * @brief Imprime la unidad producida y notifica a los consumidores.
+     */
     print("Produced ", my_unit)
     signal(can_consume)
   end while
 end procedure
-
+/**
+ * @brief Procedimiento que ejecuta cada consumidor.
+ * 
+ * Los consumidores toman unidades de la cola y las procesan.
+ */
 procedure consume3:
   while true do
+    /**
+     * @brief Espera a que haya una unidad disponible para consumir.
+     */
     wait(can_consume)
     lock(can_access_queue)
     declare my_unit := dequeue(queue)
     unlock(can_access_queue)
+    /**
+     * @brief Si recibe un -1, el consumidor finaliza.
+     */
     if my_unit = -1 then
       break while
     else
+      /**
+       * @brief Procesa la unidad consumida con un retardo aleatorio.
+       */
       print("\tConsuming ", my_unit)
       delay(random_between(consumer_min_delay, consumer_max_delay))
     end if
   end while
 end procedure
-
+/**
+ * @brief Genera un número aleatorio entre dos valores.
+ * 
+ * @param min Valor mínimo del rango.
+ * @param max Valor máximo del rango.
+ * @return Número aleatorio entre min y max.
+ */
 function random_between(min, max):
   return min + rand() % (max - min)
 end function
