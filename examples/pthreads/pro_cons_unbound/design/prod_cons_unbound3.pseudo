@@ -1,16 +1,56 @@
+/**
+ * @brief Procedimiento principal para el problema productor-consumidor.
+ * 
+ * Este procedimiento inicializa los hilos de productores y consumidores, configura
+ * los recursos compartidos como la cola y las primitivas de sincronización, y
+ * gestiona la creación, ejecución y finalización de los hilos.
+ * 
+ * @param argc Número de argumentos pasados al programa (se espera que sean 8).
+ * @param argv[] Arreglo de argumentos que define el número de unidades, el número de
+ *               productores/consumidores, y los rangos de retrasos para ambos.
+ */
 procedure main(argc, argv[]):
   if argc = 8 then
+  /**
+  * @brief Variable compartida que define el número total de unidades a producir.
+  */
     shared unit_count := integer(argv[1])
+  /**
+  * @brief Número de hilos productores que se deben crear.
+  */
     shared producer_count := integer(argv[2])
+  /**
+  * @brief Número de hilos consumidores que se deben crear.
+  */
     shared consumer_count := integer(argv[3])
+  /**
+  * @brief Retraso mínimo entre las producciones.
+  */
     shared producer_min_delay := integer(argv[4])
+  /**
+  * @brief Retraso máximo entre las producciones.
+  */
     shared producer_max_delay := integer(argv[5])
+  /**
+  * @brief Retraso mínimo entre las consumiciones.
+  */
     shared consumer_min_delay := integer(argv[6])
+  /**
+  * @brief Retraso máximo entre las consumiciones.
+  */
     shared consumer_max_delay := integer(argv[7])
+  /**
+  * @brief Cola compartida donde los productores colocan unidades y los consumidores las toman.
+  */
 
     shared queue := create_integer_queue()
+  /**
+  * @brief Mutex para controlar el acceso a la cola.
+  */
     shared can_access_queue := create_mutex()
-
+  /**
+  * @brief Contador de la siguiente unidad a producir.
+  */
     shared next_unit := 0
     shared can_access_next_unit := create_mutex()
 
