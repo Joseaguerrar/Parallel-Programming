@@ -24,7 +24,7 @@ int ProducerTest::run() {
 
   // Report production is done
   Log::append(Log::INFO, "Producer", std::to_string(this->packageCount)
-    + " menssages sent");
+    + " messages sent");
   return EXIT_SUCCESS;
 }
 

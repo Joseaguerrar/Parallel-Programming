@@ -5,6 +5,7 @@
 #ifndef PRODUCERCONSUMERTEST_HPP
 #define PRODUCERCONSUMERTEST_HPP
 
+#include <cstddef>
 #include <vector>
 
 #include "common.hpp"

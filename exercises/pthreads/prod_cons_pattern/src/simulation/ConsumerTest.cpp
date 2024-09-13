@@ -16,7 +16,7 @@ int ConsumerTest::run() {
   // If the forever loop finished, no more messages will arrive
   // Print statistics
   Log::append(Log::INFO, "Consumer", std::to_string(this->receivedMessages)
-    + " menssages consumed");
+    + " messages consumed");
   return EXIT_SUCCESS;
 }
 
