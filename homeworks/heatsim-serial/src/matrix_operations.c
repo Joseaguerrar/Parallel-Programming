@@ -32,41 +32,31 @@ double update_temp(double **matriz, int filas, int columnas, double dtime, doubl
     return max_change;
 }
 
-/**
- * @brief Asigna memoria para una matriz de tamaño filas x columnas.
- *
- * Esta función reserva espacio en memoria para una matriz de tamaño especificado,
- * donde cada fila es un array de punteros a double. La memoria para las columnas 
- * también es asignada dinámicamente.
- *
- * @param filas Número de filas de la matriz.
- * @param columnas Número de columnas de la matriz.
- * 
- * @return Un puntero doble a la matriz de double que ha sido asignada en memoria.
- * Si la asignación de memoria falla, el comportamiento es indefinido.
- */
+// Crea una matriz bidimensional con el número especificado de filas y columnas
 double** asign_matrix(int filas, int columnas) {
-    // Reservamos espacio para las filas (apuntan a arrays de doubles)
     double **matriz = (double **)malloc(filas * sizeof(double *));
-    for (int i = 0; i < filas; i++) {
-        // Reservamos espacio para las columnas (apuntan a doubles)
+    for (int i = 0; i < filas; ++i) {
         matriz[i] = (double *)malloc(columnas * sizeof(double));
     }
     return matriz;
 }
 
-/**
- * @brief Libera la memoria asignada para una matriz de double.
- *
- * Esta función libera la memoria asignada para cada fila de la matriz 
- * y luego libera la memoria asignada para la matriz misma.
- *
- * @param matriz Puntero doble a la matriz de double que se va a liberar.
- * @param filas Número de filas de la matriz.
- */
+// Libera el espacio de memoria ocupado por una matriz bidimensional
 void free_matrix(double **matriz, int filas) {
-    for (int i = 0; i < filas; i++) {
+    for (int i = 0; i < filas; ++i) {
         free(matriz[i]);
     }
     free(matriz);
+}
+// Procesa el archivo de trabajo para realizar las simulaciones
+void process_job_file(const char *job_file, const char *output_dir) {
+    // Implementación para procesar el archivo de trabajo
+}
+
+// Formatea el tiempo transcurrido en un formato legible
+char* format_time(const time_t seconds, char* text, const size_t capacity) {
+    const struct tm* gmt = gmtime(&seconds);
+    snprintf(text, capacity, "%04d/%02d/%02d\t%02d:%02d:%02d", gmt->tm_year - 70,
+        gmt->tm_mon, gmt->tm_mday - 1, gmt->tm_hour, gmt->tm_min, gmt->tm_sec);
+    return text;
 }
