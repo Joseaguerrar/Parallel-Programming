@@ -50,7 +50,32 @@ void free_matrix(double **matriz, int filas) {
 }
 // Procesa el archivo de trabajo para realizar las simulaciones
 void process_job_file(const char *job_file, const char *output_dir) {
-    // Implementación para procesar el archivo de trabajo
+    // Abrir el archivo de trabajo
+    FILE *file = fopen(job_file, "r");
+    if (!file) {
+        perror("Error al abrir el archivo de trabajo");
+        return;
+    }
+
+    // Preparar el nombre del archivo de reporte
+    char report_file[256];
+    snprintf(report_file, sizeof(report_file), "%s.tsv", job_file);
+    
+    if (output_dir) {
+        char temp[256];
+        snprintf(temp, sizeof(temp), "%s/%s", output_dir, report_file);
+        strncpy(report_file, temp, sizeof(report_file));
+    }
+
+    FILE *report_fp = fopen(report_file, "w");
+    if (!report_fp) {
+        perror("Error al abrir el archivo de reporte");
+        fclose(file);
+        return;
+    }
+
+    char plate_file[64];
+    double dtime, alpha, height, epsilon;
 }
 
 // Formatea el tiempo transcurrido en un formato legible
