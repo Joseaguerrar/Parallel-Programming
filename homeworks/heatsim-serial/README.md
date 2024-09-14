@@ -58,6 +58,7 @@ plate002.bin 60 0.08 450 0.075
 Cada línea representa una simulación independiente que se ejecutará secuencialmente.
 
 ### Créditos
+
 Algunas ideas o ayudas complementarias:
 
 Manejo de archivos: https://youtu.be/4Ob7tCFaMHw
