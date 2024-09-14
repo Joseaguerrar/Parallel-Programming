@@ -1,61 +1,34 @@
 //  Copyright [2024] <jose.guerrarodriguez@ucr.ac.cr>
-#include <matrix_operations.h>
+
+#include "matrix_operations.h"
+#include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
 
-/**
- * @brief Actualiza las temperaturas en una matriz utilizando un esquema de diferencias finitas.
- *
- * Esta función actualiza las temperaturas en una matriz basada en un esquema de diferencias finitas,
- * ignorando los bordes de la matriz. Calcula el nuevo valor de temperatura para cada celda interna 
- * utilizando los valores de sus vecinos y almacena el cambio máximo de temperatura durante la iteración.
- *
- * @param matriz Puntero doble a la matriz de temperaturas.
- * @param filas Número de filas en la matriz.
- * @param columnas Número de columnas en la matriz.
- * @param dtime Paso de tiempo utilizado en la simulación.
- * @param alpha Coeficiente de difusividad térmica.
- * @param height Altura o tamaño del paso espacial.
- *
- * @return El cambio máximo de temperatura registrado durante la iteración.
- */
-double update_temp(double **matriz, int filas, int columnas, double dtime,
-double alpha, double height) {
-    // Variable para guardar el cambio máximo de temperatura de la matriz
+// Actualiza las temperaturas en la matriz de acuerdo con la fórmula de transferencia de calor
+double update_temp(double **matriz, int filas, int columnas, double dtime, double alpha, double height) {
     double max_change = 0.0;
+    double **new_matriz = asign_matrix(filas, columnas);
 
-    // Crear una matriz temporal para almacenar los nuevos valores
-    double **temp_matriz = asign_matrix(filas, columnas);
+    for (int i = 1; i < filas - 1; ++i) {
+        for (int j = 1; j < columnas - 1; ++j) {
+            double delta = dtime * alpha / (height * height) *
+                (matriz[i-1][j] + matriz[i][j+1] + matriz[i+1][j] + matriz[i][j-1] - 4 * matriz[i][j]);
+            new_matriz[i][j] = matriz[i][j] + delta;
 
-    // Actualizar las temperaturas en la matriz, ignorando los bordes
-    for (int i = 1; i < filas - 1; i++) {
-        for (int j = 1; j < columnas - 1; j++) {
-            // Fórmula dada
-            double new_temp = matriz[i][j] + (dtime * alpha / (height * height))
-            * (matriz[i-1][j] + matriz[i+1][j] + matriz[i][j-1] +
-            matriz[i][j+1] - (4 * matriz[i][j]));
-
-            temp_matriz[i][j] = new_temp;
-            // Calcular el cambio máximo
-            double change = fabs(new_temp - matriz[i][j]);
-            // fabs es para el valor absoluto de un flotante
-            // Si hay un mayor cambio, lo actualizamos
-            if (change > max_change) {
-                max_change = change;
+            if (abs(delta) > max_change) {
+                max_change = abs(delta);
             }
         }
     }
 
-    // Copiar la matriz temporal a la original
-    for (int i = 1; i < filas - 1; i++) {
-        for (int j = 1; j < columnas - 1; j++) {
-            matriz[i][j] = temp_matriz[i][j];
+    // Copiar las nuevas temperaturas a la matriz original
+    for (int i = 1; i < filas - 1; ++i) {
+        for (int j = 1; j < columnas - 1; ++j) {
+            matriz[i][j] = new_matriz[i][j];
         }
     }
 
-    // Liberar la matriz temporal
-    free_matrix(temp_matriz, filas);
-
+    free_matrix(new_matriz, filas);
     return max_change;
 }
 
