@@ -2,9 +2,12 @@
 #ifndef MATRIX_OPERATIONS_H
 #define MATRIX_OPERATIONS_H
 
+#include <time.h>  // Incluir time.h para definir time_t
+#include <stddef.h>  // Incluir stddef.h para definir size_t
+
 /**
  * @file matrix_operations.h
- * @brief Funciones para la manipulación de matrices en la simulación de transferencia de calor.
+ * @brief Funciones para la manipulación de matrices y el procesamiento de archivos de simulación.
  */
 
 /**
@@ -26,5 +29,15 @@ double** asign_matrix(int filas, int columnas);
  * @brief Libera el espacio de memoria ocupado por una matriz bidimensional.
  */
 void free_matrix(double **matriz, int filas);
+
+/**
+ * @brief Procesa el archivo de trabajo para realizar las simulaciones.
+ */
+void process_job_file(const char *job_file, const char *output_dir);
+
+/**
+ * @brief Formatea el tiempo transcurrido en un formato legible.
+ */
+char* format_time(const time_t seconds, char* text, const size_t capacity);
 
 #endif  //  MATRIX_OPERATIONS_H
