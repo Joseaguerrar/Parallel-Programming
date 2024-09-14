@@ -76,6 +76,53 @@ void process_job_file(const char *job_file, const char *output_dir) {
 
     char plate_file[64];
     double dtime, alpha, height, epsilon;
+    // Leer cada línea del archivo de trabajo
+    while (fscanf(file, "%s %lf %lf %lf %lf", plate_file, &dtime, &alpha, &height, &epsilon) == 5) {
+        // Cargar la matriz de temperaturas inicial
+        int filas, columnas;
+        double **matriz = read_file(plate_file, &filas, &columnas, &epsilon, &dtime, &alpha, &height);
+
+        if (!matriz) {
+            fprintf(stderr, "Error al leer la lámina %s\n", plate_file);
+            continue;
+        }
+
+        int k = 0;
+        double max_change;
+
+        // Simulación: Actualizar hasta que se alcance el equilibrio
+        do {
+            max_change = update_temp(matriz, filas, columnas, dtime, alpha, height);
+            k++;
+        } while (max_change > epsilon);
+
+        // Guardar el estado de la lámina en el punto de equilibrio
+        char result_file[256];
+        snprintf(result_file, sizeof(result_file), "%s-%d.bin", plate_file, k);
+        
+        if (output_dir) {
+            char temp[256];
+            snprintf(temp, sizeof(temp), "%s/%s", output_dir, result_file);
+            strncpy(result_file, temp, sizeof(result_file));
+        }
+        
+        print_result(result_file, matriz, filas, columnas);
+
+        // Calcular el tiempo total transcurrido
+        time_t total_time = k * dtime;
+        char formatted_time[48];
+        format_time(total_time, formatted_time, sizeof(formatted_time));
+
+        // Escribir los resultados en el archivo de reporte
+        fprintf(report_fp, "%s\t%.0lf\t%.2lf\t%.0lf\t%.2lf\t%d\t%s\n",
+                plate_file, dtime, alpha, height, epsilon, k, formatted_time);
+
+        // Liberar la matriz de la memoria
+        free_matrix(matriz, filas);
+    }
+
+    fclose(file);
+    fclose(report_fp);
 }
 
 // Formatea el tiempo transcurrido en un formato legible
