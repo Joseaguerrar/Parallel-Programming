@@ -37,5 +37,21 @@ formula_p* read_job_txt(const char* jobName, const char* folder, uint64_t* lines
         return NULL;
     }
     
+    int i = 0;
+    char tempFilename[256];
+    while (fscanf(jobFile, "%s %lf %lf %lf %lf", tempFilename,
+     &variables_formulas[i].delta_t,
+      &variables_formulas[i].alpha,
+       &variables_formulas[i].h,
+        &variables_formulas[i].epsilon) == 5)
+    {
+        variables_formulas[i].filename = malloc(strlen(tempFilename) + 1);
+        if (variables_formulas[i].filename == NULL) {
+            fprintf(stderr, "Error al asignar memoria para filename en la línea %d\n", i);
+            break;
+        }
+        strcpy(variables_formulas[i].filename, tempFilename);
+        i++;
+    }
     
 }
