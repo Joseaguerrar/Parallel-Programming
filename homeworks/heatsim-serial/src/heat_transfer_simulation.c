@@ -97,6 +97,11 @@ uint64_t heat_transfer_simulation(double** matrix, uint64_t rows, uint64_t colum
             }
         }
     }
-    
+
+    for (uint64_t i = 0; i < rows; i++) {
+        free(temp_matrix[i]);
+    }
+    free(temp_matrix);
+    return states_k;
 }
 
