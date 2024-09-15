@@ -51,9 +51,9 @@ void read_bin_plate(const char* folder, params_matrix* variables, uint64_t lines
         double alpha = variables[i].alpha;
         double h = variables[i].h;
         double epsilon = variables[i].epsilon;
-        uint64_t states_k = simulacion_transferencia_calor(matrix, rows, columns, delta_t, alpha, h, epsilon);
+        uint64_t states_k = heat_transfer_simulation(matrix, rows, columns, delta_t, alpha, h, epsilon);
         array_state_k[i] = states_k;
-        generar_archivo_bin(matrix, rows, columns, folder, variables[i].filename, states_k);
+        generate_bin_file(matrix, rows, columns, folder, variables[i].filename, states_k);
 
         for (uint64_t i = 0; i < rows; i++) {
             free(matrix[i]);
