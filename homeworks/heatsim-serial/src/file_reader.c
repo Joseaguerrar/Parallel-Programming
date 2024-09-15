@@ -6,9 +6,9 @@
 #include "heat_simulation.h"
 // Lee el archivo de texto y extrae los parámetros de simulación para cada placa
 // Implementación de leer_job_txt
-formula_p* read_job_txt(const char* jobName, const char* folder, uint64_t* lines) {
+params_matrix* read_job_txt(const char* jobName, const char* folder, uint64_t* lines) {
     FILE *jobFile;
-    formula_p *variables_formulas;
+    params_matrix *variables;
     char direction[512];
     snprintf(direction, sizeof(direction), "%s/%s", folder, jobName);
 
@@ -21,8 +21,8 @@ formula_p* read_job_txt(const char* jobName, const char* folder, uint64_t* lines
     }
 
     //Asignar memoria para las estructuras
-    variables_formulas= malloc(*lines * sizeof(formula_p));
-    if (variables_formulas==NULL)
+    variables= malloc(*lines * sizeof(params_matrix));
+    if (variables==NULL)
     {
         fprintf(stderr, "Error al asignar memoria\n");
         return NULL;
@@ -33,29 +33,29 @@ formula_p* read_job_txt(const char* jobName, const char* folder, uint64_t* lines
     if (jobFile==NULL)
     {
         fprintf(stderr, "No se pudo abrir el archivo de trabajo %s\n", direction);
-        free(variables_formulas);
+        free(variables);
         return NULL;
     }
     
     int i = 0;
     char tempFilename[256];
     while (fscanf(jobFile, "%s %lf %lf %lf %lf", tempFilename,
-     &variables_formulas[i].delta_t,
-      &variables_formulas[i].alpha,
-       &variables_formulas[i].h,
-        &variables_formulas[i].epsilon) == 5)
+     &variables[i].delta_t,
+      &variables[i].alpha,
+       &variables[i].h,
+        &variables[i].epsilon) == 5)
     {
-        variables_formulas[i].filename = malloc(strlen(tempFilename) + 1);
-        if (variables_formulas[i].filename == NULL) {
+        variables[i].filename = malloc(strlen(tempFilename) + 1);
+        if (variables[i].filename == NULL) {
             fprintf(stderr, "Error al asignar memoria para filename en la línea %d\n", i);
             break;
         }
-        strcpy(variables_formulas[i].filename, tempFilename);
+        strcpy(variables[i].filename, tempFilename);
         i++;
     }
 
     fclose(jobFile);
-    return variables_formulas;
+    return variables;
     
 }
 
