@@ -5,6 +5,14 @@
 
 #include "heat_simulation.h"
 
+/**
+ * @brief Programa principal para ejecutar la simulación de transferencia de calor.
+ * 
+ * @param argc Número de argumentos pasados a la línea de comandos.
+ * @param argv Arreglo de cadenas que contiene los argumentos pasados a la línea de comandos.
+ * 
+ * @return 0 si la simulación se ejecuta correctamente, 1 si hay un error.
+ */
 int main(int argc, char *argv[]) {
     if (argc < 3) {
         printf("Uso: %s <carpeta> <archivo de trabajo>\n", argv[0]);
@@ -34,4 +42,3 @@ int main(int argc, char *argv[]) {
     printf("Simulación completada.\n");
     return 0;
 }
-

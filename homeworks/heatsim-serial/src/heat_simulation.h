@@ -11,11 +11,16 @@
  * @brief Estructura para almacenar los parámetros de cada simulación.
  */
 typedef struct {
-    char* filename;       /**< Nombre del archivo binario. */
-    double delta_t;       /**< Diferencial de tiempo. */
-    double alpha;         /**< Difusividad térmica. */
-    double h;             /**< Tamaño de las celdas. */
-    double epsilon;       /**< Sensitividad del punto de equilibrio. */
+    char* filename;       
+    // Nombre del archivo binario. 
+    double delta_t;       
+    // Diferencial de tiempo. 
+    double alpha;         
+    // Difusividad térmica. 
+    double h;             
+    // Tamaño de las celdas. 
+    double epsilon;       
+    // Sensitividad del punto de equilibrio. 
 } params_matrix;
 
 /**
