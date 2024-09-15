@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>  // Para la función gmtime
 
 #include "heat_simulation.h"
 
@@ -64,4 +65,15 @@ void generate_bin_file(double** matrix, uint64_t rows, uint64_t columns, const c
         fwrite(matrix[i], sizeof(double), columns, output_file);
     }
     fclose(output_file);
+}
+// Implementación de format_time
+char* format_time(const time_t seconds, char* text, const size_t capacity) {
+    const struct tm* gmt = gmtime(&seconds);
+    snprintf(text, capacity,
+            "%04d/%02d/%02d\t%02d:%02d:%02d",
+            gmt->tm_year + 1900,
+             gmt->tm_mon + 1, gmt->tm_mday,
+             gmt->tm_hour, gmt->tm_min,
+             gmt->tm_sec);
+    return text;
 }
