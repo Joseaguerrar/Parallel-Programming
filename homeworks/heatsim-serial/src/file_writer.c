@@ -40,3 +40,28 @@ void generate_report_file(const char* folder, const char* jobName, params_matrix
 
     fclose(report_file);
 }
+
+// Implementación de generar_archivo_bin
+void generate_bin_file(double** matrix, uint64_t rows, uint64_t columns, const char* folder, const char* jobName, uint64_t states_k) {
+    char file_name[1024]; char base_name[512];
+    strncpy(base_name, jobName, sizeof(base_name) - 1);
+    base_name[sizeof(base_name) - 1] = '\0';
+    char* pos = strstr(base_name, ".bin");
+    if (pos) {
+        *pos = '\0';
+    }
+
+    snprintf(file_name, sizeof(file_name), "%s/%s-%lu.bin", folder, base_name, states_k);
+    FILE* output_file = fopen(file_name, "wb");
+    if (output_file == NULL) {
+        fprintf(stderr, "No se pudo crear el archivo binario %s\n", file_name);
+        return;
+    }
+
+    fwrite(&rows, sizeof(uint64_t), 1, output_file);
+    fwrite(&columns, sizeof(uint64_t), 1, output_file);
+    for (uint64_t i = 0; i < rows; i++) {
+        fwrite(matrix[i], sizeof(double), columns, output_file);
+    }
+    fclose(output_file);
+}
