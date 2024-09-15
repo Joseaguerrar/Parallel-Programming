@@ -13,17 +13,22 @@
  * @param lines Número de simulaciones a realizar.
  * @param jobName Nombre del archivo de trabajo.
  */
-void read_bin_plate(const char* folder, params_matrix* variables, uint64_t lines, const char* jobName) {
+void read_bin_plate(const char* folder,
+                    params_matrix* variables,
+                    uint64_t lines,
+                    const char* jobName) {
     FILE *bin_file;
     uint64_t rows, columns;
     char direction[512];
     uint64_t* array_state_k = malloc(lines * sizeof(uint64_t));
 
     for (uint64_t i = 0; i < lines; i++) {
-        snprintf(direction, sizeof(direction), "%s/%s", folder, variables[i].filename);
+        snprintf(direction, sizeof(direction), "%s/%s",
+                    folder, variables[i].filename);
         bin_file = fopen(direction, "rb");
         if (bin_file == NULL) {
-            fprintf(stderr, "No se pudo abrir el archivo binario %s\n", variables[i].filename);
+            fprintf(stderr, "No se pudo abrir el archivo binario %s\n",
+                                                    variables[i].filename);
             return;
         }
 
@@ -32,15 +37,17 @@ void read_bin_plate(const char* folder, params_matrix* variables, uint64_t lines
 
         double **matrix = malloc(rows * sizeof(double*));
         if (matrix == NULL) {
-            fprintf(stderr, "Error al asignar memoria para las filas de la matriz\n");
+            fprintf(stderr,
+                    "Error al asignar memoria para las filas de la matriz\n");
             fclose(bin_file);
             return;
         }
-        
+
         for (uint64_t i = 0; i < rows; i++) {
             matrix[i] = malloc(columns * sizeof(double));
             if (matrix[i] == NULL) {
-                fprintf(stderr, "Error al asignar memoria para las columnas de la matriz\n");
+                fprintf(stderr,
+                   "Error al asignar memoria para las columnas de la matriz\n");
                 for (uint64_t j = 0; j < i; j++) {
                     free(matrix[j]);
                 }
@@ -55,11 +62,22 @@ void read_bin_plate(const char* folder, params_matrix* variables, uint64_t lines
         double alpha = variables[i].alpha;
         double h = variables[i].h;
         double epsilon = variables[i].epsilon;
-        uint64_t states_k = heat_transfer_simulation(matrix, rows, columns, delta_t, alpha, h, epsilon);
+        uint64_t states_k = heat_transfer_simulation(matrix,
+                                                    rows,
+                                                    columns,
+                                                    delta_t,
+                                                    alpha,
+                                                    h,
+                                                    epsilon);
         array_state_k[i] = states_k;
 
         // Generar archivo binario con el estado final
-        generate_bin_file(matrix, rows, columns, folder, variables[i].filename, states_k);
+        generate_bin_file(matrix,
+                            rows,
+                            columns,
+                            folder,
+                            variables[i].filename,
+                            states_k);
 
         // Liberar la memoria de la matriz
         for (uint64_t i = 0; i < rows; i++) {
@@ -68,7 +86,7 @@ void read_bin_plate(const char* folder, params_matrix* variables, uint64_t lines
         free(matrix);
         fclose(bin_file);
     }
-    
+
     // Generar el archivo de reporte con los resultados
     generate_report_file(folder, jobName, variables, array_state_k, lines);
     free(array_state_k);
@@ -87,7 +105,13 @@ void read_bin_plate(const char* folder, params_matrix* variables, uint64_t lines
  * 
  * @return Número de estados hasta alcanzar el punto de equilibrio.
  */
-uint64_t heat_transfer_simulation(double** matrix, uint64_t rows, uint64_t columns, double delta_t, double alpha, double h, double epsilon) {
+uint64_t heat_transfer_simulation(double** matrix,
+                                    uint64_t rows,
+                                    uint64_t columns,
+                                    double delta_t,
+                                    double alpha,
+                                    double h,
+                                    double epsilon) {
     bool balance_point = false;
     uint64_t states_k = 0;
 
@@ -104,7 +128,9 @@ uint64_t heat_transfer_simulation(double** matrix, uint64_t rows, uint64_t colum
         for (uint64_t i = 1; i < rows - 1; i++) {
             for (uint64_t j = 1; j < columns - 1; j++) {
                 double actual_temperature = matrix[i][j];
-                double new_temperature = actual_temperature + ((delta_t * alpha) / (h * h)) * (matrix[i-1][j] + matrix[i+1][j] + matrix[i][j-1] + matrix[i][j+1] - 4 * actual_temperature);
+                double new_temperature = actual_temperature +
+                ((delta_t * alpha) / (h * h)) * (matrix[i-1][j] + matrix[i+1][j]
+                + matrix[i][j-1] + matrix[i][j+1] - 4 * actual_temperature);
                 temp_matrix[i][j] = new_temperature;
                 if (fabs(new_temperature - actual_temperature) > epsilon) {
                     balance_point = false;

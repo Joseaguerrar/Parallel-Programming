@@ -15,7 +15,8 @@
  * @return Un puntero a un arreglo de estructuras `params_matrix` que contiene los parámetros de simulación para cada placa.
  * @return NULL si hay un error al leer el archivo o al asignar memoria.
  */
-params_matrix* read_job_txt(const char* jobName, const char* folder, uint64_t* lines) {
+params_matrix* read_job_txt(const char* jobName, const char* folder,
+                            uint64_t* lines) {
     FILE *jobFile;
     params_matrix *variables;
     char direction[512];
@@ -38,11 +39,11 @@ params_matrix* read_job_txt(const char* jobName, const char* folder, uint64_t* l
     // Leer los datos de cada línea del archivo .txt
     jobFile = fopen(direction, "r");
     if (jobFile == NULL) {
-        fprintf(stderr, "No se pudo abrir el archivo de trabajo %s\n", direction);
+        fprintf(stderr, "No se pudo abrir el archivo de trabajo %s\n",
+                direction);
         free(variables);
         return NULL;
     }
-    
     int i = 0;
     char tempFilename[256];
     while (fscanf(jobFile, "%s %lf %lf %lf %lf", tempFilename,
@@ -52,10 +53,11 @@ params_matrix* read_job_txt(const char* jobName, const char* folder, uint64_t* l
      &variables[i].epsilon) == 5) {
         variables[i].filename = malloc(strlen(tempFilename) + 1);
         if (variables[i].filename == NULL) {
-            fprintf(stderr, "Error al asignar memoria para filename en la línea %d\n", i);
+            fprintf(stderr,
+                "Error al asignar memoria para filename en la línea %d\n", i);
             break;
         }
-        strcpy(variables[i].filename, tempFilename);
+        strcpy(variables[i].filename, tempFilename);//NOLINT
         i++;
     }
 
