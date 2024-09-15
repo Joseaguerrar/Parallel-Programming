@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+
 #include "heat_simulation.h"
 
 int main(int argc, char *argv[]) {
