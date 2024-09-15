@@ -53,5 +53,31 @@ formula_p* read_job_txt(const char* jobName, const char* folder, uint64_t* lines
         strcpy(variables_formulas[i].filename, tempFilename);
         i++;
     }
+
+    fclose(jobFile);
+    return variables_formulas;
+    
+}
+
+
+uint64_t count_lines(const char* fileName){
+    FILE *file;
+    file=fopen(fileName, "r");
+    if (file == NULL) {
+        fprintf(stderr, "No se pudo abrir el archivo %s\n", fileName);
+        return 0;
+    }
+
+    uint64_t lines_count=0;
+    while (!feof(file))
+    {
+       char line_jump=fgetc(file);
+       if (line_jump=='\n')
+       {
+        lines_count++;
+       }
+    }
+    fclose(file);
+    return lines_count;
     
 }
