@@ -61,6 +61,19 @@ void read_bin_plate(const char* folder, params_matrix* variables, uint64_t lines
         free(matrix);
         fclose(bin_file);
     }
+    generate_report_file(folder,jobName,variables,array_state_k,lines);
+    free(array_state_k);
     
+}
+
+// Implementación de simulación de transferencia de calor
+uint64_t heat_transfer_simulation(double** matrix, uint64_t rows, uint64_t columns, double delta_t, double alpha, double h, double epsilon){
+    bool balance_point=false;
+    uint64_t states_k = 0;
+
+    double** temp_matrix = malloc(rows * sizeof(double*));
+    for (uint64_t i = 0; i < rows; i++) {
+        temp_matrix[i] = malloc(columns * sizeof(double));
+    }
 }
 
