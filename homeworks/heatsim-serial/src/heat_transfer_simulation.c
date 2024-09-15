@@ -75,5 +75,28 @@ uint64_t heat_transfer_simulation(double** matrix, uint64_t rows, uint64_t colum
     for (uint64_t i = 0; i < rows; i++) {
         temp_matrix[i] = malloc(columns * sizeof(double));
     }
+
+    while (!balance_point)
+    {
+        balance_point=true;
+        states_k++;
+        for (uint64_t i = 1; i < rows - 1; i++) {
+            for (uint64_t j = 1; j < columns - 1; j++) {
+                double actual_temperature = matrix[i][j];
+                double new_temperature = actual_temperature + ((delta_t * alpha) / (h * h)) * (matrix[i-1][j] + matrix[i+1][j] + matrix[i][j-1] + matrix[i][j+1] - 4 * actual_temperature);
+                temp_matrix[i][j] = new_temperature;
+                if (fabs(new_temperature - actual_temperature) > epsilon) {
+                    balance_point = false;
+                }
+            }
+        }
+
+        for (uint64_t i = 1; i < rows - 1; i++) {
+            for (uint64_t j = 1; j < columns - 1; j++) {
+                matrix[i][j] = temp_matrix[i][j];
+            }
+        }
+    }
+    
 }
 
