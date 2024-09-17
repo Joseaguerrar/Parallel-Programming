@@ -1,7 +1,9 @@
 //  Copyright [2024] <jose.guerrarodriguez@ucr.ac.cr>
+#define _DEFAULT_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <time.h>  // Para clock_gettime
 
 #include "heat_simulation.h"
 
@@ -22,6 +24,10 @@ int main(int argc, char *argv[]) {
     const char *folder = argv[1];
     const char *jobName = argv[2];
 
+    // Iniciar el reloj para medir el tiempo
+    struct timespec start_time, finish_time;
+    clock_gettime(CLOCK_MONOTONIC, &start_time);
+
     // Leer el archivo de trabajo
     uint64_t lines;
     params_matrix* variables = read_job_txt(jobName, folder, &lines);
@@ -32,6 +38,14 @@ int main(int argc, char *argv[]) {
 
     // Simulación de transferencia de calor
     read_bin_plate(folder, variables, lines, jobName);
+
+    // Medir el tiempo después de completar la simulación
+    clock_gettime(CLOCK_MONOTONIC, &finish_time);
+
+    // Calcular el tiempo transcurrido
+    double elapsed = (finish_time.tv_sec - start_time.tv_sec) +
+                     (finish_time.tv_nsec - start_time.tv_nsec) * 1e-9;
+    printf("Tiempo de ejecución: %.9lfs\n", elapsed);
 
     // Liberar memoria
     for (uint64_t i = 0; i < lines; i++) {
