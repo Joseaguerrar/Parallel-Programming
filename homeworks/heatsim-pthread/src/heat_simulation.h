@@ -70,7 +70,8 @@ uint64_t count_lines(const char* fileName);
 void read_bin_plate(const char* folder,
                     params_matrix* variables_formula,
                     uint64_t lines,
-                    const char* jobName);
+                    const char* jobName,
+                    int num_threads);
 
 /**
  * @brief Realiza la simulación de transferencia de calor en una matriz.
@@ -91,7 +92,8 @@ uint64_t heat_transfer_simulation(double** matrix,
                                     double delta_t,
                                     double alpha,
                                     double h,
-                                    double epsilon);
+                                    double epsilon,
+                                    int num_threads);
 
 /**
  * @brief Formatea un tiempo dado en segundos a un formato legible.
