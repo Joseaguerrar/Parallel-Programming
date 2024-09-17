@@ -19,6 +19,23 @@ typedef struct {
 } params_matrix;
 
 /**
+ * @brief Estructura para pasar datos a cada hilo.
+ */
+//Todo: revisar si es necesario todo esto
+typedef struct {
+    double** matrix;
+    double** temp_matrix;
+    uint64_t start_row;
+    uint64_t end_row;
+    uint64_t columns;
+    double delta_t;
+    double alpha;
+    double h;
+    double epsilon;
+    bool* balance_point;
+} thread_data;
+
+/**
  * @brief Lee el archivo de trabajo (.txt) y extrae los parámetros de simulación para cada placa.
  * 
  * @param jobName Nombre del archivo de trabajo.
