@@ -83,6 +83,7 @@ void read_bin_plate(const char* folder,
  * @param alpha Difusividad térmica.
  * @param h Tamaño de las celdas.
  * @param epsilon Sensitividad del punto de equilibrio.
+ * @param num_threads Cantidad de hilos 
  * 
  * @return Número de estados hasta alcanzar el punto de equilibrio.
  */
@@ -94,6 +95,8 @@ uint64_t heat_transfer_simulation(double** matrix,
                                     double h,
                                     double epsilon,
                                     int num_threads);
+
+void* heat_transfer_simulation_thread(void* arg);
 
 /**
  * @brief Formatea un tiempo dado en segundos a un formato legible.
