@@ -41,6 +41,7 @@ int ProducerConsumerTest::start(int argc, char* argv[]) {
   this->dispatcher = new DispatcherTest(this->dispatcherDelay);
   this->dispatcher->createOwnQueue();
   // Create each producer
+  // TODO: Crear el assembler, es consumidor y producidor al mismo tiempo
   this->consumers.resize(this->consumerCount);
   for ( size_t index = 0; index < this->consumerCount; ++index ) {
     this->consumers[index] = new ConsumerTest(this->consumerDelay);
