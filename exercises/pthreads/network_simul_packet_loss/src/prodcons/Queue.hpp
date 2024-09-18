@@ -60,6 +60,13 @@ class Queue {
     this->mutex.unlock();
     return result;
   }
+
+  bool isEmpty(){
+    this->mutex.lock();
+    bool empty = this->queue.empty();
+    this->mutex.unlock();
+    return empty;
+  }
 };
 
 #endif  // QUEUE_HPP
