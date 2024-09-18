@@ -14,7 +14,7 @@
  * @return 0 si la simulación se ejecuta correctamente, 1 si hay un error.
  */
 int main(int argc, char *argv[]) {
-    if (argc < 3) {
+    if (argc < 4) {
         printf("Uso: %s <carpeta> <archivo de trabajo>\n", argv[0]);
         return 1;
     }
@@ -31,7 +31,7 @@ int main(int argc, char *argv[]) {
     }
 
     // Simulación de transferencia de calor
-    read_bin_plate(folder, variables, lines, jobName);
+    read_bin_plate(folder, variables, lines, jobName, argv[3]);
 
     // Liberar memoria
     for (uint64_t i = 0; i < lines; i++) {
