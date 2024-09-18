@@ -115,10 +115,16 @@ uint64_t heat_transfer_simulation(double** matrix,
                                     double h,
                                     double epsilon,
                                     int num_threads) {
-    bool balance_point = false;
-    uint64_t states_k = 0;
-    pthread_t threads [num_threads]; //Creamos array con hilos
-    thread_data thread_args[num_threads]; //Creamos array con argumentos de cada hilo
+    pthread_t threads[num_threads]; // Creamos array con hilos
+    private_data thread_args[num_threads]; // Creamos array con datos privados para cada hilo
+    shared_data shared; // Creamos la estructura para datos compartidos
+
+    // Inicializar datos compartidos
+    pthread_mutex_init(&shared.mutex, NULL); // Inicializar el mutex
+    shared.balance_point = false;
+    shared.states_k = malloc(sizeof(uint64_t)); // Asignar memoria para states_k
+    *(shared.states_k) = 0; // Inicializar el contador de estados a 0
+
     // Crear una matriz temporal para guardar los cambios de las celdas internas
     double** temp_matrix = malloc(rows * sizeof(double*));
     for (uint64_t i = 0; i < rows; i++) {
@@ -126,19 +132,16 @@ uint64_t heat_transfer_simulation(double** matrix,
     }
 
     // Simulación de transferencia de calor
-    while (!balance_point) {
-        balance_point = true;
-        states_k++;
-        uint64_t rows_per_thread= (rows-2)/num_threads; /*Filas que le toca a
-        cada hilo, luego se puede optimizar*/
-       
+    while (!shared.balance_point) {
+        shared.balance_point = true; // Inicializar el balance_point como true
+
+        uint64_t rows_per_thread = (rows - 2) / num_threads; // Filas que le toca a cada hilo
+
         for (int t = 0; t < num_threads; t++) {
             uint64_t start_row = 1 + t * rows_per_thread;
-            //Fila donde empieza
-            uint64_t end_row = (t == num_threads - 1) ?
-                               rows - 1 : start_row + rows_per_thread;
-                               //Fila donde termina dependiendo del que sea
-            //Asignamos sus respectivos datos
+            uint64_t end_row = (t == num_threads - 1) ? rows - 1 : start_row + rows_per_thread;
+
+            // Asignamos los datos privados
             thread_args[t].matrix = matrix;
             thread_args[t].temp_matrix = temp_matrix;
             thread_args[t].start_row = start_row;
@@ -148,15 +151,16 @@ uint64_t heat_transfer_simulation(double** matrix,
             thread_args[t].alpha = alpha;
             thread_args[t].h = h;
             thread_args[t].epsilon = epsilon;
-            thread_args[t].balance_point = &balance_point;
-            //Lo mandamos a trabajar
+            thread_args[t].shared = &shared; // Asignar el puntero a los datos compartidos
+
+            // Crear el hilo
             pthread_create(&threads[t], NULL, heat_transfer_simulation_thread, &thread_args[t]);
         }
-            //Después de que cumpla el trabajo lo esperamos
+
+        // Esperar a que todos los hilos terminen
         for (int t = 0; t < num_threads; t++) {
             pthread_join(threads[t], NULL);
         }
-
 
         // Actualizar la matriz original con los valores de la matriz temporal
         for (uint64_t i = 1; i < rows - 1; i++) {
@@ -171,5 +175,13 @@ uint64_t heat_transfer_simulation(double** matrix,
         free(temp_matrix[i]);
     }
     free(temp_matrix);
-    return states_k;
+
+    // Guardar el valor final de states_k
+    uint64_t final_states_k = *(shared.states_k);
+
+    // Liberar memoria y destruir el mutex
+    free(shared.states_k);
+    pthread_mutex_destroy(&shared.mutex);
+
+    return final_states_k;
 }
