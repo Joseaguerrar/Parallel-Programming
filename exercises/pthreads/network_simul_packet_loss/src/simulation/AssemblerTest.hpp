@@ -33,7 +33,7 @@ class AssemblerTest
     //Consumir producto
     void consume(NetworkMessage data) override;
     NetworkMessage createMessageRand() const;
-    Queue<NetworkMessage>* getConsumingQueue();
+    Queue<NetworkMessage>* getQueue();
 };
 
 #endif
