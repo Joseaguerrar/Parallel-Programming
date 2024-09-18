@@ -17,7 +17,11 @@ typedef struct {
     double h;             /**< Tamaño de las celdas. */
     double epsilon;       /**< Sensitividad del punto de equilibrio. */
 } params_matrix;
-
+typedef struct {
+    pthread_mutex_t mutex;    /**< Mutex para proteger el acceso a los datos compartidos. */
+    bool balance_point;       /**< Indicador de equilibrio. */
+    uint64_t* states_k;       /**< Estados finales de cada simulación. */
+} shared_data;
 /**
  * @brief Estructura para pasar datos a cada hilo.
  */
@@ -32,8 +36,8 @@ typedef struct {
     double alpha;
     double h;
     double epsilon;
-    bool* balance_point;
-} thread_data;
+    shared_data* shared;
+} private_data;
 
 /**
  * @brief Lee el archivo de trabajo (.txt) y extrae los parámetros de simulación para cada placa.
