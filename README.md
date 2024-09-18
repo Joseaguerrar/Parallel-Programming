@@ -38,9 +38,9 @@ Glossary:
 
 17.Candado de lectura y escritura: es un mecanismo de sincronización en programación concurrente que permite un acceso concurrente más eficiente a un recurso compartido cuando se realizan operaciones de lectura y escritura. Este tipo de candado se utiliza para mejorar el rendimiento en escenarios donde hay una gran cantidad de operaciones de lectura y menos operaciones de escritura.
 
-18.Descomposición:
+18.Descomposición: proceso de dividir un problema o una tarea compleja en partes más pequeñas y manejables, que pueden ser ejecutadas de manera concurrente o en paralelo.
 
-19.Mapeo:
+19.Mapeo: proceso de asignar tareas o bloques de datos a diferentes unidades de procesamiento para que puedan ser ejecutadas de manera simultánea. El mapeo es una etapa crucial en la implementación de programas paralelos, ya que afecta directamente al rendimiento y eficiencia del sistema. Hay diferentes tipos de mapeo, dinámico, por bloques, cíclico...
 
 20.Incremento de velocidad:
 
