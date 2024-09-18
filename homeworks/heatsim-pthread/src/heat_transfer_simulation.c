@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <pthread.h>
 
 #include "heat_simulation.h"
 
@@ -16,7 +17,8 @@
 void read_bin_plate(const char* folder,
                     params_matrix* variables,
                     uint64_t lines,
-                    const char* jobName) {
+                    const char* jobName,
+                    int num_threads) {
     FILE *bin_file;
     uint64_t rows, columns;
     char direction[512];
@@ -68,7 +70,7 @@ void read_bin_plate(const char* folder,
                                                     delta_t,
                                                     alpha,
                                                     h,
-                                                    epsilon);
+                                                    epsilon, num_threads);
         array_state_k[i] = states_k;
 
         // Generar archivo binario con el estado final
@@ -111,10 +113,12 @@ uint64_t heat_transfer_simulation(double** matrix,
                                     double delta_t,
                                     double alpha,
                                     double h,
-                                    double epsilon) {
+                                    double epsilon,
+                                    int num_threads) {
     bool balance_point = false;
     uint64_t states_k = 0;
-
+    pthread_t threads [num_threads]; //Creamos array con hilos
+    thread_data thread_args[num_threads]; //Creamos array con argumentos de cada hilo
     // Crear una matriz temporal para guardar los cambios de las celdas internas
     double** temp_matrix = malloc(rows * sizeof(double*));
     for (uint64_t i = 0; i < rows; i++) {
@@ -125,18 +129,34 @@ uint64_t heat_transfer_simulation(double** matrix,
     while (!balance_point) {
         balance_point = true;
         states_k++;
-        for (uint64_t i = 1; i < rows - 1; i++) {
-            for (uint64_t j = 1; j < columns - 1; j++) {
-                double actual_temperature = matrix[i][j];
-                double new_temperature = actual_temperature +
-                ((delta_t * alpha) / (h * h)) * (matrix[i-1][j] + matrix[i+1][j]
-                + matrix[i][j-1] + matrix[i][j+1] - 4 * actual_temperature);
-                temp_matrix[i][j] = new_temperature;
-                if (fabs(new_temperature - actual_temperature) > epsilon) {
-                    balance_point = false;
-                }
-            }
+        uint64_t rows_per_thread= (rows-2)/num_threads; /*Filas que le toca a
+        cada hilo, luego se puede optimizar*/
+       
+        for (int t = 0; t < num_threads; t++) {
+            uint64_t start_row = 1 + t * rows_per_thread;
+            //Fila donde empieza
+            uint64_t end_row = (t == num_threads - 1) ?
+                               rows - 1 : start_row + rows_per_thread;
+                               //Fila donde termina dependiendo del que sea
+            //Asignamos sus respectivos datos
+            thread_args[t].matrix = matrix;
+            thread_args[t].temp_matrix = temp_matrix;
+            thread_args[t].start_row = start_row;
+            thread_args[t].end_row = end_row;
+            thread_args[t].columns = columns;
+            thread_args[t].delta_t = delta_t;
+            thread_args[t].alpha = alpha;
+            thread_args[t].h = h;
+            thread_args[t].epsilon = epsilon;
+            thread_args[t].balance_point = &balance_point;
+            //Lo mandamos a trabajar
+            pthread_create(&threads[t], NULL, heat_transfer_simulation_thread, &thread_args[t]);
         }
+            //Después de que cumpla el trabajo lo esperamos
+        for (int t = 0; t < num_threads; t++) {
+            pthread_join(threads[t], NULL);
+        }
+
 
         // Actualizar la matriz original con los valores de la matriz temporal
         for (uint64_t i = 1; i < rows - 1; i++) {
