@@ -29,6 +29,9 @@ struct NetworkMessage {
   }
 
   /// Returns true if this message is equals to the given
+  /*Se usa para comparar los mensajes así sabemos si es el
+  señal para detenerse, depende de la implementación pero en 
+  este caso es 0 0 0*/
   inline bool operator==(const NetworkMessage& other) const {
     return this->target == other.target
       && this->source == other.source
