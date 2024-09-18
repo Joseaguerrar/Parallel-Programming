@@ -21,7 +21,9 @@ int DispatcherTest::run() {
 
   return EXIT_SUCCESS;
 }
-
+/*Esta es la implementación del método abstracto, para extraer la llave para
+un tipo en concreto de distribuidor, en otros casos puede ser más complejo
+pero en este solo lo devolvemos ya que sabemos cual tipo es*/
 int DispatcherTest::extractKey(const NetworkMessage& data) const {
   // Propagate a message requires time, simulate it
   // IMPORTANT: This simulation uses sleep() to mimic the process of propagating
