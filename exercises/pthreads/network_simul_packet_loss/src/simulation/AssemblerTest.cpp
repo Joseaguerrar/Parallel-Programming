@@ -12,6 +12,14 @@ void AssemblerTest::consume(NetworkMessage data){
         Util::sleepFor(this->producer_delay);
         produce(createMessageRand());
         std::cout<< "Mensaje perdido/Message lost"<< std:: endl;
-    }
-    
+    }   
+}
+
+int AssemblerTest::run(){
+    this->consumeForever();
+    return EXIT_FAILURE;
+}
+
+Queue<NetworkMessage>* AssemblerTest:: getQueue(){
+    return this->consumingQueue;
 }
