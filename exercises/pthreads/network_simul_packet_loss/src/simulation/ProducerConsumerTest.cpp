@@ -18,6 +18,7 @@ const char* const usage =
   "  prod_delay  delay of producer to create a package\n"
   "  disp_delay  delay of dispatcher to dispatch a package\n"
   "  cons_delay  delay of consumer to consume a package\n"
+  "  loss_probability   probability of lossing a package (1 to 100)\n"
   "\n"
   "Delays are in millisenconds, negatives are maximums for random delays\n";
 
