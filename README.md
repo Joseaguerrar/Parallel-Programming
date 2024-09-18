@@ -8,9 +8,9 @@ Glossary:
 
 3.Programación paralela: es la programación en la que se ejecutan varias instrucciones al mismo tiempo, y en el mismo orden en que se encuentran escritas en el código fuente de usando múltiples procesadores o hilos de ejecución.
 
-4.Concurrencia de tareas:
+4.Concurrencia de tareas: La concurrencia de tareas es un concepto en informática que se refiere a la capacidad de un sistema para ejecutar múltiples tareas o procesos de manera superpuesta en el tiempo. Esto no implica necesariamente que las tareas se ejecuten al mismo tiempo (paralelismo), sino que pueden ser progresadas de manera intercalada, lo que permite un uso más eficiente de los recursos disponibles.
 
-5.Paralelismo de datos:
+5.Paralelismo de datos: es una forma de paralelismo en computación que consiste en dividir grandes conjuntos de datos en partes más pequeñas y procesar estas partes de manera simultánea en múltiples unidades de procesamiento. Esto permite realizar operaciones sobre los datos de forma más rápida y eficiente, ya que varios elementos se pueden procesar al mismo tiempo en lugar de hacerlo secuencialmente.
 
 6.Hilo de ejecución: un arreglo de valores que el SO carga en los registros del CPU y permiten ejecutar código en ella. Contiene el program counter, el stack pointer y los demas regisros que le permitiran ejecutar instrucciones que le corresponden.
 
@@ -32,11 +32,11 @@ Glossary:
 
 14.Semáforo: mecanismo de sincronización utilizado para controlar el acceso de múltiples hilos o procesos a recursos compartidos. Los semáforos ayudan a evitar condiciones de carrera y garantizan que los recursos críticos se utilicen de manera segura y eficiente.
 
-15.Barrera:
+15.Barrera: mecanismo de sincronización en programación concurrente que asegura que un conjunto de hilos o procesos alcance un punto específico de ejecución antes de que cualquiera de ellos pueda continuar. En otras palabras, una barrera obliga a que todos los hilos o procesos se "sincronicen" en un punto dado. por ejemplo el pthread_join.
 
-16.Variable de condición:
+16.Variable de condición: es un mecanismo de sincronización utilizado en programación concurrente para gestionar la coordinación entre hilos que comparten recursos. Permite que un hilo espere hasta que una condición específica se cumpla mientras libera un bloqueo (mutex) que estaba manteniendo, permitiendo que otros hilos puedan trabajar en la condición que se está esperando.
 
-17.Candado de lectura y escritura:
+17.Candado de lectura y escritura: es un mecanismo de sincronización en programación concurrente que permite un acceso concurrente más eficiente a un recurso compartido cuando se realizan operaciones de lectura y escritura. Este tipo de candado se utiliza para mejorar el rendimiento en escenarios donde hay una gran cantidad de operaciones de lectura y menos operaciones de escritura.
 
 18.Descomposición:
 
