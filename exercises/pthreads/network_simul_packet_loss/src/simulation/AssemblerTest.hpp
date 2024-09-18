@@ -24,7 +24,16 @@ class AssemblerTest
     this->consumer_count = consumer_count;
     this->producer_delay = producer_delay;
     this->id = id;
-  }
+    }
+    //Destructor
+    virtual ~AssemblerTest(){
+    }
+    int run() override;
+
+    //Consumir producto
+    void consume(NetworkMessage data) override;
+    NetworkMessage createMessageRand() const;
+    Queue<NetworkMessage>* getConsumingQueue();
 };
 
 #endif
