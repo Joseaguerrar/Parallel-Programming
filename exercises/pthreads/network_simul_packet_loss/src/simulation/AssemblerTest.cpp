@@ -18,3 +18,15 @@ int AssemblerTest::run(){
                 + "messages lost");
     return EXIT_SUCCESS;
 }
+
+void AssemblerTest::consume(NetworkMessage data){
+    (void)data;
+    if (Util::random(0.0,100.0)< this->package_loss_percent)
+    {
+        this->package_loss_count++;
+    } else{
+        data.target= Util::random(1,this->consumer_count+1);
+        this->produce(data);
+    }
+    
+}
