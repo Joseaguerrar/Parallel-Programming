@@ -35,16 +35,12 @@ class ProducerConsumerTest {
   int dispatcherDelay = 0;
   /// Delay of consumer to consume a package, negative for max random
   int consumerDelay = 0;
-  /// Probabilidad de perder un paquete
-  int loss_probability = 0;
 
  private:
   /// Producer of the simulated network messages
   ProducerTest* producer = nullptr;
   /// A dispatcher of the of the simulated network messages
   DispatcherTest* dispatcher = nullptr;
-  /// Creamos el assembler a nulo
-  AssemblerTest* assembler = nullptr;
   /// Consumers of the simulated network messages
   std::vector<ConsumerTest*> consumers;
 
