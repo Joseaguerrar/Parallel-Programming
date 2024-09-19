@@ -18,7 +18,7 @@ const char* const usage =
   "  prod_delay  delay of producer to create a package\n"
   "  disp_delay  delay of dispatcher to dispatch a package\n"
   "  cons_delay  delay of consumer to consume a package\n"
-  "  loss_probability   probability of lossing a package (1 to 100)\n"
+  "  loss_percent percentage of lossing a package (0 to 100)\n"
   "\n"
   "Delays are in millisenconds, negatives are maximums for random delays\n";
 
@@ -27,6 +27,7 @@ ProducerConsumerTest::~ProducerConsumerTest() {
   delete this->dispatcher;
   for ( ConsumerTest* consumer : this->consumers )
     delete consumer;
+  delete this->assembler;
 }
 
 int ProducerConsumerTest::start(int argc, char* argv[]) {
@@ -41,14 +42,15 @@ int ProducerConsumerTest::start(int argc, char* argv[]) {
   this->dispatcher = new DispatcherTest(this->dispatcherDelay);
   this->dispatcher->createOwnQueue();
   // Create each producer
-  // TODO: Crear el assembler, es consumidor y producidor al mismo tiempo
   this->consumers.resize(this->consumerCount);
   for ( size_t index = 0; index < this->consumerCount; ++index ) {
     this->consumers[index] = new ConsumerTest(this->consumerDelay);
     assert(this->consumers[index]);
     this->consumers[index]->createOwnQueue();
   }
-
+  this->assembler=new AssemblerTest(this->package_loss_percent,
+                                    this->consumerCount);
+  this->assembler->createOwnQueue();
   // Communicate simulation objects
   // Producer push network messages to the dispatcher queue
   this->producer->setProducingQueue(this->dispatcher->getConsumingQueue());
