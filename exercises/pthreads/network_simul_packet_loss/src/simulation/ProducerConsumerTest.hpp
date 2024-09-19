@@ -9,13 +9,12 @@
 #include <vector>
 
 #include "common.hpp"
-#include "AssemblerTest.hpp"
 
 // Forward declarations
+class AssemblerTest;
 class ConsumerTest;
 class DispatcherTest;
 class ProducerTest;
-class AssemblerTest;
 
 /**
  * @brief Controller class that simulates the message passing between
