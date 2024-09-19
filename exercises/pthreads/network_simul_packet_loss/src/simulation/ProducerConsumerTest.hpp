@@ -35,6 +35,8 @@ class ProducerConsumerTest {
   int dispatcherDelay = 0;
   /// Delay of consumer to consume a package, negative for max random
   int consumerDelay = 0;
+  /// Porcentaje de pérdida
+  double package_loss_percent=0.0;
 
  private:
   /// Producer of the simulated network messages
@@ -43,6 +45,8 @@ class ProducerConsumerTest {
   DispatcherTest* dispatcher = nullptr;
   /// Consumers of the simulated network messages
   std::vector<ConsumerTest*> consumers;
+  /// Simulación de pérdida de paquetes
+  AssemblerTest* assembler = nullptr;
 
  public:
   /// Constructor
