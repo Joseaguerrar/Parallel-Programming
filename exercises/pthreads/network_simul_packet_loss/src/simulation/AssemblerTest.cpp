@@ -15,7 +15,7 @@ int AssemblerTest::run(){
 
     //Cuando termine, imprimir los datos
     Log::append(Log::INFO, "Assembler", std::to_string(this->package_loss_count)
-                + "messages lost");
+                + " messages lost");
     return EXIT_SUCCESS;
 }
 
