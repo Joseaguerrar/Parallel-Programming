@@ -1,5 +1,6 @@
 /// @copyright 2020 ECCI, Universidad de Costa Rica.
-/// All rights reserved. This code is released under the GNU Public License version 3.
+/// All rights reserved. This code is released
+/// under the GNU Public License version 3.
 /// @author Jeisson Hidalgo-Céspedes <jeisson.hidalgo@ucr.ac.cr>
 
 #include <cstdlib>
@@ -69,16 +70,18 @@ int ProducerConsumerTest::start(int argc, char* argv[]) {
   }
 
   // Create the assembler
-  this->assembler = new AssemblerTest(this->package_loss_percent, this->consumerCount);
+  this->assembler = new AssemblerTest(this->package_loss_percent,
+                                      this->consumerCount);
   this->assembler->createOwnQueue();
 
   // Communicate simulation objects
   // Producer pushes network messages to the dispatcher queue
   this->producer->setProducingQueue(this->dispatcher->getConsumingQueue());
-  
+
   // Dispatcher delivers to each consumer, and they should be registered
   for ( size_t index = 0; index < this->consumerCount; ++index ) {
-    this->dispatcher->registerRedirect(index + 1, this->consumers[index]->getConsumingQueue());
+    this->dispatcher->registerRedirect(index + 1,
+                                  this->consumers[index]->getConsumingQueue());
   }
 
   // Redirect assembler's queue with the dispatcher
@@ -132,9 +135,9 @@ int ProducerConsumerTest::analyzeArguments(int argc, char* argv[]) {
   this->productorDelay = std::atoi(argv[index++]);
   this->dispatcherDelay = std::atoi(argv[index++]);
   this->consumerDelay = std::atoi(argv[index++]);
-  this->package_loss_percent = std::atof(argv[index++]); 
+  this->package_loss_percent = std::atof(argv[index++]);
                               // Convert string to double
 
-  // TODO: Validate that given arguments are valid
+  // TODO(Joseaguerrar): Validate that given arguments are valid
   return EXIT_SUCCESS;
 }

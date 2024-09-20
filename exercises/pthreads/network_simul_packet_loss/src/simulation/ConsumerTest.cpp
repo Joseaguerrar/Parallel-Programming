@@ -21,7 +21,7 @@ int ConsumerTest::run() {
 }
 
 void ConsumerTest::consume(NetworkMessage data) {
-  //El consumidor solo cuenta el número de mensajes recibidos
+  // El consumidor solo cuenta el número de mensajes recibidos
   (void)data;
   ++this->receivedMessages;
 }
