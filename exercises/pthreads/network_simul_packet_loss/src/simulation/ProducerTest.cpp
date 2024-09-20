@@ -1,5 +1,6 @@
 /// @copyright 2020 ECCI, Universidad de Costa Rica.
-/// All rights reserved. This code is released under the GNU Public License version 3.
+/// All rights reserved. This code is released
+/// under the GNU Public License version 3.
 /// @author Jeisson Hidalgo-Céspedes <jeisson.hidalgo@ucr.ac.cr>
 
 #include "ProducerTest.hpp"
@@ -16,7 +17,8 @@
  * @param productorDelay The delay for each message creation (in milliseconds).
  * @param consumerCount The number of consumers the producer can send messages to.
  */
-ProducerTest::ProducerTest(size_t packageCount, int productorDelay, size_t consumerCount)
+ProducerTest::ProducerTest(size_t packageCount,
+                           int productorDelay, size_t consumerCount)
   : packageCount(packageCount)
   , productorDelay(productorDelay)
   , consumerCount(consumerCount) {
@@ -59,13 +61,14 @@ int ProducerTest::run() {
 NetworkMessage ProducerTest::createMessage(size_t index) const {
   // Source is always 1: this producer
   const uint16_t source = 1;
-  
+
   // Target is selected randomly from the consumers
-  const uint16_t target = 1 + Util::random(0, static_cast<int>(this->consumerCount));
-  
+  const uint16_t target = 1 + Util::random(0,
+                                         static_cast<int>(this->consumerCount));
+
   // Simulate the delay for producing the message (using sleep)
   Util::sleepFor(this->productorDelay);
-  
+
   // Create and return a copy of the network message
   return NetworkMessage(target, source, index);
 }

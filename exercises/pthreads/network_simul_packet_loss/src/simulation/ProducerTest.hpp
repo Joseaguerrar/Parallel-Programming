@@ -1,5 +1,6 @@
 /// @copyright 2020 ECCI, Universidad de Costa Rica.
-/// All rights reserved. This code is released under the GNU Public License version 3.
+/// All rights reserved. This code is released
+/// under the GNU Public License version 3.
 /// @author Jeisson Hidalgo-Céspedes <jeisson.hidalgo@ucr.ac.cr>
 
 #ifndef PRODUCERTEST_HPP
@@ -16,7 +17,8 @@
  * and assigns each message a target consumer.
  */
 class ProducerTest : public Producer<NetworkMessage> {
-  DISABLE_COPY(ProducerTest);  ///< Macro to disable copy constructor and assignment.
+  DISABLE_COPY(ProducerTest);
+  ///< Macro to disable copy constructor and assignment.
 
  protected:
   /// Number of packages to be produced.

@@ -1,3 +1,4 @@
+// Copyright [2024] <Jose.guerrarodriguez@ucr.ac.cr>
 #ifndef ASSEMBLER_TEST_HPP
 #define ASSEMBLER_TEST_HPP
 
@@ -17,10 +18,10 @@ class AssemblerTest : public Assembler<NetworkMessage, NetworkMessage> {
  protected:
   /// Percent of package loss during message transmission.
   double package_loss_percent = 0.0;
-  
+
   /// Number of consumers connected to the network.
   size_t consumer_count = 0;
-  
+
   /// Number of lost packages due to simulated network conditions.
   size_t package_loss_count = 0;
 

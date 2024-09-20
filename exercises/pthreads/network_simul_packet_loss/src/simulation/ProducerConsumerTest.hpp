@@ -1,5 +1,6 @@
 /// @copyright 2020 ECCI, Universidad de Costa Rica.
-/// All rights reserved. This code is released under the GNU Public License version 3.
+/// All rights reserved. This code is released
+/// under the GNU Public License version 3.
 /// @author Jeisson Hidalgo-Céspedes <jeisson.hidalgo@ucr.ac.cr>
 
 #ifndef PRODUCERCONSUMERTEST_HPP
@@ -25,38 +26,38 @@ class ProducerTest;
  * threads for each component, and handles the simulation of packet loss.
  */
 class ProducerConsumerTest {
-  DISABLE_COPY(ProducerConsumerTest);  
+  DISABLE_COPY(ProducerConsumerTest);
   ///< Macro to disable copy constructor and assignment.
 
  private:
   /// Number of packages to be produced.
   size_t packageCount = 0;
-  
+
   /// Number of consumer threads.
   size_t consumerCount = 0;
-  
+
   /// Delay of producer to create a package, negative for max random delay.
   int productorDelay = 0;
-  
+
   /// Delay of dispatcher to dispatch a package, negative for max random delay.
   int dispatcherDelay = 0;
-  
+
   /// Delay of consumer to consume a package, negative for max random delay.
   int consumerDelay = 0;
-  
+
   /// Percentage of packet loss during transmission.
   double package_loss_percent = 0.0;
 
  private:
   /// Producer of the simulated network messages.
   ProducerTest* producer = nullptr;
-  
+
   /// Dispatcher that sends the network messages to consumers.
   DispatcherTest* dispatcher = nullptr;
-  
+
   /// Consumers that receive and process the network messages.
   std::vector<ConsumerTest*> consumers;
-  
+
   /// Assembler to simulate packet loss in the network.
   AssemblerTest* assembler = nullptr;
 
