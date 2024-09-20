@@ -12,7 +12,7 @@
  * @param folder Carpeta donde se guardará el archivo de reporte.
  * @param jobName Nombre del archivo de trabajo.
  * @param variables Arreglo de estructuras `params_matrix` que contiene los parámetros de la simulación.
- * @param states_k Arreglo que contiene el estado final de cada simulación (número de iteraciones).
+ * @param states_k Arreglo de estados
  * @param lines Número de líneas (simulaciones) en el archivo de trabajo.
  */
 void generate_report_file(const char* folder,
