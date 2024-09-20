@@ -24,6 +24,7 @@ typedef struct {
 typedef struct {
     bool balance_point; /**< Indica si se ha alcanzado el equilibrio térmico. */
     double** matrix;  /**< Matriz compartida que representa la placa térmica. */
+    pthread_mutex_t mutex; /**< Mutex para el acceso a los datos compartidos. */
 } shared_data;
 /**
  * @brief Estructura para pasar datos a cada hilo de simulación.
