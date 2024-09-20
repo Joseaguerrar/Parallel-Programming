@@ -25,7 +25,6 @@ typedef struct {
 /**
  * @brief Estructura para pasar datos a cada hilo.
  */
-//Todo: revisar si es necesario todo esto
 typedef struct {
     double** matrix;
     uint64_t start_row;
