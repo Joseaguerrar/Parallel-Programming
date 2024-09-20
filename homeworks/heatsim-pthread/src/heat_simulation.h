@@ -18,24 +18,27 @@ typedef struct {
     double h;             /**< Tamaño de las celdas. */
     double epsilon;       /**< Sensitividad del punto de equilibrio. */
 } params_matrix;
-typedef struct {
-    bool balance_point;       /**< Indicador de equilibrio. */
-    double** matrix;          /**< Matriz compartida. */
-} shared_data;
 /**
- * @brief Estructura para pasar datos a cada hilo.
+ * @brief Estructura compartida entre hilos para sincronización y datos comunes.
  */
 typedef struct {
-    double** matrix;
-    uint64_t start_row;
-    uint64_t end_row;
-    uint64_t columns;
-    double delta_t;
-    double alpha;
-    double h;
-    double epsilon;
-    uint64_t states_k;       /**< Estados finales de cada simulación. */
-    shared_data* shared;
+    bool balance_point; /**< Indica si se ha alcanzado el equilibrio térmico. */
+    double** matrix;  /**< Matriz compartida que representa la placa térmica. */
+} shared_data;
+/**
+ * @brief Estructura para pasar datos a cada hilo de simulación.
+ */
+typedef struct {
+    double** matrix;   /**< Matriz local para las celdas de la placa térmica. */
+    uint64_t start_row;      /**< Fila de inicio asignada al hilo. */
+    uint64_t end_row;        /**< Fila de fin asignada al hilo. */
+    uint64_t columns;        /**< Número de columnas de la matriz. */
+    double delta_t;          /**< Diferencial de tiempo. */
+    double alpha;            /**< Difusividad térmica. */
+    double h;                /**< Tamaño de las celdas. */
+    double epsilon;          /**< Sensibilidad del punto de equilibrio. */
+    uint64_t states_k;       /**< Número de estados alcanzados por el hilo. */
+    shared_data* shared;/**< Puntero a los datos compartidos entre los hilos. */
 } private_data;
 
 /**
@@ -99,6 +102,16 @@ uint64_t heat_transfer_simulation(double** matrix,
                                     double epsilon,
                                     int num_threads);
 
+/**
+ * @brief Función ejecutada por cada hilo durante la simulación de transferencia de calor.
+ * 
+ * Cada hilo procesa un subconjunto de filas de la matriz y actualiza el estado térmico
+ * de esas celdas.
+ * 
+ * @param arg Argumentos pasados al hilo (estructura `private_data`).
+ * 
+ * @return NULL.
+ */
 void* heat_transfer_simulation_thread(void* arg);
 
 /**
@@ -118,7 +131,7 @@ char* format_time(const time_t seconds, char* text, const size_t capacity);
  * @param folder Carpeta donde se guardará el archivo de reporte.
  * @param jobName Nombre del archivo de trabajo.
  * @param variables Arreglo de estructuras `params_matrix` que contiene los parámetros de la simulación.
- * @param states_k Arreglo que contiene los estados finales de cada simulación.
+ * @param state_k Arreglo que contiene los estados finales de cada simulación.
  * @param lines Número de líneas (simulaciones) en el archivo de trabajo.
  */
 void generate_report_file(const char* folder,
