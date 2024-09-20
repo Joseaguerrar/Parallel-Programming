@@ -137,6 +137,8 @@ uint64_t heat_transfer_simulation(double** matrix,
     // Datos compartidos entre los hilos
 
     // Inicializar los datos compartidos
+    pthread_mutex_init(&shared.mutex, NULL);
+    // Inicializar el mutex para proteger la matriz
     shared.balance_point = false;
     // Inicializar el punto de equilibrio como falso
     shared.matrix = matrix;
@@ -178,6 +180,8 @@ uint64_t heat_transfer_simulation(double** matrix,
             pthread_join(threads[t], NULL);
         }
     }
+    // Destruir el mutex
+    pthread_mutex_destroy(&shared.mutex);
     // Sumar los estados de todos los hilos
     for (int t = 0; t < num_threads; t++) {
         total_states_k += thread_args[t].states_k;
@@ -198,17 +202,21 @@ uint64_t heat_transfer_simulation(double** matrix,
  */
 void* heat_transfer_simulation_thread(void* arg) {
     private_data* data = (private_data*)arg;
-    /**< Argumento que contiene la estructura con los datos privados del hilo. */
+    /**< Argumento con la estructura con los datos privados del hilo. */
 
-    /* Antes de realizar los cambios,
-    comprobar si ya se ha alcanzado el equilibrio global*/
+    // Comprobar si ya se ha alcanzado el equilibrio global
+    pthread_mutex_lock(&(data->shared->mutex));
     if (data->shared->balance_point == true) {
+        pthread_mutex_unlock(&(data->shared->mutex));
         return NULL;
-        /**< Si el equilibrio global ya se ha alcanzado, el hilo termina su ejecución. */
     }
+    pthread_mutex_unlock(&(data->shared->mutex));
 
     // Calcular las nuevas temperaturas para las celdas asignadas a este hilo
     for (uint64_t i = data->start_row; i < data->end_row; i++) {
+        pthread_mutex_lock(&(data->shared->mutex));
+        // Bloquear acceso a la fila completa
+
         for (uint64_t j = 1; j < data->columns - 1; j++) {
             data->states_k++;
             /**< Incrementar el contador local de estados del hilo. */
@@ -217,16 +225,26 @@ void* heat_transfer_simulation_thread(void* arg) {
             double new_temp = data->shared->matrix[i][j] +
                             data->alpha * data->delta_t / (data->h * data->h) *
                 (data->shared->matrix[i-1][j] + data->shared->matrix[i+1][j] +
-                data->shared->matrix[i][j-1] + data->shared->matrix[i][j+1] - 
+                data->shared->matrix[i][j-1] + data->shared->matrix[i][j+1] -
                                4 * data->shared->matrix[i][j]);
 
             // Actualizar directamente la matriz original (shared)
             data->shared->matrix[i][j] = new_temp;
+        }
 
-            // Verificar si se ha alcanzado el equilibrio para esta celda
-            if (fabs(new_temp - data->shared->matrix[i][j]) < data->epsilon) {
+        pthread_mutex_unlock(&(data->shared->mutex));
+        // Desbloquear la fila completa
+
+        // Verificar si se ha alcanzado el equilibrio para la fila procesada
+        for (uint64_t j = 1; j < data->columns - 1; j++) {
+            if (fabs(data->shared->matrix[i][j] - data->shared->matrix[i][j])
+             < data->epsilon) {
+                pthread_mutex_lock(&(data->shared->mutex));
                 data->shared->balance_point = true;
+                // Marcar que se alcanzó el equilibrio
+                pthread_mutex_unlock(&(data->shared->mutex));
                 /**< Si el cambio es menor al umbral, se marca el equilibrio. */
+                break;
             }
         }
     }
