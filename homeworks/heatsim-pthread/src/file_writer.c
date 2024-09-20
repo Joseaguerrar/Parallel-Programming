@@ -12,14 +12,14 @@
  * @param folder Carpeta donde se guardará el archivo de reporte.
  * @param jobName Nombre del archivo de trabajo.
  * @param variables Arreglo de estructuras `params_matrix` que contiene los parámetros de la simulación.
- * @param states_k Arreglo que contiene los estados finales de cada simulación.
+ * @param states_k Estado final de cada simulación.
  * @param lines Número de líneas (simulaciones) en el archivo de trabajo.
  */
 void generate_report_file(const char* folder,
-                        const char* jobName,
-                        params_matrix* variables,
-                        uint64_t* states_k,
-                        uint64_t lines) {
+                          const char* jobName,
+                          params_matrix* variables,
+                          uint64_t* states_k,  // Ahora es un arreglo de estados
+                          uint64_t lines) {
     char report_name[1024];
     char jobName_no_txt[512];
     char formatted_time[48];
@@ -30,26 +30,27 @@ void generate_report_file(const char* folder,
     if (position) {
         *position = '\0';
     }
-    snprintf(report_name, sizeof(report_name), "%s/%s.tsv",
-            folder, jobName_no_txt);
-    FILE* report_file = fopen(report_name, "w");
+    snprintf(report_name, sizeof(report_name), "%s/%s.tsv", folder, jobName_no_txt);
+    
+    FILE* report_file = fopen(report_name, "a");  // Cambiado a "a" para agregar nuevas líneas
     if (report_file == NULL) {
-        fprintf(stderr, "No se pudo crear el archivo de reporte %s\n",
-                report_name);
+        fprintf(stderr, "No se pudo crear el archivo de reporte %s\n", report_name);
         return;
     }
 
+    // Escribir el archivo de reporte con el número correcto de estados por simulación
     for (uint64_t i = 0; i < lines; i++) {
-        time_t tiempo_transcurrido = states_k[i] * variables[i].delta_t;
-        format_time(tiempo_transcurrido, formatted_time,
-                    sizeof(formatted_time));
+        time_t tiempo_transcurrido = states_k[i] * variables[i].delta_t;  // Usamos el estado correspondiente del arreglo
+        format_time(tiempo_transcurrido, formatted_time, sizeof(formatted_time));
+
+        // Escribir correctamente el número de estados en el reporte
         fprintf(report_file, "%s\t%lf\t%lf\t%lf\t%lg\t%lu\t%s\n",
                 variables[i].filename,
                 variables[i].delta_t,
                 variables[i].alpha,
                 variables[i].h,
                 variables[i].epsilon,
-                states_k[i],
+                states_k[i],  // Imprimir el estado correspondiente
                 formatted_time);
     }
 
