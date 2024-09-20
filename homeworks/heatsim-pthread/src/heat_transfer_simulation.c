@@ -74,7 +74,7 @@ void read_bin_plate(const char* folder,
         array_state_k[i] = states_k;
 
         // Generar archivo binario con el estado final
-        generate_bin_file(matrix, rows, columns, folder, variables[i].filename, states_k);
+        generate_bin_file(matrix, rows, columns, folder, variables[i].filename, array_state_k[i]);
 
         // Liberar la memoria de la matriz
         for (uint64_t j = 0; j < rows; j++) {
@@ -101,6 +101,7 @@ void read_bin_plate(const char* folder,
  * @param alpha Difusividad térmica.
  * @param h Tamaño de las celdas.
  * @param epsilon Sensitividad del punto de equilibrio.
+ * @param num_threads Cantidad de hilos
  * 
  * @return Número de estados hasta alcanzar el punto de equilibrio.
  */
@@ -124,6 +125,8 @@ uint64_t heat_transfer_simulation(double** matrix,
     for (int t = 0; t < num_threads; t++) {
         thread_args[t].states_k = 0;
     }
+    // Cantidad total de estados 
+    uint64_t total_states_k = 0;
 
     // Simulación de transferencia de calor
     while (!shared.balance_point) {
@@ -154,23 +157,21 @@ uint64_t heat_transfer_simulation(double** matrix,
 
     }
     // Sumar los estados de todos los hilos
-    uint64_t total_states_k = 0;
     for (int t = 0; t < num_threads; t++) {
         total_states_k += thread_args[t].states_k;
     }
-
-    printf("Cantidad total de estados: %lu\n", total_states_k);  // Imprimir la cantidad total de estados
     return total_states_k;  // Devolver el número total de estados
 }
 void* heat_transfer_simulation_thread(void* arg) {
     private_data* data = (private_data*)arg;
-    //data->shared->balance_point = true;
-    // Cada hilo realiza su tarea y actualiza directamente la matriz compartida (original)
-    data->states_k++;  // Incrementar el contador local de estados
-    printf("Estados = %lu\n", data->states_k);  // Imprimir los estados de cada hilo
+    // Antes de realizar los cambios comprobar que no se haya alcanzado
+    if(data->shared->balance_point == true){
+        return NULL;
+    }
     // Calcular las nuevas temperaturas para las celdas asignadas a este hilo
     for (uint64_t i = data->start_row; i < data->end_row; i++) {
         for (uint64_t j = 1; j < data->columns - 1; j++) {
+            data->states_k++;  // Incrementar el contador local de estados
             double new_temp = data->shared->matrix[i][j] + 
                               data->alpha * data->delta_t / (data->h * data->h) *
                               (data->shared->matrix[i-1][j] + data->shared->matrix[i+1][j] + 
@@ -181,10 +182,7 @@ void* heat_transfer_simulation_thread(void* arg) {
             data->shared->matrix[i][j] = new_temp;
 
             // Verificar si aún no se ha alcanzado el equilibrio
-            if (fabs(new_temp - data->shared->matrix[i][j]) > data->epsilon) {
-                data->shared->balance_point = false;  // Aún no se alcanza el equilibrio
-            }
-            else if (fabs(new_temp - data->shared->matrix[i][j]) < data->epsilon)
+            if (fabs(new_temp - data->shared->matrix[i][j]) < data->epsilon)
             {
                 data->shared->balance_point = true;
             }
