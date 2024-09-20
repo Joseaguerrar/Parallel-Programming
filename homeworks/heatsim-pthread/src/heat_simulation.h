@@ -123,12 +123,11 @@ char* format_time(const time_t seconds, char* text, const size_t capacity);
 /**
  * @brief Genera el archivo de reporte (.tsv) con los resultados de la simulación.
  * 
- * @param state_k Arreglo que contiene los estados finales de cada simulación.
  */
 void generate_report_file(const char* folder,
                         const char* jobName,
                         params_matrix* variables_formula,
-                        uint64_t* state_k,
+                        uint64_t* states_k,
                         uint64_t lines);
 
 /**
