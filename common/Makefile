@@ -1,4 +1,4 @@
-# Makefile v3.5.0 2023-Oct-23 Jeisson Hidalgo-Cespedes ECCI-UCR CC-BY 4.0
+# Makefile v3.5.1 2024-Aug-26 Jeisson Hidalgo-Cespedes ECCI-UCR CC-BY 4.0
 
 # VAR=value  ## Overrides a variable, e.g CC=mpicc DEFS=-DGUI. See helpvars
 CC=gcc#= C compiler
@@ -219,7 +219,6 @@ Doxyfile:
 	sed -i.bak -E 's/(RECURSIVE *)= NO/\1= YES/' $@
 	sed -i.bak -E 's/(EXTRACT_ALL *)= NO/\1= YES/' $@
 	sed -i.bak -E 's/(QUIET *)= NO/\1= YES/' $@
-	sed -i.bak -E 's/(OPTIMIZE_OUTPUT_FOR_C *)= NO/\1= YES/' $@
 	rm -f $@.bak
 
 lint:  ## Check code style conformance using Cpplint
@@ -272,14 +271,14 @@ endif
 
 # Install dependencies for Debian or RedHat based distros (pacman pending)
 DEPS=clang valgrind doxygen pipx python3-gpg checkstyle
-INSTDEPS=sudo apt install build-essential openjdk-17-jdk
+INSTDEPS=sudo apt install build-essential openjdk-17-jdk cpplint icdiff
 PIP=pipx
 ifeq (, $(shell which apt))
-	INSTDEPS=sudo dnf groupinstall 'Development Tools' && sudo dnf install java-17-openjdk
+	INSTDEPS=sudo dnf groupinstall 'Development Tools' && sudo dnf install java-17-openjdk && $(PIP) install icdiff && $(PIP) install cpplint
 endif # not an apt-based distribution, use dnf
 
 instdeps:  ## Install needed packages on Debian/RedHat-based distributions
-	$(INSTDEPS) $(DEPS) && $(PIP) ensurepath && $(PIP) install icdiff && $(PIP) install cpplint
+	$(INSTDEPS) $(DEPS) && $(PIP) ensurepath
 
 update:  ## Update this Makefile to latest version"
 	$(DOWN) $(MAKSITE)/Makefile > $(MAKFILE)
