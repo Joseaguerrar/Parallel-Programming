@@ -26,15 +26,18 @@ void read_bin_plate(const char* folder,
     // Crear un arreglo para almacenar los estados por cada simulación
     uint64_t* array_state_k = malloc(lines * sizeof(uint64_t));
     if (array_state_k == NULL) {
-        fprintf(stderr, "Error al asignar memoria para el arreglo de estados.\n");
+        fprintf(stderr,
+                      "Error al asignar memoria para el arreglo de estados.\n");
         return;
     }
 
     for (uint64_t i = 0; i < lines; i++) {
-        snprintf(direction, sizeof(direction), "%s/%s", folder, variables[i].filename);
+        snprintf(direction, sizeof(direction), "%s/%s", folder,
+                                                         variables[i].filename);
         bin_file = fopen(direction, "rb");
         if (bin_file == NULL) {
-            fprintf(stderr, "No se pudo abrir el archivo binario %s\n", variables[i].filename);
+            fprintf(stderr, "No se pudo abrir el archivo binario %s\n",
+                                                         variables[i].filename);
             continue;  // Continuar con la siguiente simulación en caso de error
         }
 
@@ -43,21 +46,25 @@ void read_bin_plate(const char* folder,
 
         double **matrix = malloc(rows * sizeof(double*));
         if (matrix == NULL) {
-            fprintf(stderr, "Error al asignar memoria para las filas de la matriz\n");
+            fprintf(stderr,
+                      "Error al asignar memoria para las filas de la matriz\n");
             fclose(bin_file);
-            continue;  // Liberar recursos y continuar con la siguiente simulación
+            continue;
+            // Liberar recursos y continuar con la siguiente simulación
         }
 
         for (uint64_t j = 0; j < rows; j++) {
             matrix[j] = malloc(columns * sizeof(double));
             if (matrix[j] == NULL) {
-                fprintf(stderr, "Error al asignar memoria para las columnas de la matriz\n");
+                fprintf(stderr,
+                   "Error al asignar memoria para las columnas de la matriz\n");
                 for (uint64_t k = 0; k < j; k++) {
                     free(matrix[k]);
                 }
                 free(matrix);
                 fclose(bin_file);
-                continue;  // Liberar recursos y continuar con la siguiente simulación
+                continue;
+                // Liberar recursos y continuar con la siguiente simulación
             }
         }
 
@@ -68,13 +75,21 @@ void read_bin_plate(const char* folder,
         double epsilon = variables[i].epsilon;
 
         // Ejecutar la simulación y capturar el número de estados
-        uint64_t states_k = heat_transfer_simulation(matrix, rows, columns, delta_t, alpha, h, epsilon, num_threads);
+        uint64_t states_k = heat_transfer_simulation(matrix,
+                                                    rows,
+                                                    columns,
+                                                    delta_t,
+                                                    alpha,
+                                                    h,
+                                                    epsilon,
+                                                    num_threads);
 
         // Guardar el número de estados en el arreglo
         array_state_k[i] = states_k;
 
         // Generar archivo binario con el estado final
-        generate_bin_file(matrix, rows, columns, folder, variables[i].filename, array_state_k[i]);
+        generate_bin_file(matrix, rows, columns, folder,
+                                       variables[i].filename, array_state_k[i]);
 
         // Liberar la memoria de la matriz
         for (uint64_t j = 0; j < rows; j++) {
@@ -113,30 +128,35 @@ uint64_t heat_transfer_simulation(double** matrix,
                                   double h,
                                   double epsilon,
                                   int num_threads) {
-    pthread_t threads[num_threads];  // Array para los hilos
-    private_data thread_args[num_threads];  // Array para los datos privados de cada hilo
-    shared_data shared;  // Datos compartidos entre los hilos
+    pthread_t threads[num_threads]; //NOLINT
+    // Array para los hilos
+    private_data thread_args[num_threads]; //NOLINT
+    // Array para los datos privados de cada hilo
+    shared_data shared;
+    // Datos compartidos entre los hilos
 
     // Inicializar los datos compartidos
-    shared.balance_point = false;  // Inicializar el punto de equilibrio como falso
-    shared.matrix = matrix;  // La matriz original es compartida entre los hilos
+    shared.balance_point = false;
+    // Inicializar el punto de equilibrio como falso
+    shared.matrix = matrix;
+    // La matriz original es compartida entre los hilos
 
     // Inicializar los datos privados de cada hilo
     for (int t = 0; t < num_threads; t++) {
         thread_args[t].states_k = 0;
     }
-    // Cantidad total de estados 
+    // Cantidad total de estados
     uint64_t total_states_k = 0;
 
     // Simulación de transferencia de calor
     while (!shared.balance_point) {
-        // Reiniciar el indicador de equilibrio global al principio de cada iteración
-
-        uint64_t rows_per_thread = (rows - 2) / num_threads; // Filas que le toca a cada hilo
+        uint64_t rows_per_thread = (rows - 2) / num_threads;
+        // Filas que le toca a cada hilo
 
         for (int t = 0; t < num_threads; t++) {
             uint64_t start_row = 1 + t * rows_per_thread;
-            uint64_t end_row = (t == num_threads - 1) ? rows - 1 : start_row + rows_per_thread;
+            uint64_t end_row = (t == num_threads - 1) ? rows - 1 :
+                                                    start_row + rows_per_thread;
             thread_args[t].start_row = start_row;
             thread_args[t].end_row = end_row;
             thread_args[t].columns = columns;
@@ -144,17 +164,18 @@ uint64_t heat_transfer_simulation(double** matrix,
             thread_args[t].alpha = alpha;
             thread_args[t].h = h;
             thread_args[t].epsilon = epsilon;
-            thread_args[t].shared = &shared;  // Pasar el puntero a los datos compartidos
+            thread_args[t].shared = &shared;
+            // Pasar el puntero a los datos compartidos
 
             // Crear el hilo
-            pthread_create(&threads[t], NULL, heat_transfer_simulation_thread, &thread_args[t]);
+            pthread_create(&threads[t], NULL, heat_transfer_simulation_thread,
+                                                               &thread_args[t]);
         }
 
         // Esperar a que todos los hilos terminen
         for (int t = 0; t < num_threads; t++) {
             pthread_join(threads[t], NULL);
         }
-
     }
     // Sumar los estados de todos los hilos
     for (int t = 0; t < num_threads; t++) {
@@ -165,29 +186,26 @@ uint64_t heat_transfer_simulation(double** matrix,
 void* heat_transfer_simulation_thread(void* arg) {
     private_data* data = (private_data*)arg;
     // Antes de realizar los cambios comprobar que no se haya alcanzado
-    if(data->shared->balance_point == true){
+    if ( data->shared->balance_point == true ) {
         return NULL;
     }
     // Calcular las nuevas temperaturas para las celdas asignadas a este hilo
     for (uint64_t i = data->start_row; i < data->end_row; i++) {
         for (uint64_t j = 1; j < data->columns - 1; j++) {
             data->states_k++;  // Incrementar el contador local de estados
-            double new_temp = data->shared->matrix[i][j] + 
-                              data->alpha * data->delta_t / (data->h * data->h) *
-                              (data->shared->matrix[i-1][j] + data->shared->matrix[i+1][j] + 
-                               data->shared->matrix[i][j-1] + data->shared->matrix[i][j+1] - 
+            double new_temp = data->shared->matrix[i][j] +
+                            data->alpha * data->delta_t / (data->h * data->h) *
+                (data->shared->matrix[i-1][j] + data->shared->matrix[i+1][j] +
+                data->shared->matrix[i][j-1] + data->shared->matrix[i][j+1] -
                                4 * data->shared->matrix[i][j]);
 
             // Actualizar directamente la matriz original (shared)
             data->shared->matrix[i][j] = new_temp;
 
             // Verificar si aún no se ha alcanzado el equilibrio
-            if (fabs(new_temp - data->shared->matrix[i][j]) < data->epsilon)
-            {
+            if (fabs(new_temp - data->shared->matrix[i][j]) < data->epsilon) {
                 data->shared->balance_point = true;
             }
-        
-            
         }
     }
 

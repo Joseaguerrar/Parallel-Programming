@@ -28,11 +28,14 @@ int main(int argc, char *argv[]) {
     if (argc >= 4) {
         num_threads = atoi(argv[3]);  // Convertir argumento a entero
         if (num_threads <= 0) {
-            fprintf(stderr, "Número de hilos inválido. Usando número de CPUs disponibles.\n");
-            num_threads = sysconf(_SC_NPROCESSORS_ONLN);  // Obtener núcleos de la máquina
+            fprintf(stderr,
+             "Número de hilos inválido. Usando número de CPUs disponibles.\n");
+            num_threads = sysconf(_SC_NPROCESSORS_ONLN);
+            // Obtener núcleos de la máquina
         }
     } else {
-        num_threads = sysconf(_SC_NPROCESSORS_ONLN);  // Obtener núcleos de la máquina si no se proporciona el argumento
+        num_threads = sysconf(_SC_NPROCESSORS_ONLN);
+        // Obtener núcleos de la máquina si no se proporciona el argumento
     }
 
     printf("Número de hilos a utilizar: %d\n", num_threads);
