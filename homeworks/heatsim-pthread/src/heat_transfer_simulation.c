@@ -13,6 +13,7 @@
  * @param variables Arreglo de estructuras `params_matrix` que contiene los parámetros de cada simulación.
  * @param lines Número de simulaciones a realizar.
  * @param jobName Nombre del archivo de trabajo.
+ * @param num_threads Cantidad de hilos para el plate
  */
 void read_bin_plate(const char* folder,
                     params_matrix* variables,
@@ -183,31 +184,52 @@ uint64_t heat_transfer_simulation(double** matrix,
     }
     return total_states_k;  // Devolver el número total de estados
 }
+/**
+ * @brief Función ejecutada por cada hilo para realizar la simulación de transferencia de calor en un rango de filas.
+ * 
+ * Esta función se encarga de calcular las nuevas temperaturas para las celdas asignadas a cada hilo
+ * y actualiza directamente la matriz original compartida. También comprueba si se ha alcanzado el 
+ * equilibrio térmico para las celdas procesadas por el hilo. Si se alcanza el equilibrio, se marca 
+ * el `balance_point` global como verdadero.
+ * 
+ * @param arg Puntero a la estructura `private_data` que contiene la información necesaria para que el hilo procese su tarea.
+ * 
+ * @return NULL Siempre retorna NULL después de finalizar su trabajo.
+ */
 void* heat_transfer_simulation_thread(void* arg) {
     private_data* data = (private_data*)arg;
-    // Antes de realizar los cambios comprobar que no se haya alcanzado
-    if ( data->shared->balance_point == true ) {
+    /**< Argumento que contiene la estructura con los datos privados del hilo. */
+
+    /* Antes de realizar los cambios,
+    comprobar si ya se ha alcanzado el equilibrio global*/
+    if (data->shared->balance_point == true) {
         return NULL;
+        /**< Si el equilibrio global ya se ha alcanzado, el hilo termina su ejecución. */
     }
+
     // Calcular las nuevas temperaturas para las celdas asignadas a este hilo
     for (uint64_t i = data->start_row; i < data->end_row; i++) {
         for (uint64_t j = 1; j < data->columns - 1; j++) {
-            data->states_k++;  // Incrementar el contador local de estados
+            data->states_k++;
+            /**< Incrementar el contador local de estados del hilo. */
+
+            // Calcular la nueva temperatura de la celda actual
             double new_temp = data->shared->matrix[i][j] +
                             data->alpha * data->delta_t / (data->h * data->h) *
                 (data->shared->matrix[i-1][j] + data->shared->matrix[i+1][j] +
-                data->shared->matrix[i][j-1] + data->shared->matrix[i][j+1] -
+                data->shared->matrix[i][j-1] + data->shared->matrix[i][j+1] - 
                                4 * data->shared->matrix[i][j]);
 
             // Actualizar directamente la matriz original (shared)
             data->shared->matrix[i][j] = new_temp;
 
-            // Verificar si aún no se ha alcanzado el equilibrio
+            // Verificar si se ha alcanzado el equilibrio para esta celda
             if (fabs(new_temp - data->shared->matrix[i][j]) < data->epsilon) {
                 data->shared->balance_point = true;
+                /**< Si el cambio es menor al umbral, se marca el equilibrio. */
             }
         }
     }
 
-    return NULL;
+    return NULL;  /**< El hilo termina su ejecución y retorna NULL. */
 }
