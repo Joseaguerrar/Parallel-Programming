@@ -69,10 +69,6 @@ uint64_t count_lines(const char* fileName);
 /**
  * @brief Lee el archivo binario correspondiente a cada lámina y ejecuta la simulación de transferencia de calor.
  * 
- * @param folder Carpeta donde se encuentran los archivos binarios.
- * @param variables Arreglo de estructuras `params_matrix` que contiene los parámetros de cada simulación.
- * @param lines Número de simulaciones a realizar.
- * @param jobName Nombre del archivo de trabajo.
  */
 void read_bin_plate(const char* folder,
                     params_matrix* variables_formula,
@@ -109,8 +105,6 @@ uint64_t heat_transfer_simulation(double** matrix,
  * Cada hilo procesa un subconjunto de filas de la matriz y actualiza el estado térmico
  * de esas celdas.
  * 
- * @param arg Argumentos pasados al hilo (estructura `private_data`).
- * 
  * @return NULL.
  */
 void* heat_transfer_simulation_thread(void* arg);
@@ -129,11 +123,7 @@ char* format_time(const time_t seconds, char* text, const size_t capacity);
 /**
  * @brief Genera el archivo de reporte (.tsv) con los resultados de la simulación.
  * 
- * @param folder Carpeta donde se guardará el archivo de reporte.
- * @param jobName Nombre del archivo de trabajo.
- * @param variables Arreglo de estructuras `params_matrix` que contiene los parámetros de la simulación.
  * @param state_k Arreglo que contiene los estados finales de cada simulación.
- * @param lines Número de líneas (simulaciones) en el archivo de trabajo.
  */
 void generate_report_file(const char* folder,
                         const char* jobName,
