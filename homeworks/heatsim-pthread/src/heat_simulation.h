@@ -6,6 +6,7 @@
 #include <stddef.h>
 #include <stdbool.h>
 #include <time.h>
+#include <pthread.h>
 
 /**
  * @brief Estructura para almacenar los parámetros de cada simulación.
@@ -18,9 +19,8 @@ typedef struct {
     double epsilon;       /**< Sensitividad del punto de equilibrio. */
 } params_matrix;
 typedef struct {
-    pthread_mutex_t mutex;    /**< Mutex para proteger el acceso a los datos compartidos. */
     bool balance_point;       /**< Indicador de equilibrio. */
-    uint64_t* states_k;       /**< Estados finales de cada simulación. */
+    double** matrix;          /**< Matriz compartida. */
 } shared_data;
 /**
  * @brief Estructura para pasar datos a cada hilo.
@@ -28,7 +28,6 @@ typedef struct {
 //Todo: revisar si es necesario todo esto
 typedef struct {
     double** matrix;
-    double** temp_matrix;
     uint64_t start_row;
     uint64_t end_row;
     uint64_t columns;
@@ -36,6 +35,7 @@ typedef struct {
     double alpha;
     double h;
     double epsilon;
+    uint64_t states_k;       /**< Estados finales de cada simulación. */
     shared_data* shared;
 } private_data;
 
