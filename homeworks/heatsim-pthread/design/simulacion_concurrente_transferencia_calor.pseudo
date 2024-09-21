@@ -1,0 +1,148 @@
+# Simulación Concurrente de Transferencia de Calor en una Lámina Rectangular
+
+subrutina principal(){
+    # Leer los datos de entrada
+    matriz <- leer entrada(archivo de trabajo);
+
+    # Inicializar variables
+    cambio_maximo <- e + 1  # Inicializar para asegurar la entrada al bucle
+    num_hilos <- obtener_num_hilos()  # Determinar número de hilos (núcleos de CPU)
+
+    # Crear estructura de datos compartidos
+    datos_compartidos <- crear_estructura_compartida(matriz, num_hilos);
+
+    # Crear hilos de trabajo
+    for i desde 0 hasta num_hilos-1 do{
+        crear hilo con funcion(hilo_simulacion, datos_compartidos);
+    } end for
+
+    # Esperar a que todos los hilos terminen
+    for i desde 0 hasta num_hilos-1 do{
+        unir hilo(i);
+    } end for
+
+    # Imprimir los resultados finales
+    imprimir resultado(matriz);
+
+    # Liberar espacio
+    liberar matriz
+}//end procedure
+
+
+subrutina hilo_simulacion(datos_compartidos){
+    # Inicializar variables del hilo
+    cambio_maximo_local <- 0;
+
+    while (cambio_maximo_global > e){
+        # Dividir el trabajo por filas entre los hilos
+        asignar_filas(datos_compartidos, hilo_id);
+
+        # Actualizar temperaturas en el subconjunto de la matriz
+        cambio_maximo_local <- actualizar_temperatura(datos_compartidos, hilo_id);
+
+        # Actualizar el cambio máximo global
+        bloquear(datos_compartidos.mutex);
+        if cambio_maximo_local > datos_compartidos.cambio_maximo_global do{
+            datos_compartidos.cambio_maximo_global <- cambio_maximo_local;
+        } end if
+        desbloquear(datos_compartidos.mutex);
+
+        # Sincronizar hilos antes de la siguiente iteración
+        barrera_sincronizacion(datos_compartidos.barrera);
+    } end while
+}//end procedure
+
+
+subrutina actualizar_temperatura(datos_compartidos, hilo_id){
+    # Crear una copia local de la matriz
+    matriz_temporal <- copiar matriz(datos_compartidos.matriz);
+
+    # Inicializar variable para cambio máximo local
+    cambio_maximo_local <- 0;
+
+    # Actualizar las temperaturas de las filas asignadas al hilo
+    for i desde fila_inicio hasta fila_fin do{
+        for j desde 1 hasta C-2 do{ # No se actualizan los bordes
+            # Fórmula para actualizar temperatura
+            T_k1 <- datos_compartidos.matriz[i][j] + (Δt * α / h^2) * 
+                    (datos_compartidos.matriz[i-1][j] + 
+                     datos_compartidos.matriz[i][j+1] + 
+                     datos_compartidos.matriz[i+1][j] + 
+                     datos_compartidos.matriz[i][j-1] - 
+                     4 * datos_compartidos.matriz[i][j]);
+            # Actualizar la matriz temporal
+            matriz_temporal[i][j] <- T_k1;
+
+            # Calcular el cambio local
+            cambio <- abs(T_k1 - datos_compartidos.matriz[i][j]);
+            if cambio > cambio_maximo_local do{
+                cambio_maximo_local <- cambio;
+            } end if
+        } end for
+    } end for
+
+    # Copiar los nuevos valores a la matriz compartida
+    copiar_matriz(matriz_temporal, datos_compartidos.matriz);
+
+    return cambio_maximo_local;
+}//end procedure
+
+
+subrutina asignar_filas(datos_compartidos, hilo_id){
+    # Dividir la matriz en subconjuntos de filas para cada hilo
+    filas_por_hilo <- (R-2) / num_hilos;
+    fila_inicio <- 1 + hilo_id * filas_por_hilo;
+    fila_fin <- (hilo_id == num_hilos-1) ? R-2 : fila_inicio + filas_por_hilo - 1;
+
+    # Asignar filas al hilo correspondiente
+    datos_compartidos.hilos[hilo_id].fila_inicio <- fila_inicio;
+    datos_compartidos.hilos[hilo_id].fila_fin <- fila_fin;
+}//end procedure
+
+
+subrutina crear_estructura_compartida(matriz, num_hilos){
+    datos_compartidos.matriz <- matriz;
+    datos_compartidos.cambio_maximo_global <- e + 1;  # Inicializar para asegurar la entrada al bucle
+    datos_compartidos.mutex <- inicializar_mutex();
+    datos_compartidos.barrera <- inicializar_barrera(num_hilos);
+    return datos_compartidos;
+}//end procedure
+
+
+subrutina leer entrada(archivo){
+    abrir archivo;
+    leer dimensiones de la matriz(R,C);  # R=rows, C=columns
+    asignar memoria para matriz;
+    for i desde 0 hasta R-1 do{
+        for j desde 0 hasta C-1 do{
+            leer Temperatura[i][j] desde archivo;
+        } end for
+    } end for
+    cerrar archivo;
+    retornar matriz;
+}//end procedure
+
+
+subrutina imprimir resultado(matriz){
+    abrir archivo de salida;
+    for i desde 0 hasta R-1 do{
+        for j desde 0 hasta C-1 do{
+            escribir T[i][j] en archivo de salida;
+        } end for
+    } end for
+    cerrar archivo de salida;
+}//end procedure
+
+
+subrutina copiar_matriz(origen, destino){
+    for i desde 0 hasta R-1 do{
+        for j desde 0 hasta C-1 do{
+            destino[i][j] <- origen[i][j];
+        } end for
+    } end for
+}//end procedure
+
+
+subrutina liberar_memoria(matriz){
+    liberar matriz;
+}//end procedure
