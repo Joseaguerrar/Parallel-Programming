@@ -51,3 +51,9 @@ Para ejecutar la simulación, use el siguiente comando:
 
 2. Aclarar que si no se especifica la cantidad de hilos el sistema usa los máximos posibles por default
 
+### Ideas de Mejoras para entrega 3:
+
+1. Tratar de distribuir más equitativamente o de una manera más óptima las filas por hilos
+2. Hacer copias de la matriz para evitar el uso de mutex
+3. Solo crear los hilos una vez por simulación, no cada vez que se evalúa la placa
+4. Sumar los estados después de que los hilos terminen toda la placa
