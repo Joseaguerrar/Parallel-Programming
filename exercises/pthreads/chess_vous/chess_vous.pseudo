@@ -1,0 +1,33 @@
+procedure main()
+  shared player1_ready := semaphore(0)   // Indica que el jugador 1 está listo
+  shared player2_ready := semaphore(0)   // Indica que el jugador 2 está listo
+  shared players_ready := semaphore(0)   // Indica que ambos jugadores están listos
+  shared clock_ready := semaphore(0)     // Indica que el reloj está listo
+
+  create_thread(player1)
+  create_thread(player2)
+  create_thread(referee)
+end procedure
+
+procedure player1()
+  enter_room()              // El jugador 1 ingresa
+  signal(player1_ready)      // Notifica que está listo
+  wait(clock_ready)          // Espera a que el reloj esté listo
+  play_chess()               // Inicia a jugar
+end procedure
+
+procedure player2()
+  enter_room()              // El jugador 2 ingresa
+  signal(player2_ready)      // Notifica que está listo
+  wait(clock_ready)          // Espera a que el reloj esté listo
+  play_chess()               // Inicia a jugar
+end procedure
+
+procedure referee()
+  enter_room()              // El árbitro ingresa
+  wait(player1_ready)        // Espera a que el jugador 1 esté listo
+  wait(player2_ready)        // Espera a que el jugador 2 esté listo
+  set_clock()               // Establece el reloj
+  signal(clock_ready)        // Notifica a los jugadores que el reloj está listo
+  signal(clock_ready)        // Se notifica a ambos jugadores
+end procedure
