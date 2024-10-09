@@ -32,8 +32,18 @@ void read_bin_plate(const char* folder,
             return;
         }
 
+        // Leer el número de filas y columnas
         fread(&rows, sizeof(uint64_t), 1, bin_file);
         fread(&columns, sizeof(uint64_t), 1, bin_file);
+
+        /* Imprimir los valores extraídos del archivo binario 
+        (cantidad de filas y columnas)
+        printf("Archivo binario: %s\n", variables[i].filename);
+        printf("Número de filas: %lu\n", rows);
+        printf("Número de columnas: %lu\n", columns);
+        printf("Delta_t: %lf, Alpha: %lf, h: %lf, Epsilon: %lf\n",
+               variables[i].delta_t, variables[i].alpha,
+               variables[i].h, variables[i].epsilon); */
 
         double **matrix = malloc(rows * sizeof(double*));
         if (matrix == NULL) {
@@ -57,7 +67,12 @@ void read_bin_plate(const char* folder,
             }
         }
 
-        // Obtener los parámetros para la simulación
+        // Leer los valores de la matriz desde el archivo binario
+        for (uint64_t i = 0; i < rows; i++) {
+            fread(matrix[i], sizeof(double), columns, bin_file);
+        }
+
+        // Simulación de transferencia de calor
         double delta_t = variables[i].delta_t;
         double alpha = variables[i].alpha;
         double h = variables[i].h;
@@ -106,12 +121,12 @@ void read_bin_plate(const char* folder,
  * @return Número de estados hasta alcanzar el punto de equilibrio.
  */
 uint64_t heat_transfer_simulation(double** matrix,
-                                    uint64_t rows,
-                                    uint64_t columns,
-                                    double delta_t,
-                                    double alpha,
-                                    double h,
-                                    double epsilon) {
+                                  uint64_t rows,
+                                  uint64_t columns,
+                                  double delta_t,
+                                  double alpha,
+                                  double h,
+                                  double epsilon) {
     bool balance_point = false;
     uint64_t states_k = 0;
 
@@ -125,13 +140,21 @@ uint64_t heat_transfer_simulation(double** matrix,
     while (!balance_point) {
         balance_point = true;
         states_k++;
+        // printf("Iteración %lu:\n", states_k); Print # de la iteración
         for (uint64_t i = 1; i < rows - 1; i++) {
             for (uint64_t j = 1; j < columns - 1; j++) {
                 double actual_temperature = matrix[i][j];
                 double new_temperature = actual_temperature +
                 ((delta_t * alpha) / (h * h)) * (matrix[i-1][j] + matrix[i+1][j]
                 + matrix[i][j-1] + matrix[i][j+1] - 4 * actual_temperature);
+
                 temp_matrix[i][j] = new_temperature;
+
+                // Imprimir las diferencias de temperatura para depuración
+                /*printf("Celda [%lu, %lu]: Temp actual = %lf, Temp nueva = %lf,
+                                                            Diferencia = %lf\n",
+                       //i, j, actual_temperature, new_temperature,
+                        fabs(new_temperature - actual_temperature));*/
                 if (fabs(new_temperature - actual_temperature) > epsilon) {
                     balance_point = false;
                 }
@@ -144,6 +167,7 @@ uint64_t heat_transfer_simulation(double** matrix,
                 matrix[i][j] = temp_matrix[i][j];
             }
         }
+        // printf("\n"); // Para separar las iteraciones visualmente
     }
 
     // Liberar la memoria de la matriz temporal
@@ -151,5 +175,6 @@ uint64_t heat_transfer_simulation(double** matrix,
         free(temp_matrix[i]);
     }
     free(temp_matrix);
+
     return states_k;
 }
