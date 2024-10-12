@@ -41,8 +41,12 @@ int main(int argc, char* argv[]) {
    */
   #pragma omp parallel for num_threads(thread_count) schedule(static)
   for (int iteration = 0; iteration < iteration_count; ++iteration) {
-    std::cout << "Thread " << omp_get_thread_num() << '/' << thread_count
-              << ": iteration " << iteration << '/' << iteration_count << std::endl;
+    #pragma omp critical
+    {
+      std::cout << "Thread " << omp_get_thread_num() << '/' << thread_count
+            << ": iteration " << iteration << '/' << iteration_count << std::endl;
+    }
+   
   }
 
   return 0;
