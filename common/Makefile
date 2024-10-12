@@ -106,6 +106,9 @@ endif
 # Targets
 .PHONY: all asan debug helgrind memcheck msan release tsan ubsan
 .PHONY: clean gitconfig help instdeps lint project run tc test update version
+.PHONY: all debug release openmp
+openmp: FLAGS += -O3 -DNDEBUG $(OPENMP) ## Build with OpenMP enabled
+openmp: $(TARGETS)
 all: debug test lint doc  ## Run targets: test lint doc
 debug: FLAGS += -g  ## Build an executable for debugging [default]
 release: FLAGS += -O3 -DNDEBUG  ## Build an optimized executable
@@ -123,15 +126,15 @@ asan msan tsan ubsan: debug
 
 # C/C++ Linker call
 $(EXEFILE): $(OBJECTS) | $$(@D)/.
-	$(LD) $(strip $(FLAGS)) $(INCLUDE) $^ -o $@ $(LIBS)
+	$(LD) $(strip $(FLAGS) $(OPENMP)) $(INCLUDE) $^ -o $@ $(LIBS)
 
 # Compile C source file
 $(BUILD)/%.o: $(SRC)/%.c | $$(@D)/.
-	$(CC) -c $(FLAGC) $(INCLUDE) -MMD $< -o $@
+	$(CC) -c $(FLAGC) $(OPENMP) $(INCLUDE) -MMD $< -o $@
 
 # Compile C++ source file
 $(BUILD)/%.o: $(SRC)/%.cpp | $$(@D)/.
-	$(XC) -c $(FLAGX) $(INCLUDE) -MMD $< -o $@
+	$(XC) -c $(FLAGX) $(OPENMP) $(INCLUDE) -MMD $< -o $@
 
 # Java Linker call. TODO(jhc): fallible main class detection
 %.jar: $(OBJECTJ) | $$(@D)/.	
