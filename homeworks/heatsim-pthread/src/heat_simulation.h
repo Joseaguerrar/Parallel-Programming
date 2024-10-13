@@ -22,24 +22,23 @@ typedef struct {
  * @brief Estructura compartida entre hilos para sincronización y datos comunes.
  */
 typedef struct {
-    bool balance_point; /**< Indica si se ha alcanzado el equilibrio térmico. */
-    double** matrix;  /**< Matriz compartida que representa la placa térmica. */
-    pthread_mutex_t mutex; /**< Mutex para el acceso a los datos compartidos. */
+    bool balance_point;    /**< Indica si se ha alcanzado el equilibrio térmico. */
+    double** global_matrix; /**< Matriz global que representa la placa térmica y es actualizada por los hilos. */
+    pthread_barrier_t barrier; /**< Barrera para sincronizar los hilos entre iteraciones. */
 } shared_data;
 /**
  * @brief Estructura para pasar datos a cada hilo de simulación.
  */
 typedef struct {
-    double** matrix;   /**< Matriz local para las celdas de la placa térmica. */
-    uint64_t start_row;      /**< Fila de inicio asignada al hilo. */
-    uint64_t end_row;        /**< Fila de fin asignada al hilo. */
+    double** local_matrix;   /**< Matriz local donde el hilo almacena temporalmente los resultados de sus cálculos. */
+    uint64_t start_row;      /**< Fila de inicio asignada al hilo para procesar. */
+    uint64_t end_row;        /**< Fila de fin asignada al hilo para procesar. */
     uint64_t columns;        /**< Número de columnas de la matriz. */
     double delta_t;          /**< Diferencial de tiempo. */
     double alpha;            /**< Difusividad térmica. */
     double h;                /**< Tamaño de las celdas. */
     double epsilon;          /**< Sensibilidad del punto de equilibrio. */
-    uint64_t states_k;       /**< Número de estados alcanzados por el hilo. */
-    shared_data* shared;/**< Puntero a los datos compartidos entre los hilos. */
+    shared_data* shared;     /**< Puntero a la estructura compartida para sincronización y acceso a la matriz global. */
 } private_data;
 
 /**
@@ -118,6 +117,34 @@ void* heat_transfer_simulation_thread(void* arg);
  * 
  * @return Un puntero al buffer `text` que contiene el tiempo formateado.
  */
+
+/**
+ * @brief Crea una matriz vacía de tamaño especificado.
+ * 
+ * @param rows Número de filas de la matriz.
+ * @param columns Número de columnas de la matriz.
+ * @return Puntero a la matriz creada. Retorna NULL si la asignación de memoria falla.
+ */
+double** create_empty_matrix(uint64_t rows, uint64_t columns);
+
+/**
+ * @brief Copia los datos de una matriz a otra.
+ * 
+ * @param dest_matrix Puntero a la matriz destino donde se copiarán los datos.
+ * @param src_matrix Puntero a la matriz fuente desde donde se copiarán los datos.
+ * @param rows Número de filas de ambas matrices.
+ * @param columns Número de columnas de ambas matrices.
+ */
+void copy_matrix(double** dest_matrix, double** src_matrix, uint64_t rows, uint64_t columns);
+
+/**
+ * @brief Libera la memoria asignada a una matriz.
+ * 
+ * @param matrix Puntero a la matriz cuya memoria se va a liberar.
+ * @param rows Número de filas de la matriz.
+ */
+void free_matrix(double** matrix, uint64_t rows);
+
 char* format_time(const time_t seconds, char* text, const size_t capacity);
 
 /**
@@ -138,6 +165,6 @@ void generate_bin_file(double** matrix,
                         uint64_t columns,
                         const char* folder,
                         const char* jobName,
-                        uint64_t state_k);
+                        uint64_t states_k);
 
 #endif  //  HEAT_SIMULATION_H
