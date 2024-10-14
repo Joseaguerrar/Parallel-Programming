@@ -34,10 +34,12 @@ typedef struct {
     uint64_t start_row;      /**< Fila de inicio asignada al hilo para procesar. */
     uint64_t end_row;        /**< Fila de fin asignada al hilo para procesar. */
     uint64_t columns;        /**< Número de columnas de la matriz. */
+    uint64_t rows;           /**< Número de filas de la matriz. */
     double delta_t;          /**< Diferencial de tiempo. */
     double alpha;            /**< Difusividad térmica. */
     double h;                /**< Tamaño de las celdas. */
     double epsilon;          /**< Sensibilidad del punto de equilibrio. */
+    int id;                  /**< ID del hilo para identificarlo en la salida de reporte. */
     shared_data* shared;     /**< Puntero a la estructura compartida para sincronización y acceso a la matriz global. */
 } private_data;
 
@@ -144,6 +146,15 @@ void copy_matrix(double** dest_matrix, double** src_matrix, uint64_t rows, uint6
  * @param rows Número de filas de la matriz.
  */
 void free_matrix(double** matrix, uint64_t rows);
+
+/**
+ * @brief Imprime el contenido de una matriz de tamaño dado.
+ * 
+ * @param matrix Matriz que se desea imprimir.
+ * @param rows Número de filas de la matriz.
+ * @param columns Número de columnas de la matriz.
+ */
+void print_matrix(double** matrix, uint64_t rows, uint64_t columns);
 
 char* format_time(const time_t seconds, char* text, const size_t capacity);
 
