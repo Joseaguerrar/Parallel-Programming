@@ -22,16 +22,17 @@ typedef struct {
  * @brief Estructura compartida entre hilos para sincronización y datos comunes.
  */
 typedef struct {
-    bool balance_point;    /**< Indica si se ha alcanzado el equilibrio térmico. */
-    double** global_matrix; /**< Matriz global que representa la placa térmica y es actualizada por los hilos. */
-    pthread_barrier_t barrier; /**< Barrera para sincronizar los hilos entre iteraciones. */
+    bool balance_point; /**< Indica si se ha alcanzado el equilibrio térmico. */
+    double** global_matrix; /**< Matriz global actualizada por los hilos. */
+    pthread_mutex_t matrix_mutex; /**< Bloqueo para sincronizar las matriz globales */
+    pthread_barrier_t barrier; /**< Barrera para sincronizar los hilos */
 } shared_data;
 /**
  * @brief Estructura para pasar datos a cada hilo de simulación.
  */
 typedef struct {
-    double** local_matrix;   /**< Matriz local donde el hilo almacena temporalmente los resultados de sus cálculos. */
-    uint64_t start_row;      /**< Fila de inicio asignada al hilo para procesar. */
+    double** local_matrix;   /**< Matriz local */
+    uint64_t start_row;   /**< Fila de inicio asignada al hilo para procesar. */
     uint64_t end_row;        /**< Fila de fin asignada al hilo para procesar. */
     uint64_t columns;        /**< Número de columnas de la matriz. */
     uint64_t rows;           /**< Número de filas de la matriz. */
@@ -39,8 +40,8 @@ typedef struct {
     double alpha;            /**< Difusividad térmica. */
     double h;                /**< Tamaño de las celdas. */
     double epsilon;          /**< Sensibilidad del punto de equilibrio. */
-    int id;                  /**< ID del hilo para identificarlo en la salida de reporte. */
-    shared_data* shared;     /**< Puntero a la estructura compartida para sincronización y acceso a la matriz global. */
+    int id;                  /**< ID del hilo para identificarlo */
+    shared_data* shared;     /**< Puntero a la estructura compartida */
 } private_data;
 
 /**
@@ -137,7 +138,10 @@ double** create_empty_matrix(uint64_t rows, uint64_t columns);
  * @param rows Número de filas de ambas matrices.
  * @param columns Número de columnas de ambas matrices.
  */
-void copy_matrix(double** dest_matrix, double** src_matrix, uint64_t rows, uint64_t columns);
+void copy_matrix(double** dest_matrix,
+                 double** src_matrix,
+                 uint64_t rows,
+                 uint64_t columns);
 
 /**
  * @brief Libera la memoria asignada a una matriz.
