@@ -190,8 +190,6 @@ uint64_t heat_transfer_simulation(double** matrix,
     while (!shared.balance_point) {
         // Inicializar la variable como true al inicio de la iteración
         shared.balance_point = true;
-        /*printf("Matriz global:\n");
-        print_matrix(shared.global_matrix, rows, columns);*/
         if (num_threads == 1) {
             // Solo hay un hilo, así que se hace de una vez
             // Actualizar la matriz local directamente
