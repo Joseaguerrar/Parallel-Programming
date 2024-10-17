@@ -45,7 +45,7 @@ En la versión serial original del programa de simulación de transferencia de c
 1. *Uso de condiciones de frontera estáticas*:  
    Las celdas de los bordes de la matriz se mantienen constantes a lo largo de la simulación. Esto es eficiente, ya que permite evitar cálculos adicionales en dichas celdas, lo cual optimiza el rendimiento en esa parte de la simulación.
 
-3. *Gestión sencilla de memoria*:  
+2. *Gestión sencilla de memoria*:  
    Aunque el uso de matrices temporales podría optimizarse, la asignación de memoria para las matrices se maneja de manera simple y directa, evitando fugas de memoria y problemas con la administración de recursos, lo cual ya es una ventaja en términos de eficiencia operativa.
 
 === Razones por las cuales algunos aspectos no ameritaban optimización
@@ -83,7 +83,42 @@ En resumen, la versión serial tenía aspectos que se podían optimizar, princip
 [[conc_iter00]]
 === Versión concurrente inicial (Tarea02)
 
-#Describa aquí qué aspectos tenía la versión concurrente (Tarea02) no eficientes que podrían o fueron opitimizados luego. También aspectos que usted considera eficientes, los cuales explicarían por qué no amerita una optimización.#
+En la versión concurrente inicial (Tarea02), se introdujeron múltiples hilos para mejorar el rendimiento de la simulación de transferencia de calor, pero a pesar de esto, hubo algunos aspectos que afectaron la eficiencia y que podrían optimizarse más adelante. También hubo algunos aspectos que fueron eficientes desde el principio y no necesitaron ajustes. A continuación, se detallan estos puntos:
+
+==== Aspectos no eficientes
+
+1. *Sincronización mediante barreras*:  
+   La implementación inicial utilizaba una barrera para sincronizar a los hilos después de cada iteración de la simulación. Aunque esto es necesario para evitar condiciones de carrera, las barreras introducen una sobrecarga significativa, ya que todos los hilos deben esperar a que los demás terminen su trabajo antes de proceder a la siguiente iteración. Esto es especialmente ineficiente si algunos hilos terminan antes que otros debido a una distribución desigual de la carga de trabajo.
+
+2. *Distribución de carga desigual*:  
+   La asignación de filas a los hilos se realizaba de forma equitativa, dividiendo las filas entre los hilos. Sin embargo, algunas filas pueden requerir más procesamiento que otras, lo que resulta en un desequilibrio en la carga de trabajo entre los hilos. Esto puede provocar que algunos hilos esperen a que otros terminen, reduciendo la eficiencia global.
+
+3. *Acceso repetido a la matriz global*:  
+   Aunque cada hilo mantenía una copia local de la matriz, el acceso y actualización de la matriz global seguía ocurriendo en cada iteración. Este acceso concurrente a la matriz global requiere el uso de mutexes, lo que puede generar una ralentización debido a la contención en los bloqueos.
+
+4. *Uso de memoria para matrices locales*:  
+   Al tener cada hilo su propia matriz local, la memoria requerida aumentó considerablemente, especialmente cuando se manejaban matrices grandes. Esto puede convertirse en un problema cuando el tamaño de la simulación escala, ya que la duplicación de datos implica un mayor uso de recursos.
+
+==== Aspectos eficientes
+
+1. *Paralelización básica*:  
+   La introducción de múltiples hilos en la simulación fue un paso importante hacia la mejora del rendimiento. Al paralelizar las operaciones sobre las celdas de la matriz, el tiempo total de simulación se redujo en comparación con la versión serial. Esta estrategia, en principio, es eficiente, ya que permite aprovechar mejor los recursos de hardware disponibles en sistemas con múltiples núcleos.
+
+2. *Independencia de las celdas internas*:  
+   Cada hilo solo actualizaba las celdas internas de su porción asignada de la matriz, lo que minimizaba las interacciones entre hilos. Esta independencia ayudó a reducir la posibilidad de condiciones de carrera, ya que cada hilo operaba en una sección separada de la matriz sin interferir con otras.
+
+3. *Uso de matrices locales*:  
+   Aunque el uso de matrices locales incrementó el uso de memoria, esta estrategia también fue eficiente en el sentido de que permitió a los hilos trabajar en paralelo sin conflictos directos sobre los datos. Esto redujo la necesidad de sincronización adicional durante la actualización de las celdas, mejorando el rendimiento en comparación con una única matriz compartida.
+
+4. *Control del punto de equilibrio*:  
+   La implementación del control del balance point permitió terminar la simulación una vez que se alcanzaba el equilibrio térmico. Esto evitó la ejecución de iteraciones innecesarias, lo que mejoró la eficiencia del algoritmo al finalizar más rápido cuando se cumplía la condición de parada.
+
+==== Razones por las cuales algunos aspectos no ameritaban optimización
+
+- *Simplificación del uso de mutexes*:  
+   Aunque el uso de mutexes introduce cierta sobrecarga, fue necesario para asegurar que las actualizaciones de la matriz global fueran consistentes. Si bien podría haber maneras más eficientes de gestionar la sincronización, el uso de mutexes en este contexto ya garantizaba la correcta actualización de los datos compartidos sin errores.
+
+En resumen, la versión concurrente inicial mejoró significativamente el rendimiento mediante la paralelización, pero la sobrecarga de sincronización y la desigual distribución de carga presentaban oportunidades para optimizaciones adicionales. Algunos aspectos, como el uso del método de diferencias finitas y las matrices locales, ya eran eficientes y no ameritaban una optimización significativa.
 
 [[conc_iter01]]
 === Iteración 1
