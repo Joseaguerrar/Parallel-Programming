@@ -24,7 +24,6 @@ typedef struct {
 typedef struct {
     bool balance_point; /**< Indica si se ha alcanzado el equilibrio térmico. */
     double** global_matrix; /**< Matriz global actualizada por los hilos. */
-    pthread_mutex_t matrix_mutex; /**< Bloqueo para sincronizar las matriz globales */
     pthread_barrier_t barrier; /**< Barrera para sincronizar los hilos */
 } shared_data;
 /**
