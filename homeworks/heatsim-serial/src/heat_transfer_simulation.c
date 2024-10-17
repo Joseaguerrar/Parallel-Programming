@@ -36,15 +36,6 @@ void read_bin_plate(const char* folder,
         fread(&rows, sizeof(uint64_t), 1, bin_file);
         fread(&columns, sizeof(uint64_t), 1, bin_file);
 
-        /* Imprimir los valores extraídos del archivo binario 
-        (cantidad de filas y columnas)
-        printf("Archivo binario: %s\n", variables[i].filename);
-        printf("Número de filas: %lu\n", rows);
-        printf("Número de columnas: %lu\n", columns);
-        printf("Delta_t: %lf, Alpha: %lf, h: %lf, Epsilon: %lf\n",
-               variables[i].delta_t, variables[i].alpha,
-               variables[i].h, variables[i].epsilon); */
-
         double **matrix = malloc(rows * sizeof(double*));
         if (matrix == NULL) {
             fprintf(stderr,
@@ -140,7 +131,6 @@ uint64_t heat_transfer_simulation(double** matrix,
     while (!balance_point) {
         balance_point = true;
         states_k++;
-        // printf("Iteración %lu:\n", states_k); Print # de la iteración
         for (uint64_t i = 1; i < rows - 1; i++) {
             for (uint64_t j = 1; j < columns - 1; j++) {
                 double actual_temperature = matrix[i][j];
@@ -150,11 +140,6 @@ uint64_t heat_transfer_simulation(double** matrix,
 
                 temp_matrix[i][j] = new_temperature;
 
-                // Imprimir las diferencias de temperatura para depuración
-                /*printf("Celda [%lu, %lu]: Temp actual = %lf, Temp nueva = %lf,
-                                                            Diferencia = %lf\n",
-                       //i, j, actual_temperature, new_temperature,
-                        fabs(new_temperature - actual_temperature));*/
                 if (fabs(new_temperature - actual_temperature) > epsilon) {
                     balance_point = false;
                 }
@@ -167,7 +152,6 @@ uint64_t heat_transfer_simulation(double** matrix,
                 matrix[i][j] = temp_matrix[i][j];
             }
         }
-        // printf("\n"); // Para separar las iteraciones visualmente
     }
 
     // Liberar la memoria de la matriz temporal
@@ -177,4 +161,51 @@ uint64_t heat_transfer_simulation(double** matrix,
     free(temp_matrix);
 
     return states_k;
+}
+
+// Función para crear una matriz vacía de tamaño rows x columns
+double** create_empty_matrix(uint64_t rows, uint64_t columns) {
+    double** matrix = (double**)malloc(rows * sizeof(double*));
+    if (matrix == NULL) {
+        return NULL;  // Manejar error de asignación
+    }
+    for (uint64_t i = 0; i < rows; i++) {
+        matrix[i] = (double*)malloc(columns * sizeof(double));
+        if (matrix[i] == NULL) {
+            for (uint64_t j = 0; j < i; j++) {
+                free(matrix[j]);
+            }
+            free(matrix);
+            return NULL;  // Manejar error de asignación
+        }
+    }
+    return matrix;
+}
+
+// Función para copiar una matriz a otra
+void copy_matrix(double** dest_matrix, double** src_matrix, uint64_t rows, uint64_t columns) {
+    for (uint64_t i = 0; i < rows; i++) {
+        for (uint64_t j = 0; j < columns; j++) {
+            dest_matrix[i][j] = src_matrix[i][j];
+        }
+    }
+}
+
+// Función para liberar la memoria de una matriz
+void free_matrix(double** matrix, uint64_t rows) {
+    for (uint64_t i = 0; i < rows; i++) {
+        free(matrix[i]);
+    }
+    free(matrix);
+}
+
+// Función para imprimir la matriz (para depuración)
+void print_matrix(double** matrix, uint64_t rows, uint64_t columns) {
+    for (uint64_t i = 0; i < rows; i++) {
+        for (uint64_t j = 0; j < columns; j++) {
+            printf("%8.4f ", matrix[i][j]);
+        }
+        printf("\n");
+    }
+    printf("\n");
 }
