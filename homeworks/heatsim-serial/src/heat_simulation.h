@@ -76,6 +76,10 @@ uint64_t heat_transfer_simulation(double** matrix,
                                     double h,
                                     double epsilon);
 
+double** create_empty_matrix(uint64_t rows, uint64_t columns);
+void copy_matrix(double** dest_matrix, double** src_matrix, uint64_t rows, uint64_t columns);
+void free_matrix(double** matrix, uint64_t rows);
+void print_matrix(double** matrix, uint64_t rows, uint64_t columns);
 /**
  * @brief Formatea un tiempo dado en segundos a un formato legible.
  * 
