@@ -24,7 +24,39 @@
 [[serial_iter00]]
 === Versión serial original (Tarea01)
 
-#Describa aquí qué aspectos tenía la versión serial no eficientes que podrían o fueron opitimizados luego. También aspectos que usted considera eficientes, los cuales explicarían por qué no amerita una optimización.#
+En la versión serial original del programa de simulación de transferencia de calor (Tarea01), había varios aspectos que afectaban la eficiencia y otros que, por su naturaleza, no requerían mayor optimización. A continuación, se describen ambos casos:
+
+=== Aspectos no eficientes
+
+1. *Uso de una matriz temporal*:  
+   En la simulación de transferencia de calor, se utilizaba una matriz temporal para calcular los nuevos valores de temperatura en cada iteración. Aunque es una implementación correcta, puede no ser eficiente en cuanto al uso de memoria, ya que se duplican los datos en matrices grandes. Además, esto conlleva la necesidad de copiar los valores de vuelta a la matriz original, lo cual agrega operaciones adicionales.
+
+2. *Actualización secuencial de la matriz*:  
+   La actualización de la matriz en cada iteración se realiza de manera secuencial, lo cual es inherentemente ineficiente en sistemas con múltiples núcleos. Cada celda de la matriz se calcula una tras otra, sin aprovechar las capacidades de procesamiento paralelo.
+
+3. *Verificación del punto de equilibrio en cada celda*:  
+   La condición de equilibrio se evalúa celda por celda en cada iteración. Esto implica una gran cantidad de cálculos y comparaciones que podrían optimizarse si se implementaran técnicas más eficientes de verificación, como una comparación de matrices por bloques en lugar de por celdas individuales.
+
+4. *Acceso repetitivo a datos de bordes*:  
+   Aunque la simulación sólo actualiza las celdas internas, las celdas de los bordes se leen repetidamente en cada iteración. Dado que estos bordes no cambian, almacenar y gestionar estos valores de forma separada podría reducir el número de accesos innecesarios a memoria.
+
+=== Aspectos eficientes
+
+1. *Uso de condiciones de frontera estáticas*:  
+   Las celdas de los bordes de la matriz se mantienen constantes a lo largo de la simulación. Esto es eficiente, ya que permite evitar cálculos adicionales en dichas celdas, lo cual optimiza el rendimiento en esa parte de la simulación.
+
+3. *Gestión sencilla de memoria*:  
+   Aunque el uso de matrices temporales podría optimizarse, la asignación de memoria para las matrices se maneja de manera simple y directa, evitando fugas de memoria y problemas con la administración de recursos, lo cual ya es una ventaja en términos de eficiencia operativa.
+
+=== Razones por las cuales algunos aspectos no ameritaban optimización
+
+- *Complejidad algorítmica*:  
+   El algoritmo utilizado en la versión serial es de naturaleza iterativa y, a menos que se modifique el enfoque general (como cambiar a métodos implícitos que requieren la solución de sistemas de ecuaciones), las optimizaciones más allá de paralelizar el proceso no son significativamente efectivas.
+
+- *Simulación correcta*:  
+   Aunque el código podría no ser el más rápido, la implementación ya logra simular correctamente el fenómeno físico con los parámetros dados, por lo que no era estrictamente necesario optimizarlo si la simulación no era extremadamente lenta o demandante en términos de tiempo de cómputo.
+
+En resumen, la versión serial tenía aspectos que se podían optimizar, principalmente en cuanto al uso de memoria y la paralelización de la simulación, mientras que otros aspectos, como el método utilizado y la gestión de las condiciones de frontera, ya eran eficientes y no requerían optimizaciones adicionales.
 
 
 [[serial_iter01]]
