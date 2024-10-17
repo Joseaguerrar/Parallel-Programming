@@ -118,49 +118,55 @@ uint64_t heat_transfer_simulation(double** matrix,
                                   double alpha,
                                   double h,
                                   double epsilon) {
+     // Crear dos matrices: matrix_a y matrix_b
+    double** matrix_a = create_empty_matrix(rows, columns);
+    double** matrix_b = create_empty_matrix(rows, columns);
+
+    // Copiar el estado inicial de matrix a matrix_a y matrix_b 
+    copy_matrix(matrix_a, matrix, rows, columns);
+    copy_matrix(matrix_b, matrix, rows, columns);  
+
     bool balance_point = false;
     uint64_t states_k = 0;
-
+    /*Primer cambio, esta es la sección de código que se optimiza
     // Crear una matriz temporal para guardar los cambios de las celdas internas
     double** temp_matrix = malloc(rows * sizeof(double*));
     for (uint64_t i = 0; i < rows; i++) {
         temp_matrix[i] = malloc(columns * sizeof(double));
     }
-
+    */
     // Simulación de transferencia de calor
     while (!balance_point) {
         balance_point = true;
-        states_k++;
+        // Alternar entre matrix_a y matrix_b
+        double** current_matrix = (states_k % 2 == 1) ? matrix_a : matrix_b;
+        double** next_matrix = (states_k % 2 == 1) ? matrix_b : matrix_a;
+
         for (uint64_t i = 1; i < rows - 1; i++) {
             for (uint64_t j = 1; j < columns - 1; j++) {
-                double actual_temperature = matrix[i][j];
-                double new_temperature = actual_temperature +
-                ((delta_t * alpha) / (h * h)) * (matrix[i-1][j] + matrix[i+1][j]
-                + matrix[i][j-1] + matrix[i][j+1] - 4 * actual_temperature);
+                double new_temperature = current_matrix[i][j] +
+                    ((delta_t * alpha) / (h * h)) * (current_matrix[i-1][j] + current_matrix[i+1][j] +
+                                                     current_matrix[i][j-1] + current_matrix[i][j+1] - 4 * current_matrix[i][j]);
 
-                temp_matrix[i][j] = new_temperature;
+                next_matrix[i][j] = new_temperature;
 
-                if (fabs(new_temperature - actual_temperature) > epsilon) {
+                // Verificar si el cambio es mayor que epsilon (condición de equilibrio)
+                if (fabs(new_temperature - current_matrix[i][j]) > epsilon) {
                     balance_point = false;
                 }
             }
         }
-
-        // Actualizar la matriz original con los valores de la matriz temporal
-        for (uint64_t i = 1; i < rows - 1; i++) {
-            for (uint64_t j = 1; j < columns - 1; j++) {
-                matrix[i][j] = temp_matrix[i][j];
-            }
-        }
+        states_k++;
     }
 
-    // Liberar la memoria de la matriz temporal
-    for (uint64_t i = 0; i < rows; i++) {
-        free(temp_matrix[i]);
-    }
-    free(temp_matrix);
+    // Copiar el estado final a la matriz original
+    copy_matrix(matrix, (states_k % 2 == 1) ? matrix_b : matrix_a, rows, columns);
 
-    return states_k;
+    // Liberar las matrices temporales
+    free_matrix(matrix_a, rows);
+    free_matrix(matrix_b, rows);
+
+    return states_k;  // Retornar el número de iteraciones hasta alcanzar el equilibrio
 }
 
 // Función para crear una matriz vacía de tamaño rows x columns
