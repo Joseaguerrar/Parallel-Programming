@@ -74,7 +74,8 @@ En esta iteración, gracias a kcachegrind, se pudo observar el consumo de memori
 
 La mejora consistió en modificar la función copy_matrix para copiar cada fila de la matriz de forma individual, asegurando que los datos se transfieren correctamente fila por fila, sin errores de memoria.
 
-homeworks/heatsim-optimized/design/cache.png
+image::cache.png[Consumo de memoria]
+
 
 Resultado:
 Esta corrección asegura que los datos de las matrices se copien de manera correcta y eficiente, respetando la estructura en bloques de memoria no contiguos de las matrices de punteros. No se observó un impacto directo en el tiempo de ejecución, pero esta mejora es esencial para la correcta funcionalidad y estabilidad del programa, especialmente en simulaciones con matrices grandes, evitando errores de segmentación o datos incorrectamente copiados.
