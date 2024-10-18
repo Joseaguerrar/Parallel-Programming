@@ -80,6 +80,8 @@ image::screen_shots/cache.png[Consumo de memoria]
 
 
 Resultado:
+Importante aclarar que esta captura fue ejecutando la versión paralela, sin embargo es útil para ver lo poco eficiente que era la función de copy matrix.
+
 Esta corrección asegura que los datos de las matrices se copien de manera correcta y eficiente, respetando la estructura en bloques de memoria no contiguos de las matrices de punteros. No se observó un impacto directo en el tiempo de ejecución, pero esta mejora es esencial para la correcta funcionalidad y estabilidad del programa, especialmente en simulaciones con matrices grandes, evitando errores de segmentación o datos incorrectamente copiados.
 
 [[concurrent_optimizations]]
