@@ -74,7 +74,7 @@ En esta iteración, gracias a kcachegrind, se pudo observar el consumo de memori
 
 La mejora consistió en modificar la función copy_matrix para copiar cada fila de la matriz de forma individual, asegurando que los datos se transfieren correctamente fila por fila, sin errores de memoria.
 
-image::cache.png[Consumo de memoria]
+image::design/cache.png[Consumo de memoria]
 
 
 Resultado:
