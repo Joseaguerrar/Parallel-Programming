@@ -16,8 +16,8 @@
 |===
 |Iter. |Etiqueta |Duración (s) |_Speedup_ |Descripción corta
 |0 |Serial0 | |1.00 |Versión serial inicial (Tarea01)
-|1 | | | |
-|2 | | | |
+|1 |Serial1 | |1.00 |Intercambio de matrices por punteros
+|2 |Serial2 | |1.00 |Copia de matrices con memcpy
 |===
 
 
@@ -59,11 +59,22 @@ En la versión serial original del programa de simulación de transferencia de c
 En resumen, la versión serial tenía aspectos que se podían optimizar, principalmente en cuanto al uso de memoria y la paralelización de la simulación, mientras que otros aspectos, como el método utilizado y la gestión de las condiciones de frontera, ya eran eficientes y no requerían optimizaciones adicionales.
 
 
-[[serial_iter01]]
-=== Iteración 1
+[[serial_iter01]] === Iteración 1: Optimización de Alternancia de Matrices
 
-#Para cada iteración del ciclo de optimización, cree una subsección como esta. Resuma en máximo un párrafo en qué consiste la optimización. Su objetivo es que quien lea este documento entienda claramente qué se intentó mejorar. Provea trocitos de código fuente o pseudocódigo que ayude a entender la optimización potencial. Indique si el intento logró incrementar el desempeño. En caso de no lograrlo, conjeture la causa. Eso ayudaría a ahorrar tiempo a otras personas que tengan la misma inquietud.#
+La primera optimización se centró en mejorar el uso de memoria y eliminar la sobrecarga de copiar la matriz completa al final de cada iteración. La versión original utilizaba una matriz temporal para almacenar los nuevos valores calculados durante cada iteración, lo que requería una copia completa de la matriz al finalizar cada iteración. Para evitar esta duplicación innecesaria de datos, se implementó una técnica de alternancia de matrices, en la que dos matrices (matrix_a y matrix_b) intercambian roles en cada iteración. La matriz actual se usa para calcular los nuevos valores, mientras que la otra almacena el nuevo estado. Este proceso elimina la necesidad de copiar grandes cantidades de datos y optimiza el uso de memoria.
 
+Código optimizado (pseudocódigo):
+
+// Alternar entre matrix_a y matrix_b
+if (iteration % 2 == 1) {
+    // Calcular los nuevos valores en matrix_b usando matrix_a
+    calcular_nuevos_valores(matrix_a, matrix_b);
+} else {
+    // Calcular los nuevos valores en matrix_a usando matrix_b
+    calcular_nuevos_valores(matrix_b, matrix_a);
+}
+Resultado:
+La optimización redujo la sobrecarga de copiar la matriz completa al final de cada iteración, pero mantuvo la capacidad de comparar el estado anterior con el nuevo en cada ciclo de la simulación. En cuanto al desempeño, esta mejora mostró un impacto positivo en simulaciones de gran tamaño, ya que eliminó una operación costosa sin afectar la precisión de los resultados.
 
 
 
