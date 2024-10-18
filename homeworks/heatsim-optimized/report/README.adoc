@@ -67,7 +67,15 @@ La primera optimización se centró en mejorar el uso de memoria y eliminar la s
 Resultado:
 La optimización redujo la sobrecarga de copiar la matriz completa al final de cada iteración, pero mantuvo la capacidad de comparar el estado anterior con el nuevo en cada ciclo de la simulación. En cuanto al desempeño, esta mejora mostró un impacto positivo en simulaciones de gran tamaño, ya que eliminó una operación costosa sin afectar la precisión de los resultados.
 
+[[serial_iter02]]
+=== Iteración 2: Corrección en el uso de memcpy en copy_matrix
 
+En esta iteración, la optimización se centró en corregir el uso incorrecto de memcpy en la función copy_matrix. En la versión anterior, se intentaba copiar el contenido de las matrices utilizando memcpy de una sola vez, asumiendo que las matrices estaban almacenadas en bloques contiguos de memoria. Sin embargo, las matrices se implementan como arreglos de punteros (double**), donde cada fila está asignada individualmente. Esta estructura requiere que cada fila se copie por separado.
+
+La mejora consistió en modificar la función copy_matrix para copiar cada fila de la matriz de forma individual, asegurando que los datos se transfieren correctamente fila por fila, sin errores de memoria.
+
+Resultado:
+Esta corrección asegura que los datos de las matrices se copien de manera correcta y eficiente, respetando la estructura en bloques de memoria no contiguos de las matrices de punteros. No se observó un impacto directo en el tiempo de ejecución, pero esta mejora es esencial para la correcta funcionalidad y estabilidad del programa, especialmente en simulaciones con matrices grandes, evitando errores de segmentación o datos incorrectamente copiados.
 
 [[concurrent_optimizations]]
 == Optimizaciones concurrentes
