@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <string.h>
 
 #include "heat_simulation.h"
 
@@ -128,13 +129,6 @@ uint64_t heat_transfer_simulation(double** matrix,
 
     bool balance_point = false;
     uint64_t states_k = 0;
-    /*Primer cambio, esta es la sección de código que se optimiza
-    // Crear una matriz temporal para guardar los cambios de las celdas internas
-    double** temp_matrix = malloc(rows * sizeof(double*));
-    for (uint64_t i = 0; i < rows; i++) {
-        temp_matrix[i] = malloc(columns * sizeof(double));
-    }
-    */
     // Simulación de transferencia de calor
     while (!balance_point) {
         balance_point = true;
@@ -191,9 +185,7 @@ double** create_empty_matrix(uint64_t rows, uint64_t columns) {
 // Función para copiar una matriz a otra
 void copy_matrix(double** dest_matrix, double** src_matrix, uint64_t rows, uint64_t columns) {
     for (uint64_t i = 0; i < rows; i++) {
-        for (uint64_t j = 0; j < columns; j++) {
-            dest_matrix[i][j] = src_matrix[i][j];
-        }
+        memcpy(dest_matrix[i], src_matrix[i], columns * sizeof(double));
     }
 }
 
