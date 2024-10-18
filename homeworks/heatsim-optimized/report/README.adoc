@@ -17,7 +17,7 @@
 |Iter. |Etiqueta |Duración (s) |_Speedup_ |Descripción corta
 |0 |Serial0 | |1.00 |Versión serial inicial (Tarea01)
 |1 |Serial1 | |1.00 |Intercambio de matrices por punteros
-|2 |Serial2 | |1.00 |Copia de matrices con memcpy
+|2 |Serial2 |7690.2787s|1.00 |Copia de matrices con memcpy
 |===
 
 
