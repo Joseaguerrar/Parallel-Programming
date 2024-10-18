@@ -5,3 +5,4 @@ doc
 callgrind.out.*
 run_test.sh
 *.log
+job020/
