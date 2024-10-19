@@ -319,14 +319,3 @@ void free_matrix(double** matrix, uint64_t rows) {
     }
     free(matrix);
 }
-
-void print_matrix(double** matrix, uint64_t rows, uint64_t columns) {
-    printf("Matriz de tamaño %lu x %lu:\n", rows, columns);
-    for (uint64_t i = 0; i < rows; i++) {
-        for (uint64_t j = 0; j < columns; j++) {
-            printf("%8.4f ", matrix[i][j]);  // Imprimir con 4 decimales
-        }
-        printf("\n");
-    }
-    printf("\n");
-}
