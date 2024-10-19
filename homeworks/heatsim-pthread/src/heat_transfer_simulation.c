@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <pthread.h>
+#include <string.h>
 
 #include "heat_simulation.h"
 
@@ -148,8 +149,7 @@ uint64_t heat_transfer_simulation(double** matrix,
     // Inicializar los datos compartidos
     shared.balance_point = false;
     shared.global_matrix = matrix;
-    // Inicializar la barrera
-    pthread_barrier_init(&shared.barrier, NULL, num_threads);
+
     // Cantidad total de estados
     uint64_t total_states_k = 0;
     uint64_t rows_per_thread = (rows - 2) / num_threads;
@@ -180,8 +180,6 @@ uint64_t heat_transfer_simulation(double** matrix,
     double** new_matrix = create_empty_matrix(rows, columns);
     copy_matrix(new_matrix, shared.global_matrix, rows, columns);
     if (new_matrix == NULL) {
-        // Manejar error de asignación
-        pthread_barrier_destroy(&shared.barrier);
         // Retornar inmediatamente si no se puede crear la matriz
         return total_states_k;
     }
@@ -221,9 +219,8 @@ uint64_t heat_transfer_simulation(double** matrix,
             // Copiar los cambios de las matrices locales de los hilos a la new_matrix
             for (int t = 0; t < num_threads; t++) {
                 for (uint64_t i = thread_args[t].start_row; i < thread_args[t].end_row; i++) {
-                    for (uint64_t j = 0; j < columns; j++) {
-                        new_matrix[i][j] = thread_args[t].local_matrix[i][j];
-                    }
+                    // Copiar toda la fila usando memcpy
+                    memcpy(new_matrix[i], thread_args[t].local_matrix[i], columns * sizeof(double));
                 }
             }
         }
@@ -232,7 +229,11 @@ uint64_t heat_transfer_simulation(double** matrix,
             for (uint64_t j = 1; j < columns - 1; j++) {
                 if (fabs(new_matrix[i][j] - shared.global_matrix[i][j]) >= epsilon) {
                     shared.balance_point = false;
+                    break; // Salir del bucle de columnas
                 }
+            }
+            if (!shared.balance_point) {
+                break; // Salir del bucle de filas si ya se detectó una diferencia
             }
         }
         // Copiar la nueva matriz a la matriz global para la siguiente iteración
@@ -243,9 +244,6 @@ uint64_t heat_transfer_simulation(double** matrix,
     for (int t = 0; t < num_threads; t++) {
         free_matrix(thread_args[t].local_matrix, rows);
     }
-    // Limpiar la barrera
-    pthread_barrier_destroy(&shared.barrier);
-
     // Liberar memoria de la matriz temporal
     free_matrix(new_matrix, rows);
 
@@ -283,7 +281,6 @@ void* heat_transfer_simulation_thread(void* arg) {
         }
     }
     // Espera a que todos los hilos terminen
-    //pthread_barrier_wait(&data->shared->barrier);
     return NULL;  /**< El hilo termina su ejecución y retorna NULL. */
 }
 
@@ -309,13 +306,9 @@ double** create_empty_matrix(uint64_t rows, uint64_t columns) {
 }
 
 // Función para copiar una matriz a otra
-void copy_matrix(double** dest_matrix, double** src_matrix,
-                                              uint64_t rows, uint64_t columns) {
+void copy_matrix(double** dest_matrix, double** src_matrix, uint64_t rows, uint64_t columns) {
     for (uint64_t i = 0; i < rows; i++) {
-        for (uint64_t j = 0; j < columns; j++) {
-            dest_matrix[i][j] = src_matrix[i][j];
-            // Copiar el valor de la fuente al destino
-        }
+        memcpy(dest_matrix[i], src_matrix[i], columns * sizeof(double));
     }
 }
 
