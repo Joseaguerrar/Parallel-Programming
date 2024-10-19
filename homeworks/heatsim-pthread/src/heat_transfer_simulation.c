@@ -150,6 +150,10 @@ uint64_t heat_transfer_simulation(double** matrix,
     shared.balance_point = false;
     shared.global_matrix = matrix;
 
+    // **Optimización**: Calcular el coeficiente constante y almacenarlo en shared_data
+    double coef_local = alpha * delta_t / (h * h);
+    shared.coef = &coef_local;  // Almacenar la dirección del coeficiente en el campo `coef` de `shared_data`
+
     // Cantidad total de estados
     uint64_t total_states_k = 0;
     uint64_t rows_per_thread = (rows - 2) / num_threads;
@@ -169,6 +173,7 @@ uint64_t heat_transfer_simulation(double** matrix,
         thread_args[t].epsilon = epsilon;
         thread_args[t].shared = &shared;
         thread_args[t].id = t;
+        thread_args[t].local_coef = &coef_local;
         // Asignar una nueva matriz local para cada hilo
         thread_args[t].local_matrix = create_empty_matrix(rows, columns);
         copy_matrix(thread_args[t].local_matrix, shared.global_matrix,
@@ -264,24 +269,23 @@ uint64_t heat_transfer_simulation(double** matrix,
  */
 void* heat_transfer_simulation_thread(void* arg) {
     private_data* data = (private_data*)arg;
-    /**< Argumento con la estructura con los datos privados del hilo. */
+    
+    // **Optimización**: Copiar el coeficiente localmente para evitar acceder a shared_data repetidamente
+    double coef_local = *(data->shared->coef);
 
     // Calcular las nuevas temperaturas para las celdas asignadas a este hilo
     for (uint64_t i = data->start_row; i < data->end_row; i++) {
         for (uint64_t j = 1; j < data->columns - 1; j++) {
-            // Calcular la nueva temperatura de la celda actual
+            // Usar el coeficiente local para optimizar el acceso
             double new_temp = data->local_matrix[i][j] +
-                            data->alpha * data->delta_t / (data->h * data->h) *
-                (data->local_matrix[i-1][j] + data->local_matrix[i+1][j] +
-                data->local_matrix[i][j-1] + data->local_matrix[i][j+1] -
-                               4 * data->local_matrix[i][j]);
+                              coef_local * (data->local_matrix[i-1][j] + data->local_matrix[i+1][j] +
+                                      data->local_matrix[i][j-1] + data->local_matrix[i][j+1] - 
+                                      4 * data->local_matrix[i][j]);
 
-            // Actualizar la matriz local (no la global) con el nuevo valor
             data->local_matrix[i][j] = new_temp;
         }
     }
-    // Espera a que todos los hilos terminen
-    return NULL;  /**< El hilo termina su ejecución y retorna NULL. */
+    return NULL;
 }
 
 
