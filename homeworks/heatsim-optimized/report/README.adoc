@@ -90,7 +90,7 @@ Esta corrección asegura que los datos de las matrices se copien de manera corre
 [%autowidth.stretch,options="header"]
 |===
 |Iter. |Etiqueta |Duración (s) |_Speedup_ |Eficiencia |Descripción corta
-|- |SerialI | |1.00 |1.00 |Versión serial final
+|0 |Serial2 |7690.2787s|1.00|1.00 |Versión serial final
 |1 |Conc0 | | | |Versión concurrente inicial (Tarea02)
 |2 | | | | |
 |3 | | | | |Versión concurrente final
@@ -135,7 +135,7 @@ En la versión concurrente inicial (Tarea02), se introdujeron múltiples hilos p
 - *Simplificación del uso de mutexes*:  
    Aunque el uso de mutexes introduce cierta sobrecarga, fue necesario para asegurar que las actualizaciones de la matriz global fueran consistentes. Si bien podría haber maneras más eficientes de gestionar la sincronización, el uso de mutexes en este contexto ya garantizaba la correcta actualización de los datos compartidos sin errores.
 
-En resumen, la versión concurrente inicial mejoró significativamente el rendimiento mediante la paralelización, pero la sobrecarga de sincronización y la desigual distribución de carga presentaban oportunidades para optimizaciones adicionales. Algunos aspectos, como el uso del método de diferencias finitas y las matrices locales, ya eran eficientes y no ameritaban una optimización significativa.
+En resumen, la versión concurrente inicial, en términos teóricos no a la hora de implementación, mejoró significativamente el rendimiento mediante la paralelización, pero la sobrecarga de sincronización y la desigual distribución de carga presentaban oportunidades para optimizaciones adicionales. Algunos aspectos, como el uso del método de diferencias finitas y las matrices locales, ya eran eficientes y no ameritaban una optimización significativa.
 
 [[conc_iter01]]
 === Iteración 1
