@@ -24,7 +24,7 @@ typedef struct {
 typedef struct {
     bool balance_point; /**< Indica si se ha alcanzado el equilibrio térmico. */
     double** global_matrix; /**< Matriz global actualizada por los hilos. */
-    pthread_barrier_t barrier; /**< Barrera para sincronizar los hilos */
+    const double* coef; /**< Coeficiente precalculado para la simulación. */
 } shared_data;
 /**
  * @brief Estructura para pasar datos a cada hilo de simulación.
@@ -40,6 +40,7 @@ typedef struct {
     double h;                /**< Tamaño de las celdas. */
     double epsilon;          /**< Sensibilidad del punto de equilibrio. */
     int id;                  /**< ID del hilo para identificarlo */
+    const double* local_coef;      /**< Puntero a la estructura compartida */
     shared_data* shared;     /**< Puntero a la estructura compartida */
 } private_data;
 
