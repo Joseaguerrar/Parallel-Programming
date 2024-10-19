@@ -91,8 +91,8 @@ Esta corrección asegura que los datos de las matrices se copien de manera corre
 |===
 |Iter. |Etiqueta |Duración (s) |_Speedup_ |Eficiencia |Descripción corta
 |0 |Serial2 |7690.2787s|1.00|1.00 |Versión serial final
-|1 |Conc0 | | | |Versión concurrente inicial (Tarea02)
-|2 | | | | |
+|1 |Conc0 |9635.4943s | | |Versión concurrente inicial (Tarea02)
+|2 |Conc1 |9334.2367s | | |Accerso a coef en memoria compartida
 |3 | | | | |Versión concurrente final
 |===
 
@@ -138,10 +138,15 @@ En la versión concurrente inicial (Tarea02), se introdujeron múltiples hilos p
 En resumen, la versión concurrente inicial, en términos teóricos no a la hora de implementación, mejoró significativamente el rendimiento mediante la paralelización, pero la sobrecarga de sincronización y la desigual distribución de carga presentaban oportunidades para optimizaciones adicionales. Algunos aspectos, como el uso del método de diferencias finitas y las matrices locales, ya eran eficientes y no ameritaban una optimización significativa.
 
 [[conc_iter01]]
-=== Iteración 1
+=== Iteración 1: Optimización del Acceso a `coef` en Memoria Compartida
 
-#Para cada iteración del ciclo de optimización, cree una subsección como esta. Resuma en máximo un párrafo en qué consiste la optimización. Su objetivo es que quien lea este documento entienda claramente qué se intentó mejorar. Provea trocitos de código fuente o pseudocódigo que ayude a entender la optimización potencial. Indique si el intento logró incrementar el desempeño. En caso de no lograrlo, conjeture la causa. Eso ayudaría a ahorrar tiempo a otras personas que tengan la misma inquietud.#
+En esta iteración, la optimización se centró en reducir la latencia provocada por el acceso repetido a la memoria compartida, específicamente al coeficiente precalculado `coef`. Inicialmente, el valor del coeficiente se almacenaba en la estructura `shared_data`, lo que obligaba a los hilos a acceder a él repetidamente a través de un puntero compartido, lo cual podía generar contención de caché. La mejora consistió en copiar el valor de `coef` a una variable local dentro de cada hilo al inicio de su ejecución, evitando así accesos redundantes a la memoria compartida. El objetivo fue mejorar la localización de los datos y reducir la carga sobre la memoria compartida.
 
+[source,c]
+----
+double coef_local = *(data->shared->coef);  // Copiar el coeficiente localmente
+----
+image::screen_shots/intento_coef.png[Pseudo de la mejora]
 
 [[optimization_comparison]]
 === Comparación de optimizaciones
