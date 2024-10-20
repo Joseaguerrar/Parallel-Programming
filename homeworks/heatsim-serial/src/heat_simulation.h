@@ -46,7 +46,7 @@ uint64_t count_lines(const char* fileName);
  * @brief Lee el archivo binario correspondiente a cada lámina y ejecuta la simulación de transferencia de calor.
  * 
  * @param folder Carpeta donde se encuentran los archivos binarios.
- * @param variables Arreglo de estructuras `params_matrix` que contiene los parámetros de cada simulación.
+ * @param variables_formula Arreglo de estructuras `params_matrix` que contiene los parámetros de cada simulación.
  * @param lines Número de simulaciones a realizar.
  * @param jobName Nombre del archivo de trabajo.
  */
@@ -76,10 +76,42 @@ uint64_t heat_transfer_simulation(double** matrix,
                                     double h,
                                     double epsilon);
 
+/**
+ * @brief Crea una matriz vacía de tamaño dado.
+ * 
+ * @param rows Número de filas de la matriz.
+ * @param columns Número de columnas de la matriz.
+ * @return Un puntero a la matriz vacía.
+ */
 double** create_empty_matrix(uint64_t rows, uint64_t columns);
+
+/**
+ * @brief Copia el contenido de una matriz a otra.
+ * 
+ * @param dest_matrix Matriz de destino.
+ * @param src_matrix Matriz fuente.
+ * @param rows Número de filas de la matriz.
+ * @param columns Número de columnas de la matriz.
+ */
 void copy_matrix(double** dest_matrix, double** src_matrix, uint64_t rows, uint64_t columns);
+
+/**
+ * @brief Libera la memoria de una matriz.
+ * 
+ * @param matrix Matriz a liberar.
+ * @param rows Número de filas de la matriz.
+ */
 void free_matrix(double** matrix, uint64_t rows);
+
+/**
+ * @brief Imprime el contenido de una matriz en la consola.
+ * 
+ * @param matrix Matriz a imprimir.
+ * @param rows Número de filas de la matriz.
+ * @param columns Número de columnas de la matriz.
+ */
 void print_matrix(double** matrix, uint64_t rows, uint64_t columns);
+
 /**
  * @brief Formatea un tiempo dado en segundos a un formato legible.
  * 
@@ -96,8 +128,8 @@ char* format_time(const time_t seconds, char* text, const size_t capacity);
  * 
  * @param folder Carpeta donde se guardará el archivo de reporte.
  * @param jobName Nombre del archivo de trabajo.
- * @param variables Arreglo de estructuras `params_matrix` que contiene los parámetros de la simulación.
- * @param states_k Arreglo que contiene los estados finales de cada simulación.
+ * @param variables_formula Arreglo de estructuras `params_matrix` que contiene los parámetros de la simulación.
+ * @param state_k Arreglo que contiene los estados finales de cada simulación.
  * @param lines Número de líneas (simulaciones) en el archivo de trabajo.
  */
 void generate_report_file(const char* folder,
@@ -108,6 +140,13 @@ void generate_report_file(const char* folder,
 
 /**
  * @brief Genera un archivo binario con el estado final de la matriz después de la simulación.
+ * 
+ * @param matrix Matriz final después de la simulación.
+ * @param rows Número de filas de la matriz.
+ * @param columns Número de columnas de la matriz.
+ * @param folder Carpeta donde se guardará el archivo.
+ * @param jobName Nombre del archivo de trabajo.
+ * @param state_k Número de estados alcanzados hasta el equilibrio.
  */
 void generate_bin_file(double** matrix,
                         uint64_t rows,

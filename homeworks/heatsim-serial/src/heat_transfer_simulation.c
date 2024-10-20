@@ -163,7 +163,13 @@ uint64_t heat_transfer_simulation(double** matrix,
     return states_k;  // Retornar el número de iteraciones hasta alcanzar el equilibrio
 }
 
-// Función para crear una matriz vacía de tamaño rows x columns
+/**
+ * @brief Crea una matriz vacía de tamaño rows x columns.
+ * 
+ * @param rows Número de filas de la matriz.
+ * @param columns Número de columnas de la matriz.
+ * @return Un puntero a la matriz vacía, o NULL si no se pudo asignar memoria.
+ */
 double** create_empty_matrix(uint64_t rows, uint64_t columns) {
     double** matrix = (double**)malloc(rows * sizeof(double*));
     if (matrix == NULL) {
@@ -182,14 +188,26 @@ double** create_empty_matrix(uint64_t rows, uint64_t columns) {
     return matrix;
 }
 
-// Función para copiar una matriz a otra
+/**
+ * @brief Copia el contenido de una matriz a otra.
+ * 
+ * @param dest_matrix Matriz de destino.
+ * @param src_matrix Matriz de origen.
+ * @param rows Número de filas de la matriz.
+ * @param columns Número de columnas de la matriz.
+ */
 void copy_matrix(double** dest_matrix, double** src_matrix, uint64_t rows, uint64_t columns) {
     for (uint64_t i = 0; i < rows; i++) {
         memcpy(dest_matrix[i], src_matrix[i], columns * sizeof(double));
     }
 }
 
-// Función para liberar la memoria de una matriz
+/**
+ * @brief Libera la memoria de una matriz.
+ * 
+ * @param matrix Matriz a liberar.
+ * @param rows Número de filas de la matriz.
+ */
 void free_matrix(double** matrix, uint64_t rows) {
     for (uint64_t i = 0; i < rows; i++) {
         free(matrix[i]);
@@ -197,7 +215,13 @@ void free_matrix(double** matrix, uint64_t rows) {
     free(matrix);
 }
 
-// Función para imprimir la matriz (para depuración)
+/**
+ * @brief Imprime el contenido de una matriz en la consola. Útil para depuración.
+ * 
+ * @param matrix Matriz a imprimir.
+ * @param rows Número de filas de la matriz.
+ * @param columns Número de columnas de la matriz.
+ */
 void print_matrix(double** matrix, uint64_t rows, uint64_t columns) {
     for (uint64_t i = 0; i < rows; i++) {
         for (uint64_t j = 0; j < columns; j++) {
