@@ -185,11 +185,11 @@ Por cuestiones de tiempo, no se realizaron optimizaciones como el mapeo por bloq
 [%autowidth.stretch,options="header"]
 |===
 |Versión |Descripción
-|SerialI |Versión serial inicial
-|SerialF |Versión serial final
-|ConcI |Versión concurrente inicial
-|Conc1 |Acceso a coef en memoria compartida
-|Conc2 |Mapeo dinámico
+|Serial-I |Versión serial inicial
+|Serial-F |Versión serial final
+|Conc-I |Versión concurrente inicial
+|Conc-1 |Acceso a coef en memoria compartida
+|Conc-2 |Mapeo dinámico
 |===
 
 
