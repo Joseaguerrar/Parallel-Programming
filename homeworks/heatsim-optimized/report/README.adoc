@@ -217,6 +217,7 @@ La versión concurrente inicial (Conc-I) tuvo una eficiencia muy baja de 0.0665,
 ==== Conclusión eficiencia
 En conclusión, la implementación concurrente no fue tan eficiente como se esperaba debido a estos problemas, pero con las optimizaciones sugeridas, se podría mejorar significativamente el uso de los hilos y el rendimiento general del programa.
 [[concurrency_comparison]]
+=== Comparación del grado de concurrencia
 [%autowidth.stretch,options="header"]
 |===
 |#|Etiqueta|Descripción|Hilos
@@ -228,5 +229,6 @@ En conclusión, la implementación concurrente no fue tan eficiente como se espe
 |6|4C|4 hilos por CPU|48
 |7|D|Tantos hilos como unidades de descomposición hay en la entrada (en caso de que sea menor que la cantidad máxima de hilos permitida por el sistema operativo)|30114
 |===
-=== Comparación del grado de concurrencia
+
+
 image::screen_shots/comparacion-conc.png[comparación-conc]
