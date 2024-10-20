@@ -176,7 +176,7 @@ A pesar de mejorar la distribución de la carga de trabajo entre los hilos, el c
 
 === Conclusión o Conjetura de las Optimizaciones
 
-En general, esta versión concurrente de la simulación de transferencia de calor muestra una buena gestión teórica de la paralelización y sincronización de los hilos, logrando un balance de carga dinámico y una correcta protección de datos compartidos. Sin embargo, durante la implementación, el rendimiento podría haberse visto afectado negativamente debido al false sharing, un problema común cuando múltiples hilos acceden a datos que residen en la misma línea de caché.
+En general, esta versión concurrente de la simulación de transferencia de calor muestra una buena gestión teórica de la paralelización y sincronización de los hilos, logrando un balance de carga dinámico y una correcta protección de datos compartidos. Sin embargo, durante la implementación, el rendimiento podría haberse visto afectado negativamente debido al false sharing, un problema común cuando múltiples hilos acceden a datos que residen en la misma línea de caché. Aclarar que en este caso se realizó la prueba con 12 hilos.
 
 Por cuestiones de tiempo, no se realizaron optimizaciones como el mapeo por bloque o el mapeo por bloque cíclico, que podrían haber mitigado este problema de false sharing. Se insta a llevar a cabo estas optimizaciones en futuras iteraciones para mejorar el rendimiento y aprovechar mejor los recursos de hardware disponibles.
 [[optimization_comparison]]
