@@ -25,6 +25,9 @@ typedef struct {
     bool balance_point; /**< Indica si se ha alcanzado el equilibrio térmico. */
     double** global_matrix; /**< Matriz global actualizada por los hilos. */
     const double* coef; /**< Coeficiente precalculado para la simulación. */
+    uint64_t fila_actual;  /**< Contador de la fila actual para mapeo dinámico. */
+    uint64_t total_states; /**< Contador de los estados totales alcanzados. */
+    pthread_mutex_t mutex; /**< Mutex para proteger el acceso a fila_actual y total_states. */
 } shared_data;
 /**
  * @brief Estructura para pasar datos a cada hilo de simulación.
