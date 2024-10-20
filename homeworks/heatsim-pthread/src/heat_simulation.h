@@ -18,30 +18,38 @@ typedef struct {
     double h;             /**< Tamaño de las celdas. */
     double epsilon;       /**< Sensitividad del punto de equilibrio. */
 } params_matrix;
+
 /**
  * @brief Estructura compartida entre hilos para sincronización y datos comunes.
+ * 
+ * @details Esta estructura es utilizada para almacenar la matriz global que los hilos modificarán.
+ * El campo `balance_point` indica si la simulación ha alcanzado el punto de equilibrio.
  */
 typedef struct {
     bool balance_point; /**< Indica si se ha alcanzado el equilibrio térmico. */
     double** global_matrix; /**< Matriz global actualizada por los hilos. */
     const double* coef; /**< Coeficiente precalculado para la simulación. */
 } shared_data;
+
 /**
  * @brief Estructura para pasar datos a cada hilo de simulación.
+ * 
+ * @details Contiene la matriz local y las filas asignadas a cada hilo. Los hilos usarán estos
+ * datos para realizar cálculos locales en la simulación de transferencia de calor.
  */
 typedef struct {
-    double** local_matrix;   /**< Matriz local */
-    uint64_t start_row;   /**< Fila de inicio asignada al hilo para procesar. */
-    uint64_t end_row;        /**< Fila de fin asignada al hilo para procesar. */
+    double** local_matrix;   /**< Matriz local procesada por el hilo. */
+    uint64_t start_row;      /**< Fila de inicio asignada al hilo. */
+    uint64_t end_row;        /**< Fila de fin asignada al hilo. */
     uint64_t columns;        /**< Número de columnas de la matriz. */
     uint64_t rows;           /**< Número de filas de la matriz. */
     double delta_t;          /**< Diferencial de tiempo. */
     double alpha;            /**< Difusividad térmica. */
     double h;                /**< Tamaño de las celdas. */
-    double epsilon;          /**< Sensibilidad del punto de equilibrio. */
-    int id;                  /**< ID del hilo para identificarlo */
-    const double* local_coef;      /**< Puntero a la estructura compartida */
-    shared_data* shared;     /**< Puntero a la estructura compartida */
+    double epsilon;          /**< Sensitividad del punto de equilibrio. */
+    int id;                  /**< ID del hilo para identificarlo. */
+    const double* local_coef; /**< Coeficiente precalculado utilizado en la simulación. */
+    shared_data* shared;     /**< Estructura compartida entre los hilos. */
 } private_data;
 
 /**
@@ -50,7 +58,6 @@ typedef struct {
  * @param jobName Nombre del archivo de trabajo.
  * @param folder Carpeta donde se encuentra el archivo de trabajo.
  * @param lines Puntero a una variable donde se almacenará la cantidad de líneas en el archivo.
- * 
  * @return Un puntero a un arreglo de estructuras `params_matrix` que contiene los parámetros de simulación para cada placa.
  * @return NULL si hay un error al leer el archivo o al asignar memoria.
  */
@@ -62,7 +69,6 @@ params_matrix* read_job_txt(const char* jobName,
  * @brief Cuenta el número de líneas en un archivo de texto.
  * 
  * @param fileName Nombre del archivo a leer.
- * 
  * @return El número de líneas en el archivo.
  * @return 0 si no se pudo abrir el archivo.
  */
@@ -71,6 +77,11 @@ uint64_t count_lines(const char* fileName);
 /**
  * @brief Lee el archivo binario correspondiente a cada lámina y ejecuta la simulación de transferencia de calor.
  * 
+ * @param folder Carpeta donde se encuentran los archivos binarios.
+ * @param variables_formula Arreglo de estructuras `params_matrix` que contiene los parámetros de cada simulación.
+ * @param lines Número de simulaciones a realizar.
+ * @param jobName Nombre del archivo de trabajo.
+ * @param num_threads Número de hilos a utilizar en la simulación.
  */
 void read_bin_plate(const char* folder,
                     params_matrix* variables_formula,
@@ -88,8 +99,7 @@ void read_bin_plate(const char* folder,
  * @param alpha Difusividad térmica.
  * @param h Tamaño de las celdas.
  * @param epsilon Sensitividad del punto de equilibrio.
- * @param num_threads Cantidad de hilos 
- * 
+ * @param num_threads Número de hilos a utilizar.
  * @return Número de estados hasta alcanzar el punto de equilibrio.
  */
 uint64_t heat_transfer_simulation(double** matrix,
@@ -104,22 +114,10 @@ uint64_t heat_transfer_simulation(double** matrix,
 /**
  * @brief Función ejecutada por cada hilo durante la simulación de transferencia de calor.
  * 
- * Cada hilo procesa un subconjunto de filas de la matriz y actualiza el estado térmico
- * de esas celdas.
- * 
+ * @param arg Puntero a los datos privados (`private_data`) del hilo.
  * @return NULL.
  */
 void* heat_transfer_simulation_thread(void* arg);
-
-/**
- * @brief Formatea un tiempo dado en segundos a un formato legible.
- * 
- * @param seconds Tiempo en segundos a formatear.
- * @param text Buffer donde se almacenará el tiempo formateado.
- * @param capacity Capacidad del buffer `text`.
- * 
- * @return Un puntero al buffer `text` que contiene el tiempo formateado.
- */
 
 /**
  * @brief Crea una matriz vacía de tamaño especificado.
@@ -160,11 +158,24 @@ void free_matrix(double** matrix, uint64_t rows);
  */
 void print_matrix(double** matrix, uint64_t rows, uint64_t columns);
 
+/**
+ * @brief Formatea un tiempo dado en segundos a un formato legible.
+ * 
+ * @param seconds Tiempo en segundos a formatear.
+ * @param text Buffer donde se almacenará el tiempo formateado.
+ * @param capacity Capacidad del buffer `text`.
+ * @return Un puntero al buffer `text` que contiene el tiempo formateado.
+ */
 char* format_time(const time_t seconds, char* text, const size_t capacity);
 
 /**
  * @brief Genera el archivo de reporte (.tsv) con los resultados de la simulación.
  * 
+ * @param folder Carpeta donde se guardará el archivo de reporte.
+ * @param jobName Nombre del archivo de trabajo.
+ * @param variables_formula Arreglo de estructuras `params_matrix` que contiene los parámetros de la simulación.
+ * @param states_k Arreglo que contiene el número de iteraciones para alcanzar el equilibrio en cada simulación.
+ * @param lines Número de simulaciones realizadas.
  */
 void generate_report_file(const char* folder,
                         const char* jobName,
@@ -174,6 +185,13 @@ void generate_report_file(const char* folder,
 
 /**
  * @brief Genera un archivo binario con el estado final de la matriz después de la simulación.
+ * 
+ * @param matrix Matriz con el estado final de la simulación.
+ * @param rows Número de filas de la matriz.
+ * @param columns Número de columnas de la matriz.
+ * @param folder Carpeta donde se guardará el archivo binario.
+ * @param jobName Nombre del archivo de trabajo.
+ * @param states_k Número de iteraciones realizadas hasta alcanzar el equilibrio.
  */
 void generate_bin_file(double** matrix,
                         uint64_t rows,
@@ -182,4 +200,4 @@ void generate_bin_file(double** matrix,
                         const char* jobName,
                         uint64_t states_k);
 
-#endif  //  HEAT_SIMULATION_H
+#endif  // HEAT_SIMULATION_H

@@ -11,11 +11,15 @@
 /**
  * @brief Lee el archivo binario correspondiente a cada lámina y ejecuta la simulación de transferencia de calor.
  * 
+ * Esta función abre un archivo binario que contiene los datos iniciales de una lámina, ejecuta la simulación 
+ * de transferencia de calor y genera el resultado final en un nuevo archivo binario. Al finalizar todas las 
+ * simulaciones, se genera un reporte con los resultados de todas las láminas.
+ * 
  * @param folder Carpeta donde se encuentran los archivos binarios.
  * @param variables Arreglo de estructuras params_matrix que contiene los parámetros de cada simulación.
  * @param lines Número de simulaciones a realizar.
  * @param jobName Nombre del archivo de trabajo.
- * @param num_threads Cantidad de hilos para el plate
+ * @param num_threads Cantidad de hilos para la simulación.
  */
 void read_bin_plate(const char* folder,
                     params_matrix* variables,
@@ -120,6 +124,10 @@ void read_bin_plate(const char* folder,
 /**
  * @brief Realiza la simulación de transferencia de calor en una matriz.
  * 
+ * Esta función toma como entrada una matriz que representa una lámina, así como otros parámetros físicos y 
+ * de simulación, y ejecuta la transferencia de calor hasta que se alcanza el equilibrio térmico. 
+ * Utiliza múltiples hilos para dividir el trabajo en filas de la matriz.
+ * 
  * @param matrix Matriz de la lámina con los datos iniciales.
  * @param rows Número de filas de la matriz.
  * @param columns Número de columnas de la matriz.
@@ -127,7 +135,7 @@ void read_bin_plate(const char* folder,
  * @param alpha Difusividad térmica.
  * @param h Tamaño de las celdas.
  * @param epsilon Sensitividad del punto de equilibrio.
- * @param num_threads Cantidad de hilos
+ * @param num_threads Cantidad de hilos de ejecución.
  * 
  * @return Número de estados hasta alcanzar el punto de equilibrio.
  */
@@ -288,8 +296,16 @@ void* heat_transfer_simulation_thread(void* arg) {
     return NULL;
 }
 
-
-// Función para crear una matriz vacía de tamaño rows x columns
+/**
+ * @brief Crea una matriz vacía de tamaño especificado.
+ * 
+ * Asigna memoria para una matriz bidimensional con el número de filas y columnas dado.
+ * 
+ * @param rows Número de filas de la matriz.
+ * @param columns Número de columnas de la matriz.
+ * 
+ * @return Puntero a la matriz creada o NULL si no se pudo asignar memoria.
+ */
 double** create_empty_matrix(uint64_t rows, uint64_t columns) {
     double** matrix = (double**)malloc(rows * sizeof(double*));
     if (matrix == NULL) {
@@ -309,14 +325,30 @@ double** create_empty_matrix(uint64_t rows, uint64_t columns) {
     return matrix;
 }
 
-// Función para copiar una matriz a otra
+/**
+ * @brief Copia una matriz en otra.
+ * 
+ * Esta función copia los datos de una matriz fuente a una matriz destino.
+ * 
+ * @param dest_matrix Matriz de destino.
+ * @param src_matrix Matriz fuente.
+ * @param rows Número de filas de la matriz.
+ * @param columns Número de columnas de la matriz.
+ */
 void copy_matrix(double** dest_matrix, double** src_matrix, uint64_t rows, uint64_t columns) {
     for (uint64_t i = 0; i < rows; i++) {
         memcpy(dest_matrix[i], src_matrix[i], columns * sizeof(double));
     }
 }
 
-// Función para liberar la memoria de una matriz
+/**
+ * @brief Libera la memoria utilizada por una matriz.
+ * 
+ * Esta función libera la memoria asignada dinámicamente para una matriz bidimensional.
+ * 
+ * @param matrix Matriz a liberar.
+ * @param rows Número de filas de la matriz.
+ */
 void free_matrix(double** matrix, uint64_t rows) {
     for (uint64_t i = 0; i < rows; i++) {
         free(matrix[i]);
