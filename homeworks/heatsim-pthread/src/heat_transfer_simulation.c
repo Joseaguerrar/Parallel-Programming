@@ -158,9 +158,10 @@ uint64_t heat_transfer_simulation(double** matrix,
     shared.balance_point = false;
     shared.global_matrix = matrix;
 
-    // **Optimización**: Calcular el coeficiente constante y almacenarlo en shared_data
+    /* **Optimización**: Calcular el coeficiente constante
+    y almacenarlo en shared_data*/
     double coef_local = alpha * delta_t / (h * h);
-    shared.coef = &coef_local;  // Almacenar la dirección del coeficiente en el campo `coef` de `shared_data`
+    shared.coef = &coef_local;
 
     // Cantidad total de estados
     uint64_t total_states_k = 0;
@@ -204,7 +205,8 @@ uint64_t heat_transfer_simulation(double** matrix,
         if (num_threads == 1) {
             // Solo hay un hilo, así que se hace de una vez
             // Actualizar la matriz local directamente
-            copy_matrix(thread_args[0].local_matrix, shared.global_matrix, rows, columns);
+            copy_matrix(thread_args[0].local_matrix,
+                                           shared.global_matrix, rows, columns);
 
             // Ejecutar la simulación de transferencia de calor directamente
             heat_transfer_simulation_thread(&thread_args[0]);
@@ -216,12 +218,14 @@ uint64_t heat_transfer_simulation(double** matrix,
 
             // Actualizar la matriz local para cada hilo
             for (int t = 0; t < num_threads; t++) {
-                copy_matrix(thread_args[t].local_matrix, shared.global_matrix, rows, columns);
+                copy_matrix(thread_args[t].local_matrix,
+                                           shared.global_matrix, rows, columns);
             }
 
             // Crear los hilos para procesar las filas
             for (int t = 0; t < num_threads; t++) {
-                pthread_create(&threads[t], NULL, heat_transfer_simulation_thread, &thread_args[t]);
+                pthread_create(&threads[t], NULL,
+                              heat_transfer_simulation_thread, &thread_args[t]);
             }
 
             // Esperar a que todos los hilos terminen
@@ -229,24 +233,27 @@ uint64_t heat_transfer_simulation(double** matrix,
                 pthread_join(threads[t], NULL);
             }
 
-            // Copiar los cambios de las matrices locales de los hilos a la new_matrix
+            // Copiar matrices locales de los hilos a la new_matrix
             for (int t = 0; t < num_threads; t++) {
-                for (uint64_t i = thread_args[t].start_row; i < thread_args[t].end_row; i++) {
+                for (uint64_t i = thread_args[t].start_row; i <
+                                                  thread_args[t].end_row; i++) {
                     // Copiar toda la fila usando memcpy
-                    memcpy(new_matrix[i], thread_args[t].local_matrix[i], columns * sizeof(double));
+                    memcpy(new_matrix[i], thread_args[t].local_matrix[i],
+                                                      columns * sizeof(double));
                 }
             }
         }
         // Verificar el balance point
         for (uint64_t i = 1; i < rows - 1; i++) {
             for (uint64_t j = 1; j < columns - 1; j++) {
-                if (fabs(new_matrix[i][j] - shared.global_matrix[i][j]) >= epsilon) {
+                if (fabs(new_matrix[i][j] - shared.global_matrix[i][j]) >=
+                                                                      epsilon) {
                     shared.balance_point = false;
-                    break; // Salir del bucle de columnas
+                    break;  // Salir del bucle de columnas
                 }
             }
             if (!shared.balance_point) {
-                break; // Salir del bucle de filas si ya se detectó una diferencia
+                break;  // Salir del bucle de filas si detectó una diferencia
             }
         }
         // Copiar la nueva matriz a la matriz global para la siguiente iteración
@@ -277,8 +284,9 @@ uint64_t heat_transfer_simulation(double** matrix,
  */
 void* heat_transfer_simulation_thread(void* arg) {
     private_data* data = (private_data*)arg;
-    
-    // **Optimización**: Copiar el coeficiente localmente para evitar acceder a shared_data repetidamente
+
+    /* **Optimización**: Copiar el coeficiente localmente
+    para evitar acceder a shared_data repetidamente*/
     double coef_local = *(data->shared->coef);
 
     // Calcular las nuevas temperaturas para las celdas asignadas a este hilo
@@ -286,8 +294,8 @@ void* heat_transfer_simulation_thread(void* arg) {
         for (uint64_t j = 1; j < data->columns - 1; j++) {
             // Usar el coeficiente local para optimizar el acceso
             double new_temp = data->local_matrix[i][j] +
-                              coef_local * (data->local_matrix[i-1][j] + data->local_matrix[i+1][j] +
-                                      data->local_matrix[i][j-1] + data->local_matrix[i][j+1] - 
+         coef_local * (data->local_matrix[i-1][j] + data->local_matrix[i+1][j] +
+                       data->local_matrix[i][j-1] + data->local_matrix[i][j+1] -
                                       4 * data->local_matrix[i][j]);
 
             data->local_matrix[i][j] = new_temp;
@@ -335,7 +343,8 @@ double** create_empty_matrix(uint64_t rows, uint64_t columns) {
  * @param rows Número de filas de la matriz.
  * @param columns Número de columnas de la matriz.
  */
-void copy_matrix(double** dest_matrix, double** src_matrix, uint64_t rows, uint64_t columns) {
+void copy_matrix(double** dest_matrix, double** src_matrix, uint64_t rows,
+                                                             uint64_t columns) {
     for (uint64_t i = 0; i < rows; i++) {
         memcpy(dest_matrix[i], src_matrix[i], columns * sizeof(double));
     }

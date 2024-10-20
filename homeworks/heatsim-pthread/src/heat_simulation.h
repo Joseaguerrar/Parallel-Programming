@@ -48,7 +48,7 @@ typedef struct {
     double h;                /**< Tamaño de las celdas. */
     double epsilon;          /**< Sensitividad del punto de equilibrio. */
     int id;                  /**< ID del hilo para identificarlo. */
-    const double* local_coef; /**< Coeficiente precalculado utilizado en la simulación. */
+    const double* local_coef; /**< Coeficiente precalculado */
     shared_data* shared;     /**< Estructura compartida entre los hilos. */
 } private_data;
 
