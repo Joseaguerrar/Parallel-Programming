@@ -219,4 +219,14 @@ En conclusión, la implementación concurrente no fue tan eficiente como se espe
 [[concurrency_comparison]]
 === Comparación del grado de concurrencia
 
-(pendiente)
+[%autowidth.stretch,options="header"]
+|===
+|# |Etiqueta |Descripción |Hilos
+|1 |S |Versión serial final |1
+|2 |1 |Un solo hilo |1
+|3 |hC |Tantos hilos como la mitad de CPUs hay en la computadora que ejecuta el programa |6
+|4 |1C |Tantos hilos como CPUs hay en la computadora que ejecuta el programa |12
+|5 |2C | |Dos hilos por cada CPU que hay en la computadora que ejecuta el programa |24
+|6 |4C | |Cuatro hilos por cada CPU que hay en la computadora que ejecuta el programa |48
+|7 |D | |Tantos hilos como unidades de descomposición hay en la entrada|30114
+|===
