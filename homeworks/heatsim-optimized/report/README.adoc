@@ -197,16 +197,19 @@ En este proyecto, el objetivo fue optimizar un software de simulación de transf
 
 ==== Conclusión-Desempeño
 Aunque teóricamente la paralelización debería haber acelerado el programa, el problema de false sharing introdujo un cuello de botella importante. Al intentar distribuir la carga entre múltiples hilos, muchos de ellos terminaron accediendo a datos que compartían la misma línea de caché, lo que provocó una contención en la caché que ralentizó la ejecución. Como resultado, las versiones concurrentes terminaron siendo más lentas que la versión serial optimizada. Por cuestiones de tiempo, no se implementaron técnicas de mitigación como el mapeo por bloque o el padding, pero sería crucial implementarlas en el futuro para mejorar el rendimiento de la versión concurrente.
+
 ==== Comparación de eficiencia
+
 image::screen_shots/comparacion-eficiencia.png[comparación-eficiencia]
+
 El gráfico muestra la comparación entre el speedup y la eficiencia de diferentes versiones de la simulación de transferencia de calor, desde la versión serial hasta las versiones concurrentes. Podemos observar que, mientras la versión serial (Serial-F) fue la más eficiente, con una eficiencia de 1 (100%), las versiones concurrentes tuvieron una caída dramática en eficiencia. Esto se debe principalmente a un mal manejo de los hilos, donde problemas como la sincronización ineficiente y el false sharing afectaron significativamente el rendimiento.
 
 La versión concurrente inicial (Conc-I) tuvo una eficiencia muy baja de 0.0665, indicando que los hilos no estaban siendo utilizados de manera efectiva. A pesar de que la versión coef-access mejoró ligeramente la eficiencia a 0.0687 y la versión de mapeo dinámico (Dynamic-Mapping) mantuvo una eficiencia de 0.0645, sigue siendo una pérdida importante comparada con la versión serial.
 
-*Causas del bajo rendimiento*:
+====*Causas del bajo rendimiento*:
    1.Manejo ineficiente de los hilos: La falta de reutilización adecuada de los hilos puede generar sobrecarga debido a la constante creación y destrucción de hilos. Esto genera una carga adicional innecesaria que afecta la eficiencia del sistema.
    2.False sharing: Varios hilos accediendo a datos cercanos en la misma línea de caché provocan contención, lo que aumenta el tiempo de ejecución y disminuye el aprovechamiento de los hilos.
-*Posibles mejoras*:
+====*Posibles mejoras*:
    1.Reutilización de hilos: Implementar un pool de hilos, donde los hilos se crean al inicio y se reutilizan durante todo el ciclo de simulación, reduciría la sobrecarga de creación y destrucción.
    2.Optimización del mapeo: Mejorar el esquema de mapeo, utilizando un mapeo por bloque o mapeo cíclico, podría reducir la contención en la caché, mejorando la eficiencia.
 En resumen, la falta de optimización en la gestión de los hilos y el mal manejo de la paralelización resultaron en una eficiencia mucho menor de lo esperado. Reutilizar los hilos y evitar el false sharing podrían haber mejorado significativamente estos resultados.
