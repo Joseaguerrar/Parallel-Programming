@@ -148,7 +148,8 @@ double coef_local = *(data->shared->coef);  // Copiar el coeficiente localmente
 ----
 image::screen_shots/intento_coef.png[Pseudo de la mejora]
 
-[[conc_iter02]] === Iteración 2: Implementación del Mapeo Dinámico con Contador de Filas Protegido
+[[conc_iter02]] 
+=== Iteración 2: Implementación del Mapeo Dinámico con Contador de Filas Protegido
 
 En esta iteración, la optimización se centró en mejorar el balance de carga entre los hilos mediante el mapeo dinámico de filas, usando un contador de filas protegido por un mutex. Originalmente, las filas de la matriz se distribuían de manera estática entre los hilos, lo que podía generar una carga desigual cuando algunas filas requerían más tiempo de cómputo que otras.
 
