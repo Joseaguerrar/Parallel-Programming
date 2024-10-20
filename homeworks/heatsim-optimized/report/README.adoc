@@ -93,7 +93,7 @@ Esta corrección asegura que los datos de las matrices se copien de manera corre
 |0 |Serial2 |7690.2787s|1.00|1.00 |Versión serial final
 |1 |Conc0 |9635.4943s | | |Versión concurrente inicial (Tarea02)
 |2 |Conc1 |9334.2367s | | |Accerso a coef en memoria compartida
-|3 | | | | |Versión concurrente final
+|3 |Conc2 |9932.9817s | | |Mapeo dinámico
 |===
 
 
@@ -147,6 +147,25 @@ En esta iteración, la optimización se centró en reducir la latencia provocada
 double coef_local = *(data->shared->coef);  // Copiar el coeficiente localmente
 ----
 image::screen_shots/intento_coef.png[Pseudo de la mejora]
+
+[[conc_iter02]] === Iteración 2: Implementación del Mapeo Dinámico con Contador de Filas Protegido
+
+En esta iteración, la optimización se centró en mejorar el balance de carga entre los hilos mediante el mapeo dinámico de filas, usando un contador de filas protegido por un mutex. Originalmente, las filas de la matriz se distribuían de manera estática entre los hilos, lo que podía generar una carga desigual cuando algunas filas requerían más tiempo de cómputo que otras.
+
+La mejora consistió en introducir un contador de filas global (fila_actual) dentro de la estructura shared_data. Este contador es accedido de manera concurrente por los hilos, pero su acceso está protegido por un mutex para evitar condiciones de carrera. Cada hilo toma dinámicamente la siguiente fila disponible, lo que asegura una distribución más balanceada del trabajo.
+
+Sin embargo, este mapeo dinámico también introduce un riesgo de false sharing, especialmente cuando los hilos procesan filas adyacentes de la matriz. Debido a que los datos de esas filas podrían estar en la misma línea de caché, las escrituras de un hilo invalidan la caché utilizada por otros hilos, lo que genera contención de caché y afecta el rendimiento general. Aunque el mutex controla el acceso al contador de filas, el false sharing en las filas de la matriz puede convertirse en un cuello de botella significativo.
+
+Mitigación propuesta: Para reducir el impacto del false sharing, se podrían explorar las siguientes soluciones:
+
+Agregar padding (relleno) a las estructuras de datos compartidas para asegurarse de que las variables no se alineen en la misma línea de caché.
+Cambiar el esquema de mapeo dinámico por otras estrategias como:
+Mapeo por bloque: Asignar grupos consecutivos de filas a cada hilo, en lugar de asignar una fila a la vez.
+Mapeo por bloque cíclico: Asignar las filas a los hilos de manera intercalada (por ejemplo, el hilo 1 procesa las filas 1, 4, 7, etc., y el hilo 2 procesa las filas 2, 5, 8, etc.). Esto puede reducir la probabilidad de que los hilos procesen filas adyacentes que comparten la misma línea de caché.
+
+image::screen_shots/Dynamic.png[Pseudo de la mejora de mapeo dinámico]
+
+A pesar de mejorar la distribución de la carga de trabajo entre los hilos, el costo de la contención de caché derivada del false sharing en algunos casos puede reducir las ganancias esperadas, particularmente en matrices donde las filas tienen costos homogéneos de procesamiento.
 
 [[optimization_comparison]]
 === Comparación de optimizaciones
