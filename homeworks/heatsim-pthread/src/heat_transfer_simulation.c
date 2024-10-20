@@ -117,6 +117,20 @@ void read_bin_plate(const char* folder,
     free(array_state_k);
 }
 
+/**
+ * @brief Realiza la simulación de transferencia de calor en una matriz.
+ * 
+ * @param matrix Matriz de la lámina con los datos iniciales.
+ * @param rows Número de filas de la matriz.
+ * @param columns Número de columnas de la matriz.
+ * @param delta_t Diferencial de tiempo.
+ * @param alpha Difusividad térmica.
+ * @param h Tamaño de las celdas.
+ * @param epsilon Sensitividad del punto de equilibrio.
+ * @param num_threads Cantidad de hilos
+ * 
+ * @return Número de estados hasta alcanzar el punto de equilibrio.
+ */
 uint64_t heat_transfer_simulation(double** matrix,
                                   uint64_t rows,
                                   uint64_t columns,
@@ -125,91 +139,152 @@ uint64_t heat_transfer_simulation(double** matrix,
                                   double h,
                                   double epsilon,
                                   int num_threads) {
-    (void)epsilon;  // Ignorar parámetro no utilizado
-    pthread_t threads[num_threads];
-    private_data thread_args[num_threads];
+    // Array de hilos
+    pthread_t threads[num_threads]; //NOLINT
+    // Array de datos privados de cada hilo
+    private_data thread_args[num_threads]; //NOLINT
+    // Datos compartidos entre hilos
     shared_data shared;
 
     // Inicializar los datos compartidos
     shared.balance_point = false;
     shared.global_matrix = matrix;
 
-    // Calcular el coeficiente constante
+    // **Optimización**: Calcular el coeficiente constante y almacenarlo en shared_data
     double coef_local = alpha * delta_t / (h * h);
-    shared.coef = &coef_local;
+    shared.coef = &coef_local;  // Almacenar la dirección del coeficiente en el campo `coef` de `shared_data`
 
-    // Inicializar el contador de filas y el mutex
-    shared.fila_actual = 1;
-    shared.total_states = 0;
-    pthread_mutex_init(&shared.mutex, NULL);
-
-    // Inicializar los hilos
+    // Cantidad total de estados
+    uint64_t total_states_k = 0;
+    uint64_t rows_per_thread = (rows - 2) / num_threads;
     for (int t = 0; t < num_threads; t++) {
+        uint64_t start_row = 1 + t * rows_per_thread;
+        uint64_t end_row = (t == num_threads - 1) ? rows - 1 :
+                                                    start_row + rows_per_thread;
+
+        // Inicializar los datos del hilo
+        thread_args[t].start_row = start_row;
+        thread_args[t].end_row = end_row;
         thread_args[t].columns = columns;
         thread_args[t].rows = rows;
-        thread_args[t].local_coef = &coef_local;
+        thread_args[t].delta_t = delta_t;
+        thread_args[t].alpha = alpha;
+        thread_args[t].h = h;
+        thread_args[t].epsilon = epsilon;
         thread_args[t].shared = &shared;
+        thread_args[t].id = t;
+        thread_args[t].local_coef = &coef_local;
+        // Asignar una nueva matriz local para cada hilo
         thread_args[t].local_matrix = create_empty_matrix(rows, columns);
-        copy_matrix(thread_args[t].local_matrix, shared.global_matrix, rows, columns);
-        pthread_create(&threads[t], NULL, heat_transfer_simulation_thread, &thread_args[t]);
+        copy_matrix(thread_args[t].local_matrix, shared.global_matrix,
+                                                                 rows, columns);
     }
 
-    // Esperar a que todos los hilos terminen
-    for (int t = 0; t < num_threads; t++) {
-        pthread_join(threads[t], NULL);
+    /*Crear una matriz nueva donde se almacenarán
+    los resultados al final de cada iteración*/
+    double** new_matrix = create_empty_matrix(rows, columns);
+    copy_matrix(new_matrix, shared.global_matrix, rows, columns);
+    if (new_matrix == NULL) {
+        // Retornar inmediatamente si no se puede crear la matriz
+        return total_states_k;
     }
 
-    // Destruir el mutex
-    pthread_mutex_destroy(&shared.mutex);
+    // Simulación de transferencia de calor
+    while (!shared.balance_point) {
+        // Inicializar la variable como true al inicio de la iteración
+        shared.balance_point = true;
+        if (num_threads == 1) {
+            // Solo hay un hilo, así que se hace de una vez
+            // Actualizar la matriz local directamente
+            copy_matrix(thread_args[0].local_matrix, shared.global_matrix, rows, columns);
 
-    // Liberar memoria
+            // Ejecutar la simulación de transferencia de calor directamente
+            heat_transfer_simulation_thread(&thread_args[0]);
+
+            // Copiar los cambios de la matriz local a la new_matrix
+            copy_matrix(new_matrix, thread_args[0].local_matrix, rows, columns);
+        } else {
+            // Si hay más de un hilo, se sigue con el manejo normal de hilos
+
+            // Actualizar la matriz local para cada hilo
+            for (int t = 0; t < num_threads; t++) {
+                copy_matrix(thread_args[t].local_matrix, shared.global_matrix, rows, columns);
+            }
+
+            // Crear los hilos para procesar las filas
+            for (int t = 0; t < num_threads; t++) {
+                pthread_create(&threads[t], NULL, heat_transfer_simulation_thread, &thread_args[t]);
+            }
+
+            // Esperar a que todos los hilos terminen
+            for (int t = 0; t < num_threads; t++) {
+                pthread_join(threads[t], NULL);
+            }
+
+            // Copiar los cambios de las matrices locales de los hilos a la new_matrix
+            for (int t = 0; t < num_threads; t++) {
+                for (uint64_t i = thread_args[t].start_row; i < thread_args[t].end_row; i++) {
+                    // Copiar toda la fila usando memcpy
+                    memcpy(new_matrix[i], thread_args[t].local_matrix[i], columns * sizeof(double));
+                }
+            }
+        }
+        // Verificar el balance point
+        for (uint64_t i = 1; i < rows - 1; i++) {
+            for (uint64_t j = 1; j < columns - 1; j++) {
+                if (fabs(new_matrix[i][j] - shared.global_matrix[i][j]) >= epsilon) {
+                    shared.balance_point = false;
+                    break; // Salir del bucle de columnas
+                }
+            }
+            if (!shared.balance_point) {
+                break; // Salir del bucle de filas si ya se detectó una diferencia
+            }
+        }
+        // Copiar la nueva matriz a la matriz global para la siguiente iteración
+        copy_matrix(shared.global_matrix, new_matrix, rows, columns);
+        total_states_k++;
+    }
+    // Liberar las matrices locales después de que los hilos hayan terminado
     for (int t = 0; t < num_threads; t++) {
         free_matrix(thread_args[t].local_matrix, rows);
     }
+    // Liberar memoria de la matriz temporal
+    free_matrix(new_matrix, rows);
 
-    // Devolver el número total de estados alcanzados
-    return shared.total_states;
+    return total_states_k;  // Devolver el número total de estados
 }
 
+/**
+ * @brief Función ejecutada por cada hilo para realizar la simulación de transferencia de calor en un rango de filas.
+ * 
+ * Esta función se encarga de calcular las nuevas temperaturas para las celdas asignadas a cada hilo
+ * y actualiza directamente la matriz original compartida. También comprueba si se ha alcanzado el 
+ * equilibrio térmico para las celdas procesadas por el hilo. Si se alcanza el equilibrio, se marca 
+ * el balance_point global como verdadero.
+ * 
+ * @param arg Puntero a la estructura private_data que contiene la información necesaria para que el hilo procese su tarea.
+ * 
+ * @return NULL Siempre retorna NULL después de finalizar su trabajo.
+ */
 void* heat_transfer_simulation_thread(void* arg) {
     private_data* data = (private_data*)arg;
     
-    // Copiar el coeficiente localmente para optimizar el acceso
+    // **Optimización**: Copiar el coeficiente localmente para evitar acceder a shared_data repetidamente
     double coef_local = *(data->shared->coef);
 
-    while (true) {
-        uint64_t fila;
-
-        // Proteger el acceso al contador de filas con un mutex
-        pthread_mutex_lock(&(data->shared->mutex));
-        fila = data->shared->fila_actual;
-        data->shared->fila_actual++;
-
-        // Verificar si ya no hay más filas para procesar
-        if (fila >= data->rows - 1) {
-            pthread_mutex_unlock(&(data->shared->mutex));
-            break;
-        }
-        pthread_mutex_unlock(&(data->shared->mutex));
-
-        // Calcular las nuevas temperaturas para las celdas en la fila obtenida
+    // Calcular las nuevas temperaturas para las celdas asignadas a este hilo
+    for (uint64_t i = data->start_row; i < data->end_row; i++) {
         for (uint64_t j = 1; j < data->columns - 1; j++) {
-            double new_temp = data->local_matrix[fila][j] +
-                              coef_local * (data->local_matrix[fila-1][j] + 
-                                            data->local_matrix[fila+1][j] + 
-                                            data->local_matrix[fila][j-1] + 
-                                            data->local_matrix[fila][j+1] - 
-                                            4 * data->local_matrix[fila][j]);
+            // Usar el coeficiente local para optimizar el acceso
+            double new_temp = data->local_matrix[i][j] +
+                              coef_local * (data->local_matrix[i-1][j] + data->local_matrix[i+1][j] +
+                                      data->local_matrix[i][j-1] + data->local_matrix[i][j+1] - 
+                                      4 * data->local_matrix[i][j]);
 
-            data->local_matrix[fila][j] = new_temp;
+            data->local_matrix[i][j] = new_temp;
         }
-
-        // Incrementar el contador de estados de forma segura
-        pthread_mutex_lock(&(data->shared->mutex));
-        data->shared->total_states++;
-        pthread_mutex_unlock(&(data->shared->mutex));
     }
-
     return NULL;
 }
 
