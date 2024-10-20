@@ -209,10 +209,12 @@ La versión concurrente inicial (Conc-I) tuvo una eficiencia muy baja de 0.0665,
 ==== *Causas del bajo rendimiento*:
    1.Manejo ineficiente de los hilos: La falta de reutilización adecuada de los hilos puede generar sobrecarga debido a la constante creación y destrucción de hilos. Esto genera una carga adicional innecesaria que afecta la eficiencia del sistema.
    2.False sharing: Varios hilos accediendo a datos cercanos en la misma línea de caché provocan contención, lo que aumenta el tiempo de ejecución y disminuye el aprovechamiento de los hilos.
+
 ==== *Posibles mejoras*:
    1.Reutilización de hilos: Implementar un pool de hilos, donde los hilos se crean al inicio y se reutilizan durante todo el ciclo de simulación, reduciría la sobrecarga de creación y destrucción.
    2.Optimización del mapeo: Mejorar el esquema de mapeo, utilizando un mapeo por bloque o mapeo cíclico, podría reducir la contención en la caché, mejorando la eficiencia.
 En resumen, la falta de optimización en la gestión de los hilos y el mal manejo de la paralelización resultaron en una eficiencia mucho menor de lo esperado. Reutilizar los hilos y evitar el false sharing podrían haber mejorado significativamente estos resultados.
+
 [[concurrency_comparison]]
 === Comparación del grado de concurrencia
 
