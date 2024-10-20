@@ -182,7 +182,15 @@ Por cuestiones de tiempo, no se realizaron optimizaciones como el mapeo por bloq
 [[optimization_comparison]]
 === Comparación de optimizaciones
 
-(pendiente)
+[%autowidth.stretch,options="header"]
+|===
+|Versión |Descripción |
+|SerialI |Versión serial inicial|
+|SerialF |Versión serial final|
+|ConcI |Versión concurrente inicial|
+|Conc1 |Acceso a coef en memoria compartida|
+|Conc2 |Mapeo dinámico|
+|===
 
 
 [[concurrency_comparison]]
