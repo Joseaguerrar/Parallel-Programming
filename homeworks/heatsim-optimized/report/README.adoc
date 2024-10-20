@@ -191,8 +191,8 @@ Por cuestiones de tiempo, no se realizaron optimizaciones como el mapeo por bloq
 |Conc-1 |Acceso a coef en memoria compartida
 |Conc-2 |Mapeo dinámico
 |===
-image::img/comparacion-desempeno.png[comparación-desempeño]
 ==== Comparación de desempeño
+image::screen_shots/comparacion-desempeno.png[comparación-desempeño]
 En este proyecto, el objetivo fue optimizar un software de simulación de transferencia de calor implementando versiones concurrentes utilizando múltiples hilos. Comencé con una versión serial (Serial-I) que tenía un tiempo de ejecución de 8625.44 segundos. Después de aplicar algunas mejoras en la versión serial, como la eliminación de cálculos innecesarios y la optimización de operaciones redundantes, logré reducir el tiempo de ejecución a 7695.49 segundos en la versión final (Serial-F), lo que representó la mejoría más notable en cuanto a rendimiento. Sin embargo, al implementar versiones concurrentes para aprovechar el paralelismo, el rendimiento no mejoró como se esperaba.
 
 ==== Conclusión
