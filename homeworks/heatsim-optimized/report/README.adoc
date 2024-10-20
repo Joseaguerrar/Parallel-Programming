@@ -214,8 +214,8 @@ La versión concurrente inicial (Conc-I) tuvo una eficiencia muy baja de 0.0665,
    1.Reutilización de hilos: Implementar un pool de hilos, donde los hilos se crean al inicio y se reutilizan durante todo el ciclo de simulación, reduciría la sobrecarga de creación y destrucción.
    2.Optimización del mapeo: Mejorar el esquema de mapeo, utilizando un mapeo por bloque o mapeo cíclico, podría reducir la contención en la caché, mejorando la eficiencia.
 
-En resumen, la falta de optimización en la gestión de los hilos y el mal manejo de la paralelización resultaron en una eficiencia mucho menor de lo esperado. Reutilizar los hilos y evitar el false sharing podrían haber mejorado significativamente estos resultados.
-
+==== Conclusión eficiencia
+En conclusión, la implementación concurrente no fue tan eficiente como se esperaba debido a estos problemas, pero con las optimizaciones sugeridas, se podría mejorar significativamente el uso de los hilos y el rendimiento general del programa.
 [[concurrency_comparison]]
 === Comparación del grado de concurrencia
 
