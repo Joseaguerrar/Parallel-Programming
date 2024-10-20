@@ -157,13 +157,19 @@ La mejora consistió en introducir un contador de filas global (fila_actual) den
 
 Sin embargo, este mapeo dinámico también introduce un riesgo de false sharing, especialmente cuando los hilos procesan filas adyacentes de la matriz. Debido a que los datos de esas filas podrían estar en la misma línea de caché, las escrituras de un hilo invalidan la caché utilizada por otros hilos, lo que genera contención de caché y afecta el rendimiento general. Aunque el mutex controla el acceso al contador de filas, el false sharing en las filas de la matriz puede convertirse en un cuello de botella significativo.
 
-Mitigación propuesta: Para reducir el impacto del false sharing, se podrían explorar las siguientes soluciones:
+==== Mitigaciones propuestas para false sharing y optimización del mapeo dinámico
 
-Agregar padding (relleno) a las estructuras de datos compartidas para asegurarse de que las variables no se alineen en la misma línea de caché.
-Cambiar el esquema de mapeo dinámico por otras estrategias como:
-Mapeo por bloque: Asignar grupos consecutivos de filas a cada hilo, en lugar de asignar una fila a la vez.
-Mapeo por bloque cíclico: Asignar las filas a los hilos de manera intercalada (por ejemplo, el hilo 1 procesa las filas 1, 4, 7, etc., y el hilo 2 procesa las filas 2, 5, 8, etc.). Esto puede reducir la probabilidad de que los hilos procesen filas adyacentes que comparten la misma línea de caché.
+ 1.Agregar padding (relleno):
+El uso de relleno (padding) entre las estructuras de datos compartidas, como los contadores o las matrices, puede evitar que diferentes hilos trabajen en datos que residen en la misma línea de caché. Al asegurarse de que los datos estén alineados de manera adecuada, se reduce el riesgo de que las escrituras de un hilo invaliden la caché de otro hilo que esté trabajando en la misma línea.
 
+ 2.Mapeo por bloque:
+Asignar grupos de filas consecutivas a cada hilo en lugar de hacerlo una por una. Esto reduce el riesgo de false sharing, ya que los hilos procesan bloques más grandes y la probabilidad de que trabajen en datos cercanos disminuye. Además, este enfoque mejora la localización de los datos, lo que puede aumentar la eficiencia de la caché.
+
+ 3.Mapeo por bloque cíclico:
+Distribuir las filas entre los hilos de manera intercalada (p. ej., el hilo 1 procesa las filas 1, 4, 7, etc.; el hilo 2 procesa las filas 2, 5, 8, etc.). Este mapeo asegura que los hilos no procesen filas adyacentes, lo que ayuda a mitigar el false sharing. Al intercalar las filas, los hilos tienen más probabilidad de trabajar en diferentes líneas de caché, lo que reduce las invalidaciones de caché entre hilos.
+
+ 4.Reducir el acceso compartido a las estructuras de datos:
+Minimizar la cantidad de accesos a las estructuras compartidas, como shared_data, y mover el trabajo hacia variables locales en cada hilo puede mejorar la localización de los datos y disminuir la contención de la caché.
 image::screen_shots/Dynamic.png[Pseudo de la mejora de mapeo dinámico]
 
 A pesar de mejorar la distribución de la carga de trabajo entre los hilos, el costo de la contención de caché derivada del false sharing en algunos casos puede reducir las ganancias esperadas, particularmente en matrices donde las filas tienen costos homogéneos de procesamiento.
