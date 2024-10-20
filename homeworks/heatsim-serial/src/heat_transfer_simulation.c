@@ -123,9 +123,9 @@ uint64_t heat_transfer_simulation(double** matrix,
     double** matrix_a = create_empty_matrix(rows, columns);
     double** matrix_b = create_empty_matrix(rows, columns);
 
-    // Copiar el estado inicial de matrix a matrix_a y matrix_b 
+    // Copiar el estado inicial de matrix a matrix_a y matrix_b
     copy_matrix(matrix_a, matrix, rows, columns);
-    copy_matrix(matrix_b, matrix, rows, columns);  
+    copy_matrix(matrix_b, matrix, rows, columns);
 
     bool balance_point = false;
     uint64_t states_k = 0;
@@ -139,12 +139,15 @@ uint64_t heat_transfer_simulation(double** matrix,
         for (uint64_t i = 1; i < rows - 1; i++) {
             for (uint64_t j = 1; j < columns - 1; j++) {
                 double new_temperature = current_matrix[i][j] +
-                    ((delta_t * alpha) / (h * h)) * (current_matrix[i-1][j] + current_matrix[i+1][j] +
-                                                     current_matrix[i][j-1] + current_matrix[i][j+1] - 4 * current_matrix[i][j]);
+                    ((delta_t * alpha) / (h * h)) * (current_matrix[i-1][j] +
+                                                     current_matrix[i+1][j] +
+                                                     current_matrix[i][j-1] +
+                                                     current_matrix[i][j+1] -
+                                                     4 * current_matrix[i][j]);
 
                 next_matrix[i][j] = new_temperature;
 
-                // Verificar si el cambio es mayor que epsilon (condición de equilibrio)
+                // Verificar si el cambio es mayor que epsilon
                 if (fabs(new_temperature - current_matrix[i][j]) > epsilon) {
                     balance_point = false;
                 }
@@ -154,13 +157,15 @@ uint64_t heat_transfer_simulation(double** matrix,
     }
 
     // Copiar el estado final a la matriz original
-    copy_matrix(matrix, (states_k % 2 == 1) ? matrix_b : matrix_a, rows, columns);
+    copy_matrix(matrix, (states_k % 2 == 1) ? matrix_b :
+                                                       matrix_a, rows, columns);
 
     // Liberar las matrices temporales
     free_matrix(matrix_a, rows);
     free_matrix(matrix_b, rows);
 
-    return states_k;  // Retornar el número de iteraciones hasta alcanzar el equilibrio
+    return states_k;
+    // Retornar el número de iteraciones hasta alcanzar el equilibrio
 }
 
 /**
@@ -196,7 +201,8 @@ double** create_empty_matrix(uint64_t rows, uint64_t columns) {
  * @param rows Número de filas de la matriz.
  * @param columns Número de columnas de la matriz.
  */
-void copy_matrix(double** dest_matrix, double** src_matrix, uint64_t rows, uint64_t columns) {
+void copy_matrix(double** dest_matrix, double** src_matrix, uint64_t rows,
+                                                             uint64_t columns) {
     for (uint64_t i = 0; i < rows; i++) {
         memcpy(dest_matrix[i], src_matrix[i], columns * sizeof(double));
     }

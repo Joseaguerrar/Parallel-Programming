@@ -93,7 +93,8 @@ double** create_empty_matrix(uint64_t rows, uint64_t columns);
  * @param rows Número de filas de la matriz.
  * @param columns Número de columnas de la matriz.
  */
-void copy_matrix(double** dest_matrix, double** src_matrix, uint64_t rows, uint64_t columns);
+void copy_matrix(double** dest_matrix, double** src_matrix,
+                                               uint64_t rows, uint64_t columns);
 
 /**
  * @brief Libera la memoria de una matriz.
