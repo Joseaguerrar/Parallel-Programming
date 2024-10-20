@@ -228,5 +228,5 @@ En conclusión, la implementación concurrente no fue tan eficiente como se espe
 |4|1C|Tantos hilos como CPUs hay en la computadora que ejecuta el programa|12
 |5|2C|Dos hilos por cada CPU que hay en la computadora que ejecuta el programa|24
 |6|4C|Cuatro hilos por cada CPU que hay en la computadora que ejecuta el programa|48
-|7|D|Tantos hilos como unidades de descomposición hay en la entrada|30114
+|7|D|Tantos hilos como unidades de descomposición hay en la entrada (en caso de que sea menor que la cantidad máxima de hilos permitida por el sistema operativo)|30114
 |===
