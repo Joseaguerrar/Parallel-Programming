@@ -1,0 +1,28 @@
+Pseudocódigo de paso de mensajes
+// Global constants
+process_number    // Number of this process (integer)
+process_count     // Number of processes in the team this process belongs to
+process_hostname  // Name of the computer where this process is running (text)
+any_process       // For accepting messages from any process
+any_tag           // For accepting messages classified with any tag
+
+// Send a variable or array (a set of bytes) to the destination process
+send(message, count, to_process, tag = 0)
+// Receive a set of bytes into a variable from a source process
+receive(&message, count, from_process = any_process, tag = any_tag)
+// Send a variable or array from the source process to the rest
+broadcast(&message, count, from_process)
+// Reduce the data value from all processes to a single result value in
+// destination process applying the given operation
+reduce(data, &result, count, operation, to_process)
+// Reduce the data value from all processes to a single result value that will
+// be available in all processes
+all_reduce(data, &result, count, operation)
+// Distributes an array into subsets for each process using block mapping
+scatter(entire_array, entire_count, &subset_array, &subset_count, from_process)
+// Updates the entire array from the subsets that where assigned to each process
+gather(&entire_array, entire_count, subset_array, subset_count, to_process)
+// Get the wall time for the calling process
+wall_time()
+// Make all processes of a team wait until all of them have reached the barrier
+wait_barrier()
