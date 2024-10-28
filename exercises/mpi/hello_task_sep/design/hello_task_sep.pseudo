@@ -1,0 +1,17 @@
+procedure main(){
+    initialize_mpi( argc, argv)
+    number = get_number() //número de procesos desde línea de comandos
+    if(number<2){
+        print("Usage: mpirun -np <number> hello_task_sep")
+        finalize_mpi()
+    } else{
+        if(rank==0){
+        process_tasks(return number)
+        }
+        else{
+            process_tasks(return number)
+        }
+        finalize_mpi()
+    }
+    
+} end procedure
