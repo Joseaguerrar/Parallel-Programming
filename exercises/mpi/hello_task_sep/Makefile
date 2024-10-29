@@ -1,4 +1,4 @@
-include ../../common/Makefile
+include ../../../common/Makefile
 
 CC = mpicc // compilador de C con MPI
-XC = mpicc++
+XC = mpicxx
