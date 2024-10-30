@@ -1,0 +1,17 @@
+procedure main:
+  declare my_num := random(100) // Each process has a unique random number
+  declare const previous_process := (process_count + process_number - 1) % process_count
+  declare const next_process := (process_number + 1) % process_count
+  declare sum_received := 0  // Initial sum to start with
+
+  if process_number > 0 then
+    receive(&sum_received, 1, previous_process)  // Receive accumulated sum from the previous process
+  end if
+  
+  declare sum_sent := sum_received + my_num  // Add this process's number to the received sum
+  
+  print "The sum is ", sum_sent, " from process ", process_number, " of ",
+        process_count, " on ", process_hostname
+  
+  send(sum_sent, 1, next_process)  // Send the updated sum to the next process
+end procedure
