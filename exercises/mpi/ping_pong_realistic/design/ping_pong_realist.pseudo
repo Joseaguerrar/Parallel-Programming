@@ -1,0 +1,33 @@
+procedure main(argc, argv[])
+    if argv[0] != 2 then
+    print "Error: El programa requiere exactamente 2 jugadores."
+    else
+    shared const requiered_wins = integer(argv[1])
+    shared const prob_p1 = integer(argv[2])
+    shared const prob_p2 = integer(argv[3])
+    mpi_init(argc, argv)
+    mpi_comm_rank(MPI_COMM_WORLD, rank)
+    mpi_comm_size(MPI_COMM_WORLD, size)
+    while true
+        play_game(prob_prank, size, prob_p1, prob_p2)
+        if generated_number==invalid(miss)
+        print "Jugador ", rank, " perdio el juego."
+        rank_wins = rank_wins + 1
+        exit
+        end if
+        else
+            send_message(rank, size, prob_prank)
+        if rank_wins == requiered_wins
+            print "Jugador ", rank, " gano la partida."
+            print "global score ", score
+            exit
+end procedure
+
+
+
+
+
+
+function play_game(rank, size, prob_p1, prob_p2)
+  return generate_random_number(prob_prank)
+end
