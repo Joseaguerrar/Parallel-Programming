@@ -1,3 +1,4 @@
+// Copyright 2021 Jeisson Hidalgo <jeisson.hidalgo@ucr.ac.cr> CC-BY 4.0
 #include <cstdlib>
 #include <iostream>
 
