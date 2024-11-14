@@ -8,8 +8,28 @@
 
 #define fail(msg) throw std::runtime_error(msg)
 
+/**
+ * @brief Calcula estadísticas de los números de la suerte generados por los procesos.
+ *
+ * Esta función genera un número de la suerte para el proceso actual, utiliza
+ * reducciones de MPI para calcular el mínimo, máximo y promedio de los números
+ * generados por todos los procesos, y los imprime en el proceso 0.
+ *
+ * @param process_number Número del proceso actual.
+ * @param process_count Total de procesos ejecutándose en MPI.
+ */
 void generate_lucky_statistics(int process_number, int process_count);
 
+/**
+ * @brief Punto de entrada del programa.
+ *
+ * Inicializa MPI, obtiene el número de proceso y el total de procesos,
+ * y llama a la función para generar estadísticas de números de la suerte.
+ *
+ * @param argc Cantidad de argumentos de la línea de comandos.
+ * @param argv Arreglo de argumentos de la línea de comandos.
+ * @return EXIT_SUCCESS si la ejecución es exitosa, EXIT_FAILURE en caso de error.
+ */
 int main(int argc, char* argv[]) {
     int error = EXIT_SUCCESS;
     if (MPI_Init(&argc, &argv) == MPI_SUCCESS) {
@@ -66,8 +86,7 @@ void generate_lucky_statistics(int process_number, int process_count) {
         // Imprimir los resultados globales
         std::cout << "Process 0: all minimum: " << all_min << std::endl;
         std::cout << "Process 0: all average: " << std::fixed <<
-                                                            std::setprecision(2)
-                  << all_average << std::endl;
+                  std::setprecision(2) << all_average << std::endl;
         std::cout << "Process 0: all maximum: " << all_max << std::endl;
     }
 }
