@@ -32,20 +32,20 @@ void simulate_relay_race(int argc, char* argv[], int process_number,
 /**
  * @brief Ejecuta la primera etapa de la carrera para un equipo.
  * 
- * @param stage1_delay Retraso en milisegundos para la etapa 1.
+ * @param etapa1_delay Retraso en milisegundos para la etapa 1.
  * @param process_number El número de rango del proceso MPI actual.
  * @param team_count El número total de equipos.
  */
-void run_stage1(int stage1_delay, int process_number, int team_count);
+void etapa_1(int etapa1_delay, int process_number, int team_count);
 
 /**
  * @brief Ejecuta la segunda etapa de la carrera para un equipo.
  * 
- * @param stage2_delay Retraso en milisegundos para la etapa 2.
+ * @param etapa2_delay Retraso en milisegundos para la etapa 2.
  * @param process_number El número de rango del proceso MPI actual.
  * @param team_count El número total de equipos.
  */
-void run_stage2(int stage2_delay, int process_number, int team_count);
+void etapa_2(int etapa2_delay, int process_number, int team_count);
 
 /**
  * @brief Supervisa la carrera y reporta los resultados.
@@ -86,54 +86,54 @@ void simulate_relay_race(int argc, char* argv[], int process_number,
   if (argc == 3) {
     if (process_count >= 3 && process_count % 2 == 1) {
       const int team_count = (process_count - 1) / 2;
-      const int stage1_delay = atoi(argv[1]);
-      const int stage2_delay = atoi(argv[2]);
+      const int etapa1_delay = atoi(argv[1]);
+      const int etapa2_delay = atoi(argv[2]);
 
       if (process_number == 0) {
         referee(team_count);
       } else if (process_number <= team_count) {
-        run_stage1(stage1_delay, process_number, team_count);
+        etapa_1(etapa1_delay, process_number, team_count);
       } else {
-        run_stage2(stage2_delay, process_number, team_count);
+        etapa_2(etapa2_delay, process_number, team_count);
       }
     } else {
       fail("error: el número de procesos debe ser impar y mayor a 3");
     }
   } else {
-    fail("uso: relay_race_dist stage1_delay stage2_delay");
+    fail("uso: relay_race_dist etapa1_delay etapa2_delay");
   }
 }
 
-void run_stage1(int stage1_delay, int process_number, int team_count) {
+void etapa_1(int etapa1_delay, int process_number, int team_count) {
   // Esperar en la barrera
   if (MPI_Barrier(MPI_COMM_WORLD) != MPI_SUCCESS) {
     fail("error: no se pudo esperar en la barrera");
   }
-  usleep(1000 * stage1_delay);
-  const int peer = process_number + team_count;
+  usleep(1000 * etapa1_delay);
+  const int teammate = process_number + team_count;
   bool baton = true;
   // Enviar testigo al compañero
-  if (MPI_Send(&baton, /*count*/ 1, MPI_C_BOOL, peer, /*tag*/ 0, MPI_COMM_WORLD)
-                                                               != MPI_SUCCESS) {
+  if (MPI_Send(&baton, /*count*/ 1, MPI_C_BOOL, teammate,
+                                    /*tag*/ 0, MPI_COMM_WORLD) != MPI_SUCCESS) {
     fail("error: no se pudo enviar el testigo");
   }
 }
 
-void run_stage2(int stage2_delay, int process_number, int team_count) {
+void etapa_2(int etapa2_delay, int process_number, int team_count) {
   // Esperar en la barrera
   if (MPI_Barrier(MPI_COMM_WORLD) != MPI_SUCCESS) {
     fail("error: no se pudo esperar en la barrera");
   }
-  int peer = process_number - team_count;
+  int teammate = process_number - team_count;
   bool baton = false;
   // Recibir testigo del compañero
-  if (MPI_Recv(&baton, /*capacity*/ 1, MPI_C_BOOL, /*source*/ peer, /*tag*/ 0,
-                            MPI_COMM_WORLD, MPI_STATUS_IGNORE) != MPI_SUCCESS) {
+  if (MPI_Recv(&baton, /*capacity*/ 1, MPI_C_BOOL, /*source*/ teammate,
+                 /*tag*/ 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE) != MPI_SUCCESS) {
     fail("error: no se pudo recibir el testigo");
   }
-  usleep(1000 * stage2_delay);
+  usleep(1000 * etapa2_delay);
   // Enviar el número del equipo al árbitro
-  if (MPI_Send(&peer, /*count*/ 1, MPI_INT, /*target*/ 0, /*tag*/ 0,
+  if (MPI_Send(&teammate, /*count*/ 1, MPI_INT, /*target*/ 0, /*tag*/ 0,
                                                MPI_COMM_WORLD) != MPI_SUCCESS) {
     fail("error: no se pudo enviar el número del equipo al árbitro");
   }
@@ -145,17 +145,17 @@ void referee(int team_count) {
   if (MPI_Barrier(MPI_COMM_WORLD) != MPI_SUCCESS) {
     fail("error: no se pudo esperar en la barrera");
   }
-  int place = 0;
+  int posicion = 0;
   for (int index = 0; index < team_count; ++index) {
-    int team = 0;
+    int equipo = 0;
     // Recibir el número del equipo de cualquier proceso
-    if (MPI_Recv(&team, /*capacity*/ 1, MPI_INT, MPI_ANY_SOURCE,
+    if (MPI_Recv(&equipo, /*capacity*/ 1, MPI_INT, MPI_ANY_SOURCE,
                  /*tag*/ 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE) != MPI_SUCCESS) {
       fail("error: no se pudo recibir el número del equipo");
     }
     const double elapsed = MPI_Wtime() - start_time;
-    ++place;
-    std::cout << "Lugar " << place << ": equipo " << team << " en " <<
+    ++posicion;
+    std::cout << "Posición " << posicion << ": equipo " << equipo << " en " <<
                                                     elapsed << "s" << std::endl;
   }
 }
