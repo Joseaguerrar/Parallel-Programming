@@ -201,24 +201,31 @@ Aunque teóricamente la paralelización debería haber acelerado el programa, el
 
 ===== Comparativa de Desempeño: OpenMP vs Pthreads
 
-En la evaluación de desempeño entre OpenMP y Pthreads, se observaron mejoras significativas en las implementaciones concurrentes tras resolver el problema de distribución de datos. Las optimizaciones implementadas, como el mapeo por bloques y el uso de técnicas de padding para mitigar el *false sharing*, permitieron aprovechar de manera efectiva los recursos disponibles.
+En la evaluación de desempeño entre OpenMP y Pthreads, se observaron mejoras significativas en las implementaciones concurrentes tras resolver parcialmente algunos problemas de distribución de datos. Sin embargo, persistieron limitaciones en la implementación con Pthreads debido al manejo ineficiente de los hilos y problemas como el *false sharing*. Esto afectó negativamente el rendimiento de la simulación de transferencia de calor, especialmente en configuraciones de múltiples hilos.
 
 ====== Facilidad de Uso
 - *OpenMP*: La abstracción que proporciona OpenMP resultó ser ventajosa, ya que simplificó la paralelización al reducir la cantidad de código necesario. Las directivas como `#pragma omp parallel for` y el manejo automático del balance de carga permitieron una implementación eficiente sin necesidad de gestionar manualmente la sincronización.
-- *Pthreads*: Aunque más complejo de implementar, Pthreads ofreció un control más granular sobre los hilos. Esto permitió optimizar la distribución de la carga de trabajo y las sincronizaciones, logrando un rendimiento comparable al de OpenMP.
+- *Pthreads*: Aunque más complejo de implementar, Pthreads ofreció un control más granular sobre los hilos. Sin embargo, en esta implementación particular, el rendimiento estuvo limitado por la falta de optimizaciones como el mapeo por bloque o el uso de un *thread pool*. Esto resultó en problemas de contención en la caché (*false sharing*), disminuyendo la eficiencia general del programa.
 
 ====== Rendimiento
-- *OpenMP*: Gracias al balance automático de carga y a las mejoras en la distribución de datos, OpenMP alcanzó un desempeño cercano al óptimo en sistemas con varios núcleos. Sin embargo, su rendimiento dependió de la estrategia de paralelización y la correcta configuración de las directivas.
-- *Pthreads*: Al gestionar manualmente la distribución de datos y evitar el *false sharing*, Pthreads logró un rendimiento igualmente competitivo. La implementación efectiva del mapeo por bloques permitió una distribución uniforme del trabajo, maximizando el uso de caché y reduciendo la latencia en las operaciones.
+- *OpenMP*: Gracias al balance automático de carga y la reducción del overhead asociado con la sincronización manual, OpenMP alcanzó un desempeño razonable, aunque todavía estuvo limitado por problemas inherentes al diseño concurrente, como el acceso a memoria compartida.
+- *Pthreads*: Aunque teóricamente ofrece mayor control sobre la concurrencia, en este caso el rendimiento fue inferior debido a la falta de reutilización de hilos y el manejo ineficiente de datos compartidos. La ausencia de técnicas como el *padding* para mitigar el *false sharing* impactó significativamente la velocidad de ejecución.
 
 ====== Escalabilidad
-- *OpenMP*: Demostró una buena escalabilidad en sistemas con hasta 8 núcleos. Más allá de este punto, el impacto del *overhead* en la sincronización y las barreras comenzó a ser más significativo.
-- *Pthreads*: Aunque más complejo de optimizar, Pthreads presentó una mejor escalabilidad en configuraciones con mayor cantidad de núcleos debido a su capacidad para personalizar la sincronización y minimizar el *overhead*.
+- *OpenMP*: Mostró una buena escalabilidad en sistemas con hasta 12 núcleos, pero el rendimiento no escaló linealmente debido a problemas relacionados con el acceso a memoria compartida.
+- *Pthreads*: La escalabilidad fue limitada por la contención en la caché y la sobrecarga causada por la creación y destrucción repetitiva de hilos. Estos factores hicieron que Pthreads no aprovechara de manera eficiente los recursos de hardware disponibles.
 
 ====== Eficiencia General
-Ambos enfoques lograron superar la implementación serial en escenarios donde el acceso a datos estaba bien distribuido y los hilos trabajaban sobre bloques independientes. Sin embargo, la diferencia clave radicó en la simplicidad y velocidad de implementación con OpenMP frente al control detallado y optimización manual que ofrece Pthreads.
+Ambos enfoques lograron cierto nivel de paralelización, pero la diferencia clave radicó en la simplicidad y rapidez de implementación con OpenMP frente al control detallado ofrecido por Pthreads. Sin embargo, en este caso específico, la implementación con Pthreads no alcanzó su potencial debido a las siguientes causas principales:
+1. *Manejo ineficiente de los hilos*: La constante creación y destrucción de hilos generó una sobrecarga innecesaria que afectó negativamente el rendimiento.
+2. *False sharing*: Varios hilos accediendo a datos que compartían la misma línea de caché provocaron contención, lo que ralentizó la ejecución.
 
-En conclusión, OpenMP destacó por su facilidad de uso y rapidez de implementación, mientras que Pthreads, con un esfuerzo adicional en la programación, permitió exprimir al máximo el hardware disponible. Ambas herramientas, correctamente utilizadas, demostraron ser soluciones viables para mejorar el desempeño de la simulación concurrente.
+====== Posibles Mejoras
+1. *Reutilización de hilos*: Implementar un *thread pool* donde los hilos se crean al inicio y se reutilizan durante todo el ciclo de simulación reduciría la sobrecarga de creación y destrucción.
+2. *Optimización del mapeo*: Utilizar un mapeo por bloque o un mapeo cíclico podría mitigar los problemas de *false sharing* al distribuir los datos de manera más eficiente entre los hilos.
+
+====== Conclusión
+En conclusión, aunque la implementación con OpenMP mostró mejores resultados en términos de facilidad de uso y eficiencia general, la implementación con Pthreads presentó limitaciones significativas debido a la falta de optimizaciones. Sin embargo, con las mejoras sugeridas, la versión concurrente con Pthreads podría lograr un rendimiento significativamente mayor y aprovechar mejor los recursos de hardware disponibles.
 
 ==== Comparación de eficiencia
 
