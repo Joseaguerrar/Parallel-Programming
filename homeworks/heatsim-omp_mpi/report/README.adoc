@@ -288,4 +288,15 @@ Uno de los factores que puede explicar esta tendencia es el false sharing. Este 
 Aunque se podría esperar que más hilos resulten en una mejora continua en el speedup, el gráfico indica que después de un cierto punto (aproximadamente en 12 hilos), la concurrencia no genera beneficios adicionales, y la eficiencia disminuye drásticamente hasta que llega a valores negativos, en el caso de 24 y 48 hilos. La tendencia final, donde la eficiencia parece aumentar con 31,400 hilos (D), es un artefacto numérico provocado por la enorme cantidad de hilos en relación con las unidades de trabajo, pero el tiempo total de ejecución es más alto, lo que evidencia sobrecarga de concurrencia.
 
 ==== Conclusión concurrencia
-En conclusión, el grado de concurrencia influye significativamente en el desempeño y la eficiencia de una solución de software. A medida que se incrementa el número de hilos, el rendimiento no mejora de manera proporcional debido a problemas como el false sharing y la sobrecarga de sincronización. Sin embargo, este comportamiento adverso podría cambiar notablemente si se implementaran diferentes estrategias de mapeo, como el mapeo en bloque o mapeo en bloque cíclico, que permitirían distribuir mejor las cargas de trabajo entre los hilos y minimizar los conflictos de acceso a la memoria. Estas técnicas podrían reducir la interferencia entre hilos y mejorar tanto el rendimiento como la escalabilidad de la solución.
+El grado de concurrencia influye de manera determinante en el desempeño y la eficiencia de una solución de software. Aunque incrementar el número de hilos puede mejorar el rendimiento, este incremento no siempre es proporcional debido a factores como el false sharing, la contención en caché y la sobrecarga asociada con la sincronización de hilos.
+
+Sin embargo, en esta evaluación, el uso de OpenMP demostró ser efectivo para mitigar varios de estos problemas. Gracias a su manejo automático de balance de carga y a su capacidad para abstraer la sincronización, OpenMP logró reducir la incidencia de conflictos en el acceso a memoria compartida y optimizó la distribución de las cargas de trabajo.
+
+Para soluciones que utilicen otras herramientas, como Pthreads, adoptar estrategias de mapeo eficientes, como el mapeo en bloque o el mapeo en bloque cíclico, podría replicar estas ventajas al minimizar los conflictos de acceso y reducir la interferencia entre hilos. Estas técnicas, junto con optimizaciones específicas, permitirían mejorar tanto el rendimiento como la escalabilidad de la solución en sistemas con múltiples núcleos.
+
+
+
+
+
+
+
