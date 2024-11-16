@@ -149,11 +149,9 @@ uint64_t heat_transfer_simulation(double** matrix, uint64_t rows, uint64_t colum
 
     uint64_t total_states = 0;
     bool balance_point = false;
-
+    double coef = alpha * delta_t / (h * h);  // Constante calculada antes del bucle
    while (!balance_point) {
     balance_point = true;
-    double coef = alpha * delta_t / (h * h);  // Constante calculada antes del bucle
-
     // Definir tamaño de bloque
     int block_size = 5;  // Cambia según las necesidades de balance de carga
 
@@ -185,12 +183,12 @@ uint64_t heat_transfer_simulation(double** matrix, uint64_t rows, uint64_t colum
                 matrix[i][j] = new_matrix[i][j];
             }
         }
-
+        #pragma omp barrier
         // Barrera implícita al final del bucle paralelo
     }
 
     total_states++;
-}
+    }
 
 
 
