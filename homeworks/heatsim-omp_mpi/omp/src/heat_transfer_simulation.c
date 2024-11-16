@@ -140,61 +140,64 @@ void read_bin_plate(const char* folder,
  * 
  * @return Número de estados hasta alcanzar el punto de equilibrio.
  */
-uint64_t heat_transfer_simulation(double** matrix, uint64_t rows, uint64_t columns,
-                                  double delta_t, double alpha, double h, double epsilon, int num_threads) {
-    omp_set_num_threads(num_threads); // Configura el número de hilos
+uint64_t heat_transfer_simulation(double** matrix,
+                                  uint64_t rows,
+                                  uint64_t columns,
+                                  double delta_t,
+                                  double alpha,
+                                  double h,
+                                  double epsilon,
+                                  int num_threads) {
+    // Configurar el número de hilos para OpenMP
+    omp_set_num_threads(num_threads);
 
-    double** new_matrix = create_empty_matrix(rows, columns);
-    if (new_matrix == NULL) return 0;
+    double** matrix_a = create_empty_matrix(rows, columns);
+    double** matrix_b = create_empty_matrix(rows, columns);
 
-    uint64_t total_states = 0;
+    copy_matrix(matrix_a, matrix, rows, columns);
+    copy_matrix(matrix_b, matrix, rows, columns);
+
     bool balance_point = false;
-    double coef = alpha * delta_t / (h * h);  // Constante calculada antes del bucle
-   while (!balance_point) {
-    balance_point = true;
-    // Definir tamaño de bloque
-    int block_size = 5;  // Cambia según las necesidades de balance de carga
+    uint64_t states_k = 0;
 
-    #pragma omp parallel shared(matrix, new_matrix, balance_point, coef)
-    {
-        // Actualización de las celdas con mapeo cíclico por bloque
-        #pragma omp for schedule(static, block_size)
+    while (!balance_point) {
+        balance_point = true;
+
+        double** current_matrix = (states_k % 2 == 1) ? matrix_a : matrix_b;
+        double** next_matrix = (states_k % 2 == 1) ? matrix_b : matrix_a;
+
+        double coef = (delta_t * alpha) / (h * h);
+
+        // Paralelizar solo el cálculo de cada fila (no afectando la parte de lectura/escritura)
+        #pragma omp parallel for schedule(static)
         for (uint64_t i = 1; i < rows - 1; i++) {
             for (uint64_t j = 1; j < columns - 1; j++) {
-                double new_temp = matrix[i][j] + coef *
-                    (matrix[i-1][j] + matrix[i+1][j] +
-                     matrix[i][j-1] + matrix[i][j+1] - 4 * matrix[i][j]);
-                new_matrix[i][j] = new_temp;
+                double new_temperature = current_matrix[i][j] +
+                    coef * (current_matrix[i-1][j] + current_matrix[i+1][j] +
+                            current_matrix[i][j-1] + current_matrix[i][j+1] -
+                            4 * current_matrix[i][j]);
 
-                if (fabs(new_temp - matrix[i][j]) >= epsilon) {
-                    #pragma omp critical
-                    balance_point = false;  // Actualización segura de balance_point
+                next_matrix[i][j] = new_temperature;
+
+                // Verificar si el cambio es mayor que epsilon
+                if (fabs(new_temperature - current_matrix[i][j]) > epsilon) {
+                    #pragma omp atomic write
+                    balance_point = false;
                 }
             }
         }
 
-        // Barrera explícita para sincronizar antes de copiar matrices
-        #pragma omp barrier
-
-        // Copiar los valores de `new_matrix` a `matrix` para la próxima iteración
-        #pragma omp for schedule(static, block_size)
-        for (uint64_t i = 0; i < rows; i++) {
-            for (uint64_t j = 0; j < columns; j++) {
-                matrix[i][j] = new_matrix[i][j];
-            }
-        }
-        #pragma omp barrier
-        // Barrera implícita al final del bucle paralelo
+        states_k++;
     }
 
-    total_states++;
-    }
+    copy_matrix(matrix, (states_k % 2 == 1) ? matrix_b : matrix_a, rows, columns);
 
+    free_matrix(matrix_a, rows);
+    free_matrix(matrix_b, rows);
 
-
-    free_matrix(new_matrix, rows);
-    return total_states;
+    return states_k;
 }
+
 
 /**
  * @brief Crea una matriz vacía de tamaño especificado.
