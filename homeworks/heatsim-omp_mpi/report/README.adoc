@@ -236,7 +236,15 @@ Ambos enfoques lograron cierto nivel de paralelización, pero la diferencia clav
 
 ====== Conclusión
 
-En conclusión, aunque la implementación con OpenMP mostró mejores resultados en términos de facilidad de uso y eficiencia general, la implementación con Pthreads presentó limitaciones significativas debido a la falta de optimizaciones. Sin embargo, con las mejoras sugeridas, la versión concurrente con Pthreads podría lograr un rendimiento significativamente mayor y aprovechar mejor los recursos de hardware disponibles.
+El grado de concurrencia influye de manera determinante en el desempeño y la eficiencia de una solución de software. Aunque incrementar el número de hilos puede mejorar el rendimiento, este incremento no siempre es proporcional debido a factores como el false sharing, la contención en caché y la sobrecarga asociada con la sincronización de hilos. Sin embargo, en esta evaluación, el uso de OpenMP demostró ser efectivo para mitigar varios de estos problemas. Gracias a su manejo automático de balance de carga y a su capacidad para abstraer la sincronización, OpenMP logró reducir la incidencia de conflictos en el acceso a memoria compartida y optimizó la distribución de las cargas de trabajo. Para soluciones que utilicen otras herramientas, como Pthreads, adoptar estrategias de mapeo eficientes, como el mapeo en bloque o el mapeo en bloque cíclico, podría replicar estas ventajas al minimizar los conflictos de acceso y reducir la interferencia entre hilos. Estas técnicas, junto con optimizaciones específicas, permitirían mejorar tanto el rendimiento como la escalabilidad de la solución en sistemas con múltiples núcleos.
+
+
+
+
+
+
+
+
 
 ==== Comparación de eficiencia
 
