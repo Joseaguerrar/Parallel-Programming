@@ -56,8 +56,7 @@ void read_bin_plate(const char* folder,
                     const char* jobName);
 
 /**
- * @brief Realiza la simulación de transferencia de calor en una matriz.
- * 
+ * @brief Realiza la simulación de transferencia de calor en una matriz distribuida entre varios procesos.
  * @param matrix Matriz de la lámina con los datos iniciales.
  * @param rows Número de filas de la matriz.
  * @param columns Número de columnas de la matriz.
@@ -65,6 +64,8 @@ void read_bin_plate(const char* folder,
  * @param alpha Difusividad térmica.
  * @param h Tamaño de las celdas.
  * @param epsilon Sensitividad del punto de equilibrio.
+ * @param rank Rango del proceso.
+ * @param size Número total de procesos.
  * 
  * @return Número de estados hasta alcanzar el punto de equilibrio.
  */
@@ -74,8 +75,12 @@ uint64_t heat_transfer_simulation(double** matrix,
                                     double delta_t,
                                     double alpha,
                                     double h,
-                                    double epsilon);
+                                    double epsilon,
+                                    int rank,
+                                    int size);
 
+// Intercambia las filas frontera entre procesos vecinos
+void exchange_borders(double* local_matrix, uint64_t local_rows, uint64_t columns, int rank, int size);
 /**
  * @brief Crea una matriz vacía de tamaño dado.
  * 
