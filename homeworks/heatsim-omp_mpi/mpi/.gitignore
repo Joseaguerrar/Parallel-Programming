@@ -1,0 +1,8 @@
+bin
+build
+doc
+.vscode
+callgrind.out.*
+run_test.sh
+*.log
+job020/
