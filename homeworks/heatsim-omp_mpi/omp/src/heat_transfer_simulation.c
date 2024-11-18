@@ -168,7 +168,8 @@ uint64_t heat_transfer_simulation(double** matrix,
 
         double coef = (delta_t * alpha) / (h * h);
 
-        // Paralelizar solo el cálculo de cada fila (no afectando la parte de lectura/escritura)
+        // Paralelizar solo el cálculo de cada fila
+        // (no afectando la parte de lectura/escritura)
         #pragma omp parallel for schedule(static)
         for (uint64_t i = 1; i < rows - 1; i++) {
             for (uint64_t j = 1; j < columns - 1; j++) {
@@ -190,7 +191,8 @@ uint64_t heat_transfer_simulation(double** matrix,
         states_k++;
     }
 
-    copy_matrix(matrix, (states_k % 2 == 1) ? matrix_b : matrix_a, rows, columns);
+    copy_matrix(matrix, (states_k % 2 == 1) ?
+                                            matrix_b : matrix_a, rows, columns);
 
     free_matrix(matrix_a, rows);
     free_matrix(matrix_b, rows);
