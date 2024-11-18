@@ -7,6 +7,13 @@
 #include <mpi.h>
 #include "heat_simulation.h"
 
+/**
+ * @file main.c
+ * @brief Programa principal para la simulación distribuida utilizando MPI.
+ *
+ * Este programa distribuye el trabajo de simulación térmica entre varios
+ * procesos utilizando MPI, realiza las simulaciones y mide el tiempo de ejecución.
+ */
 int main(int argc, char *argv[]) {
     MPI_Init(&argc, &argv);  // Inicializar MPI
 

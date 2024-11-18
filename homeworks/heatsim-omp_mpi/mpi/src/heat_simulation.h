@@ -44,7 +44,7 @@ params_matrix* read_job_txt(const char* jobName,
 uint64_t count_lines(const char* fileName);
 
 /**
- * @brief Lee el archivo binario correspondiente a cada lámina y ejecuta la simulación de transferencia de calor.
+ * @brief Lee el archivo binario correspondiente a cada lámina y ejecuta la simulación de transferencia de calor. Con MPI.
  * 
  * @param folder Carpeta donde se encuentran los archivos binarios.
  * @param variables_formula Arreglo de estructuras `params_matrix` que contiene los parámetros de cada simulación.
@@ -57,7 +57,7 @@ void read_bin_plate(const char* folder,
                     const char* jobName);
 
 /**
- * @brief Realiza la simulación de transferencia de calor en una matriz.
+ * @brief Realiza la simulación de transferencia de calor en una matriz con MPI.
  * 
  * @param matrix Matriz de la lámina con los datos iniciales.
  * @param rows Número de filas de la matriz.
