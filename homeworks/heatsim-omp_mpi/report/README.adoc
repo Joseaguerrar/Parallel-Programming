@@ -95,6 +95,7 @@ Esta corrección asegura que los datos de las matrices se copien de manera corre
 |2 |Conc1 |9334.2367s |0.8239 |0.0687 |Accerso a coef en memoria compartida
 |3 |Conc2 |9932.9817s |0.7742 |0.0645 |Mapeo dinámico
 |4 |Omp |1321.2345 |5.82 |0.485 |Implementación con Omp
+|5 |Mpi |0 |0 |0 |Implementación con MPI
 |===
 
 
@@ -192,6 +193,7 @@ Por cuestiones de tiempo, no se realizaron optimizaciones como el mapeo por bloq
 |Conc-1 |Acceso a coef en memoria compartida
 |Conc-2 |Mapeo dinámico
 |Omp |Versión OpenMP
+|Mpi |Versión MPI
 |===
 ==== Comparación de desempeño
 image::screen_shots/comparacion-desempeño-mpi.png[comparación-desempeño]
