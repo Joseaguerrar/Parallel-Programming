@@ -6,6 +6,7 @@
 #include <stddef.h>
 #include <stdbool.h>
 #include <time.h>
+#include <string.h>
 
 /**
  * @brief Estructura para almacenar los parámetros de cada simulación.
