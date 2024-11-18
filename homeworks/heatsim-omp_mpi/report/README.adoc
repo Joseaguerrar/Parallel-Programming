@@ -299,7 +299,7 @@ El propósito de esta entrega era realizar la comparación entre MPI y OpenMP pa
 
 La cola de trabajo no se logró desocupar en el tiempo disponible, por lo que se tuvo que implementar para una versión local y no escalable, debido a esto se logra apreciar en los gráficos el resultado nulo de dicha implementación.
 
-La implementación con MPI a pesar de ser nula es compilable, sin embargo, por errores desconocidos y repito, por cuestiones de tiempo, no se pudieron depurar para encontrar el error.
+La implementación con MPI a pesar de ser nula es compilable, sin embargo, por errores desconocidos y repito, por cuestiones de tiempo, no se pudieron depurar para encontrar los errores de porque la implementación no generaba los resultados esperados. Sin embargo, el flujo de la ejecución parece ser muy parecido al correcto, lo más probable es que sean detalles muy puntuales que están siendo omitidos por cuestiones de tiempo.
 
 
 
