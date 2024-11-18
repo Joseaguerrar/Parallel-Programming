@@ -194,7 +194,7 @@ Por cuestiones de tiempo, no se realizaron optimizaciones como el mapeo por bloq
 |Omp |Versión OpenMP
 |===
 ==== Comparación de desempeño
-image::screen_shots/Desempeño-omp.png[comparación-desempeño]
+image::screen_shots/comparacion-desempeño-mpi.png[comparación-desempeño]
 En este proyecto, el objetivo fue optimizar un software de simulación de transferencia de calor implementando versiones concurrentes utilizando múltiples hilos. Comencé con una versión serial (Serial-I) que tenía un tiempo de ejecución de 8625.44 segundos. Después de aplicar algunas mejoras en la versión serial, como la eliminación de cálculos innecesarios y la optimización de operaciones redundantes, logré reducir el tiempo de ejecución a 7695.49 segundos en la versión final (Serial-F), lo que representó la mejoría más notable en cuanto a rendimiento. Sin embargo, al implementar versiones concurrentes para aprovechar el paralelismo, el rendimiento no mejoró como se esperaba.
 
 ==== Conclusión-Desempeño
@@ -248,7 +248,7 @@ El grado de concurrencia influye de manera determinante en el desempeño y la ef
 
 ==== Comparación de eficiencia
 
-image::screen_shots/Comparacion-eficiencia-omp.png[comparación-eficiencia]
+image::screen_shots/comparacion-eficiencia-mpi.png[comparación-eficiencia]
 
 El gráfico muestra la comparación entre el speedup y la eficiencia de diferentes versiones de la simulación de transferencia de calor, desde la versión serial hasta las versiones concurrentes. Podemos observar que, mientras la versión serial (Serial-F) fue la más eficiente, con una eficiencia de 1 (100%), las versiones concurrentes tuvieron una caída dramática en eficiencia a excepción de la implementada con OpenMP. Esto se debe principalmente a un mal manejo de los hilos, donde problemas como la sincronización ineficiente y el false sharing afectaron significativamente el rendimiento.
 
@@ -294,7 +294,12 @@ Sin embargo, en esta evaluación, el uso de OpenMP demostró ser efectivo para m
 
 Para soluciones que utilicen otras herramientas, como Pthreads, adoptar estrategias de mapeo eficientes, como el mapeo en bloque o el mapeo en bloque cíclico, podría replicar estas ventajas al minimizar los conflictos de acceso y reducir la interferencia entre hilos. Estas técnicas, junto con optimizaciones específicas, permitirían mejorar tanto el rendimiento como la escalabilidad de la solución en sistemas con múltiples núcleos.
 
+=== Comparación MPI vs OpenMP
+El propósito de esta entrega era realizar la comparación entre MPI y OpenMP para la simulación de transferencia de calor una buscando la paralelización y otra buscando la escalabilidad utilizando el clúster, sin embargo, por cuestiones de tiempo y manejo de recursos, la versión no se pudo probar en el clúster.
 
+La cola de trabajo no se logró desocupar en el tiempo disponible, por lo que se tuvo que implementar para una versión local y no escalable, debido a esto se logra apreciar en los gráficos el resultado nulo de dicha implementación.
+
+La implementación con MPI a pesar de ser nula es compilable, sin embargo, por errores desconocidos y repito, por cuestiones de tiempo, no se pudieron depurar para encontrar el error.
 
 
 
