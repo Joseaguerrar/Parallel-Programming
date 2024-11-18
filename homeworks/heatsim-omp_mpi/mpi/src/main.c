@@ -11,8 +11,10 @@ int main(int argc, char *argv[]) {
     MPI_Init(&argc, &argv);  // Inicializar MPI
 
     int rank, world_size;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);  // Obtener el rango del proceso actual
-    MPI_Comm_size(MPI_COMM_WORLD, &world_size);  // Obtener el número total de procesos
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    // Obtener el rango del proceso actual
+    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+    // Obtener el número total de procesos
 
     if (argc < 3) {
         if (rank == 0) {
@@ -48,24 +50,30 @@ int main(int argc, char *argv[]) {
     // Distribuir trabajo entre procesos
     uint64_t rows_per_proc = lines / world_size;
     uint64_t extra_rows = lines % world_size;
-    uint64_t local_start = rank * rows_per_proc + (rank < extra_rows ? rank : extra_rows);
+    uint64_t local_start = rank * rows_per_proc + (rank < extra_rows ?
+                                                             rank : extra_rows);
     uint64_t local_lines = rows_per_proc + (rank < extra_rows ? 1 : 0);
 
-    params_matrix* local_variables = malloc(local_lines * sizeof(params_matrix));
+    params_matrix* local_variables = malloc(local_lines *
+                                                         sizeof(params_matrix));
 
     // Scatter los parámetros de las simulaciones
     if (rank == 0) {
         for (int i = 0; i < world_size; i++) {
-            uint64_t start = i * rows_per_proc + (i < extra_rows ? i : extra_rows);
+            uint64_t start = i * rows_per_proc + (i < extra_rows ? i :
+                                                                    extra_rows);
             uint64_t count = rows_per_proc + (i < extra_rows ? 1 : 0);
             if (i == 0) {
-                memcpy(local_variables, variables + start, count * sizeof(params_matrix));
+                memcpy(local_variables, variables + start, count *
+                                                         sizeof(params_matrix));
             } else {
-                MPI_Send(variables + start, count * sizeof(params_matrix), MPI_BYTE, i, 0, MPI_COMM_WORLD);
+                MPI_Send(variables + start, count * sizeof(params_matrix),
+                                                MPI_BYTE, i, 0, MPI_COMM_WORLD);
             }
         }
     } else {
-        MPI_Recv(local_variables, local_lines * sizeof(params_matrix), MPI_BYTE, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        MPI_Recv(local_variables, local_lines * sizeof(params_matrix),
+                             MPI_BYTE, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
     }
 
     // Cada proceso realiza su porción de simulación

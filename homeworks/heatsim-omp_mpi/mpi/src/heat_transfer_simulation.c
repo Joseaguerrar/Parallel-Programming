@@ -6,33 +6,40 @@
 #include <string.h>
 #include "heat_simulation.h"
 
-void read_bin_plate(const char* folder, params_matrix* variables, uint64_t lines, const char* jobName) {
+void read_bin_plate(const char* folder, params_matrix* variables,
+                                          uint64_t lines, const char* jobName) {
     int rank, world_size;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
     uint64_t rows, columns;
-    char direction[1024]; // Incrementar el tamaño para rutas largas
+    char direction[1024];  // Incrementar el tamaño para rutas largas
     uint64_t* array_state_k = malloc(lines * sizeof(uint64_t));
 
     for (uint64_t i = 0; i < lines; i++) {
         // Validar que variables[i].filename no sea NULL
         if (variables[i].filename == NULL) {
-            fprintf(stderr, "Proceso %d: Filename es NULL para la simulación %lu\n", rank, i);
+            fprintf(stderr,
+              "Proceso %d: Filename es NULL para la simulación %lu\n", rank, i);
             MPI_Abort(MPI_COMM_WORLD, 1);
         }
 
         // Generar la ruta completa y validar que no se trunque
-        int ret = snprintf(direction, sizeof(direction), "%s/%s", folder, variables[i].filename);
+        int ret = snprintf(direction, sizeof(direction), "%s/%s",
+                                                 folder, variables[i].filename);
         if (ret < 0 || ret >= sizeof(direction)) {
-            fprintf(stderr, "Proceso %d: La ruta generada es demasiado larga para el buffer.\n", rank);
+            fprintf(stderr,
+            "Proceso %d: La ruta generada es demasiado larga para el buffer.\n",
+            rank);
             MPI_Abort(MPI_COMM_WORLD, 1);
         }
 
         // Abrir el archivo binario y validar
         FILE* bin_file = fopen(direction, "rb");
         if (bin_file == NULL) {
-            fprintf(stderr, "Proceso %d: No se pudo abrir el archivo binario %s\n", rank, variables[i].filename);
+            fprintf(stderr,
+            "Proceso %d: No se pudo abrir el archivo binario %s\n", rank,
+            variables[i].filename);
             MPI_Abort(MPI_COMM_WORLD, 1);
         }
 
@@ -43,7 +50,8 @@ void read_bin_plate(const char* folder, params_matrix* variables, uint64_t lines
         // Asignar memoria para la matriz local
         double** matrix = create_empty_matrix(rows, columns);
         if (matrix == NULL) {
-            fprintf(stderr, "Proceso %d: Error al asignar memoria para la matriz\n", rank);
+            fprintf(stderr,
+            "Proceso %d: Error al asignar memoria para la matriz\n", rank);
             fclose(bin_file);
             MPI_Abort(MPI_COMM_WORLD, 1);
         }
@@ -60,11 +68,13 @@ void read_bin_plate(const char* folder, params_matrix* variables, uint64_t lines
         double h = variables[i].h;
         double epsilon = variables[i].epsilon;
 
-        uint64_t states_k = heat_transfer_simulation(matrix, rows, columns, delta_t, alpha, h, epsilon);
+        uint64_t states_k = heat_transfer_simulation(matrix, rows, columns,
+                                                    delta_t, alpha, h, epsilon);
         array_state_k[i] = states_k;
 
         // Generar el archivo binario con el estado final
-        generate_bin_file(matrix, rows, columns, folder, variables[i].filename, states_k);
+        generate_bin_file(matrix, rows, columns, folder, variables[i].filename,
+                                                                      states_k);
 
         // Liberar la memoria de la matriz
         free_matrix(matrix, rows);
@@ -78,23 +88,28 @@ void read_bin_plate(const char* folder, params_matrix* variables, uint64_t lines
     free(array_state_k);
 }
 
-uint64_t heat_transfer_simulation(double** matrix, uint64_t rows, uint64_t columns,
-                                      double delta_t, double alpha, double h, double epsilon) {
+uint64_t heat_transfer_simulation(double** matrix, uint64_t rows,
+                                 uint64_t columns, double delta_t, double alpha,
+                                double h, double epsilon) {
     int rank, world_size;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
     // Calcular el rango de filas para este proceso
-    uint64_t local_rows = rows / world_size + (rank < rows % world_size ? 1 : 0);
-    uint64_t start_row = rank * (rows / world_size) + (rank < rows % world_size ? rank : rows % world_size);
+    uint64_t local_rows = rows / world_size + (rank < rows % world_size ?
+                                                                         1 : 0);
+    uint64_t start_row = rank * (rows / world_size) + (rank < rows % world_size
+                                                    ? rank : rows % world_size);
 
     // Crear matrices locales
-    double** current_matrix = create_empty_matrix(local_rows + 2, columns); // Incluye filas fantasma
+    double** current_matrix = create_empty_matrix(local_rows + 2, columns);
+    // Incluye filas fantasma
     double** next_matrix = create_empty_matrix(local_rows + 2, columns);
 
     // Copiar las filas correspondientes de la matriz global
     for (uint64_t i = 0; i < local_rows; i++) {
-        memcpy(current_matrix[i + 1], matrix[start_row + i], columns * sizeof(double));
+        memcpy(current_matrix[i + 1], matrix[start_row + i], columns *
+        sizeof(double));
     }
 
     uint64_t states_k = 0;
@@ -106,11 +121,14 @@ uint64_t heat_transfer_simulation(double** matrix, uint64_t rows, uint64_t colum
         // Intercambiar filas frontera con procesos vecinos
         if (rank > 0) {
             MPI_Sendrecv(current_matrix[1], columns, MPI_DOUBLE, rank - 1, 0,
-                         current_matrix[0], columns, MPI_DOUBLE, rank - 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                         current_matrix[0], columns, MPI_DOUBLE, rank - 1, 0,
+                        MPI_COMM_WORLD, MPI_STATUS_IGNORE);
         }
         if (rank < world_size - 1) {
-            MPI_Sendrecv(current_matrix[local_rows], columns, MPI_DOUBLE, rank + 1, 0,
-                         current_matrix[local_rows + 1], columns, MPI_DOUBLE, rank + 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            MPI_Sendrecv(current_matrix[local_rows], columns, MPI_DOUBLE,
+                                                                    rank + 1, 0,
+                         current_matrix[local_rows + 1], columns, MPI_DOUBLE,
+                        rank + 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
         }
 
         // Actualizar las celdas internas
@@ -130,7 +148,8 @@ uint64_t heat_transfer_simulation(double** matrix, uint64_t rows, uint64_t colum
 
         // Sincronización para evaluar el balance
         bool global_balance_point;
-        MPI_Allreduce(&balance_point, &global_balance_point, 1, MPI_C_BOOL, MPI_LAND, MPI_COMM_WORLD);
+        MPI_Allreduce(&balance_point, &global_balance_point, 1, MPI_C_BOOL,
+                                                      MPI_LAND, MPI_COMM_WORLD);
         balance_point = global_balance_point;
 
         // Intercambiar matrices
@@ -144,11 +163,13 @@ uint64_t heat_transfer_simulation(double** matrix, uint64_t rows, uint64_t colum
     // Enviar datos al proceso raíz
     if (rank == 0) {
         for (uint64_t i = 0; i < local_rows; i++) {
-            memcpy(matrix[start_row + i], current_matrix[i + 1], columns * sizeof(double));
+            memcpy(matrix[start_row + i], current_matrix[i + 1], columns *
+                                                                sizeof(double));
         }
     } else {
         for (uint64_t i = 0; i < local_rows; i++) {
-            MPI_Send(current_matrix[i + 1], columns, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
+            MPI_Send(current_matrix[i + 1], columns, MPI_DOUBLE, 0, 0,
+                                                                MPI_COMM_WORLD);
         }
     }
 
