@@ -127,7 +127,7 @@ void read_bin_plate(const char* folder,
  * 
  * Esta función toma como entrada una matriz que representa una lámina, así como otros parámetros físicos y 
  * de simulación, y ejecuta la transferencia de calor hasta que se alcanza el equilibrio térmico. 
- * Utiliza múltiples hilos para dividir el trabajo en filas de la matriz.
+ * Utiliza múltiples hilos para dividir el trabajo en filas de la matriz utilizando OpenMP.
  * 
  * @param matrix Matriz de la lámina con los datos iniciales.
  * @param rows Número de filas de la matriz.
