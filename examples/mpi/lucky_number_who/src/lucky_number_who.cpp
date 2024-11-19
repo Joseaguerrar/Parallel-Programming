@@ -36,23 +36,32 @@ int main(int argc, char* argv[]) {
 }
 
 void generate_lucky_statistics(int process_number, int process_count) {
-  // TODO(you): Generate my lucky number
-  const int my_lucky_number = -1;
+  // Generate my lucky number
+  UniformRandom<int> uniformRandom(process_number);
+  const int my_lucky_number = uniformRandom.between(0, 100);
+
+  std::cout << "Process " << process_number << ": my lucky number is "
+    << my_lucky_number << std::endl;
 
   int all_min = -1;
   int all_max = -1;
   int all_sum = -1;
 
-  // TODO(you): Update distributed statistics from processes' lucky numbers
+  // Update distributed statistics from processes' lucky numbers
+  if (MPI_Allreduce(/*input*/ &my_lucky_number, /*output*/ &all_min, /*count*/ 1
+    , MPI_INT, MPI_MIN, MPI_COMM_WORLD) != MPI_SUCCESS) {
+    fail("error: could not reduce min");
+  }
+  if (MPI_Allreduce(/*input*/ &my_lucky_number, /*output*/ &all_max, /*count*/ 1
+    , MPI_INT, MPI_MAX, MPI_COMM_WORLD) != MPI_SUCCESS) {
+    fail("error: could not reduce max");
+  }
+  if (MPI_Allreduce(/*input*/ &my_lucky_number, /*output*/ &all_sum, /*count*/ 1
+    , MPI_INT, MPI_SUM, MPI_COMM_WORLD) != MPI_SUCCESS) {
+    fail("error: could not reduce sum");
+  }
 
   const double all_average = double(all_sum) / process_count;
-  std::cout << "Process " << process_number << ": all minimum = "
-    << all_min << std::endl;
-  std::cout << "Process " << process_number << ": all average = "
-    << all_average << std::endl;
-  std::cout << "Process " << process_number << ": all maximum = "
-    << all_max << std::endl;
-
   if (my_lucky_number == all_min) {
     std::cout << "Process " << process_number << ": my lucky number ("
       << my_lucky_number << ") is the minimum (" << all_min << ")" << std::endl;
