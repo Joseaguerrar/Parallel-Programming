@@ -76,10 +76,12 @@ int main(int argc, char* argv[]) {
         int thread_count = omp_get_num_threads();
 
         // Calcular el rango para cada hilo
-        int thread_start = calculate_start(thread_id, process_finish,
-                                           thread_count, process_start);
-        int thread_finish = calculate_finish(thread_id, process_finish,
-                                             thread_count, process_start);
+        int thread_start = process_start + calculate_start(thread_id,
+                                                 process_finish - process_start,
+                                                            thread_count, 0);
+        int thread_finish = process_start + calculate_finish(thread_id,
+                                                 process_finish - process_start,
+                                                              thread_count, 0);
         int thread_size = thread_finish - thread_start;
 
         #pragma omp critical
