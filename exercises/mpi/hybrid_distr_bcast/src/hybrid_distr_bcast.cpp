@@ -6,20 +6,53 @@
 #include <iostream>
 #include <vector>
 
-// Funciones auxiliares
+/**
+ * @brief Calcula el inicio de un rango asignado a un proceso o hilo.
+ *
+ * @param rank Identificador del proceso o hilo dentro de su grupo.
+ * @param end Valor final del rango general (no incluido).
+ * @param workers Número total de procesos o hilos en el grupo.
+ * @param begin Valor inicial del rango general.
+ * @return El valor de inicio del subrango asignado al proceso o hilo.
+ */
 int calculate_start(int rank, int end, int workers, int begin);
+
+/**
+ * @brief Calcula el final de un rango asignado a un proceso o hilo.
+ *
+ * @param rank Identificador del proceso o hilo dentro de su grupo.
+ * @param end Valor final del rango general (no incluido).
+ * @param workers Número total de procesos o hilos en el grupo.
+ * @param begin Valor inicial del rango general.
+ * @return El valor final (no incluido) del subrango asignado al proceso o hilo.
+ */
 int calculate_finish(int rank, int end, int workers, int begin);
 
+/**
+ * @brief Programa principal que distribuye un rango entre procesos MPI y hilos
+ *        de OpenMP.
+ *
+ * Este programa inicializa MPI y distribuye un rango general entre los
+ * diferentes procesos MPI y, dentro de cada proceso, entre los hilos de OpenMP.
+ * Cada proceso informa su rango asignado, y cada hilo dentro del proceso informa
+ * su subrango. El tiempo de ejecución de cada proceso es medido desde la inicialización
+ * hasta la finalización de MPI.
+ *
+ * @param argc Número de argumentos de línea de comandos.
+ * @param argv Array de argumentos de línea de comandos. Se esperan dos argumentos:
+ *        el inicio (inclusive) y el fin (no inclusive) del rango general.
+ * @return 0 si el programa finaliza correctamente.
+ */
 int main(int argc, char* argv[]) {
     double start_time = 0.0, end_time = 0.0;
 
     if (MPI_Init(&argc, &argv) == MPI_SUCCESS) {
-        start_time = MPI_Wtime();  // Tiempo inicial
+        start_time = MPI_Wtime();  ///< Tiempo inicial del proceso MPI.
 
-        int process_number = -1;  // rank del proceso
+        int process_number = -1;  ///< Identificador del proceso actual (rank).
         MPI_Comm_rank(MPI_COMM_WORLD, &process_number);
 
-        int process_count = -1;  // cantidad total de procesos
+        int process_count = -1;  ///< Número total de procesos en MPI.
         MPI_Comm_size(MPI_COMM_WORLD, &process_count);
 
         char process_hostname[MPI_MAX_PROCESSOR_NAME];
@@ -74,7 +107,7 @@ int main(int argc, char* argv[]) {
                   << process_start << ", " << process_finish << "[ size "
                   << process_size;
 
-        end_time = MPI_Wtime();  // Tiempo final
+        end_time = MPI_Wtime();  ///< Tiempo final del proceso MPI.
 
         // Calcular el tiempo total del proceso
         double elapsed_time = end_time - start_time;
