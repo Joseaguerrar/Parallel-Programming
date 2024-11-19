@@ -1,9 +1,16 @@
 procedure main(argc, argv[]):
   declare constant my_lucky_number = random(0, 100)
+  print("Process ", process_number, ": my lucky number is ", my_lucky_number)
 
   declare all_min := -1
   declare all_max := -1
   declare all_sum := -1
+
+  // Reduce the data value from all processes to a single result value that will
+  // be available in all processes
+  all_reduce(my_lucky_number, &all_min, 1, min)
+  all_reduce(my_lucky_number, &all_max, 1, max)
+  all_reduce(my_lucky_number, &all_sum, 1, sum)
 
   declare constant all_average = all_sum / process_count
   if my_lucky_number = all_min then
