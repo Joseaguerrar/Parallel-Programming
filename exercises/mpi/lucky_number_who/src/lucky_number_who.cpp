@@ -1,6 +1,5 @@
 //  Copyright [2024] <jose.guerrarodriguez@ucr.ac.cr>
 /**
- * @file mpi_lucky_statistics.cpp
  * @brief Example program using MPI to compute distributed statistics.
  * 
  * This program demonstrates how to use MPI to calculate the minimum, 
