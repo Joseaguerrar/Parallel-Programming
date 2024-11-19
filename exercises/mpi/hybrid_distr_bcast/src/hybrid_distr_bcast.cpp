@@ -1,3 +1,4 @@
+//  Copyright [2024] <jose.guerrarodriguez@ucr.ac.cr>
 #include <mpi.h>
 #include <omp.h>
 #include <algorithm>
@@ -34,7 +35,8 @@ int main(int argc, char* argv[]) {
                 overall_start = atoi(argv[1]);
                 overall_finish = atoi(argv[2]);
             } else {
-                std::cerr << "usage: hybrid_distr_arg start finish" << std::endl;
+                std::cerr
+                         << "usage: hybrid_distr_arg start finish" << std::endl;
                 MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
             }
         }
@@ -49,8 +51,10 @@ int main(int argc, char* argv[]) {
 
         if (process_number == 0) {
             for (int i = 0; i < process_count; ++i) {
-                starts[i] = calculate_start(i, overall_finish, process_count, overall_start);
-                finishes[i] = calculate_finish(i, overall_finish, process_count, overall_start);
+                starts[i] = calculate_start(i, overall_finish, process_count,
+                                                                 overall_start);
+                finishes[i] = calculate_finish(i, overall_finish, process_count,
+                                                                 overall_start);
             }
         }
 
@@ -58,8 +62,10 @@ int main(int argc, char* argv[]) {
         int process_start = 0;
         int process_finish = 0;
 
-        MPI_Scatter(starts.data(), 1, MPI_INT, &process_start, 1, MPI_INT, 0, MPI_COMM_WORLD);
-        MPI_Scatter(finishes.data(), 1, MPI_INT, &process_finish, 1, MPI_INT, 0, MPI_COMM_WORLD);
+        MPI_Scatter(starts.data(), 1, MPI_INT, &process_start, 1, MPI_INT, 0,
+                                                                MPI_COMM_WORLD);
+        MPI_Scatter(finishes.data(), 1, MPI_INT, &process_finish, 1, MPI_INT, 0,
+                                                                MPI_COMM_WORLD);
 
         int process_size = process_finish - process_start;
 
@@ -82,14 +88,16 @@ int main(int argc, char* argv[]) {
             int thread_count = omp_get_num_threads();
 
             // Calcular el rango para cada hilo dentro del rango del proceso
-            int thread_start = process_start + calculate_start(thread_id, process_finish - process_start,
+            int thread_start = process_start + calculate_start(thread_id,
+                                                 process_finish - process_start,
                                                             thread_count, 0);
-            int thread_finish = process_start + calculate_finish(thread_id, process_finish - process_start,
-                                                                thread_count, 0);
+            int thread_finish = process_start + calculate_finish(thread_id,
+                                                 process_finish - process_start,
+                                                               thread_count, 0);
             int thread_size = thread_finish - thread_start;
 
             #pragma omp critical
-            std::cout << '\t' << process_hostname << ':' << process_number << '.'
+            std::cout << '\t' << process_hostname << ':' << process_number <<'.'
                     << thread_id << ": range [" << thread_start << ", "
                     << thread_finish
                     << "[ size " << thread_size << std::endl;
