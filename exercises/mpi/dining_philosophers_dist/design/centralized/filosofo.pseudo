@@ -1,0 +1,11 @@
+procedure philosopher(id):
+  left := (id + 1) mod 5  // Palillo izquierdo
+  right := id  // Palillo derecho
+  while true do
+    think()  // Pensar
+    send_message(waiter, {"REQUEST", id, left, right})  // Solicitar ambos palillos
+    wait_for_message("GRANT")  // Esperar confirmación del mesero
+    eat()  // Comer
+    send_message(waiter, {"RELEASE", id, left, right})  // Liberar ambos palillos
+  end while
+end procedure

@@ -1,0 +1,28 @@
+shared chopstick_right[] := create_array(5, "free")  // Cada filósofo posee su palillo derecho
+
+procedure philosopher(id):
+  left_neighbor := (id + 4) mod 5  // Vecino izquierdo
+  right := id  // Palillo derecho
+  while true do
+    think()  // Pensar
+
+    // Solicitar palillos
+    send_message(left_neighbor, {"REQUEST", id})  // Solicitar el palillo izquierdo
+    wait_for_message("GRANT_LEFT")  // Esperar aprobación del vecino izquierdo
+    lock(chopstick_right[right])  // Intentar bloquear el palillo derecho
+    if chopstick_right[right] = "free" then
+      chopstick_right[right] := "occupied"  // Marcar el palillo derecho como ocupado
+      send_message(left_neighbor, {"GRANT_RIGHT"})  // Confirmar que tiene ambos palillos
+    else
+      send_message(left_neighbor, {"DENY_RIGHT"})  // Si no puede tomar el palillo derecho, liberar el izquierdo
+      continue  // Volver a intentar más tarde
+    end if
+
+    // Comer
+    eat()
+
+    // Liberar palillos
+    chopstick_right[right] := "free"  // Liberar el palillo derecho
+    send_message(left_neighbor, {"RELEASE"})  // Informar al vecino izquierdo que el palillo está libre
+  end while
+end procedure

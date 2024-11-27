@@ -1,0 +1,20 @@
+shared chopsticks[] := create_array(5, "free")  // Inicialmente, todos los palillos están libres
+
+procedure waiter():
+  while true do
+    msg := receive_message()  // Esperar un mensaje de los filósofos
+    if msg.type = "REQUEST" then
+      if chopsticks[msg.left] = "free" and chopsticks[msg.right] = "free" then
+        chopsticks[msg.left] := "occupied"  // Marcar los palillos como ocupados
+        chopsticks[msg.right] := "occupied"
+        send_message(msg.philosopher, "GRANT")  // Otorgar acceso al filósofo
+      else
+        queue_request(msg)  // Si no están disponibles, guardar la solicitud en una cola
+      end if
+    else if msg.type = "RELEASE" then
+      chopsticks[msg.left] := "free"  // Liberar los palillos
+      chopsticks[msg.right] := "free"
+      check_queue()  // Verificar si alguna solicitud en cola puede ser atendida
+    end if
+  end while
+end procedure
