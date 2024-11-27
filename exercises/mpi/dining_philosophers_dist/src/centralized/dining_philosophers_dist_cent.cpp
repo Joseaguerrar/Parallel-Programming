@@ -1,3 +1,4 @@
+//  Copyright [2024] <jose.guerrarodriguez@ucr.ac.cr>
 #include <queue>
 #include <utility>
 #include <mpi.h>
@@ -7,6 +8,15 @@
 
 using namespace std;
 
+/**
+ * @brief Simula el comportamiento de un filósofo.
+ *
+ * Cada filósofo alterna entre pensar, tener hambre y comer. Para comer, solicita acceso a los palillos al mesero
+ * (implementado como un proceso separado). Una vez que termina de comer, libera los palillos.
+ *
+ * @param rank El identificador del filósofo (proceso).
+ * @param num_philosophers El número total de filósofos.
+ */
 void philosopher(int rank, int num_philosophers) {
     int left = (rank + 1) % num_philosophers; // Palillo izquierdo
     int right = rank;                         // Palillo derecho
@@ -32,6 +42,15 @@ void philosopher(int rank, int num_philosophers) {
     }
 }
 
+/**
+ * @brief Simula el comportamiento del mesero (árbitro).
+ *
+ * El mesero controla el acceso a los palillos compartidos entre los filósofos. Procesa solicitudes de comer
+ * y libera los palillos después de que los filósofos terminan de comer. Utiliza una cola para garantizar un
+ * acceso justo y en orden.
+ *
+ * @param num_philosophers El número total de filósofos.
+ */
 void waiter(int num_philosophers) {
     int *chopsticks = (int *)calloc(num_philosophers, sizeof(int)); // Estado de los palillos (0: libre, 1: ocupado)
     queue<pair<int, int>> request_queue; // Cola para solicitudes: (tipo, filósofo)
@@ -77,6 +96,15 @@ void waiter(int num_philosophers) {
     free(chopsticks);
 }
 
+/**
+ * @brief Función principal.
+ *
+ * Inicializa MPI, identifica el rol de cada proceso (filósofo o mesero) y lanza la simulación.
+ *
+ * @param argc Número de argumentos de línea de comandos.
+ * @param argv Argumentos de línea de comandos.
+ * @return Código de salida (EXIT_SUCCESS o EXIT_FAILURE).
+ */
 int main(int argc, char **argv) {
     MPI_Init(&argc, &argv);
 
