@@ -1,0 +1,29 @@
+procedure main()
+  shared hydrogen_multiplex := create_semaphore(2)
+  shared oxygen_multiplex := create_semaphore(1)
+  shared device_barrier := crate_barrier(3)
+
+  while true do
+    case read_char() of
+      'H': create_thread(hydrogen)
+      'O': create_thread(oxygen)
+      EOF: return
+    end case
+  end while
+end procedure
+
+procedure hydrogen()
+  wait(hydrogen_multiplex)
+  wait(device_barrier)
+  bond()
+  wait(device_barrier)
+  signal(hydrogen_multiplex)
+end procedure
+
+procedure oxygen()
+  wait(oxygen_multiplex)
+  wait(device_barrier)
+  bond()
+  wait(device_barrier)
+  signal(oxygen_multiplex)
+end procedure
