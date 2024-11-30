@@ -3,7 +3,7 @@
 #include <pthread.h>
 #include <semaphore.h>
 #include <iostream>
-#include <cctype>  
+#include <cctype>
 
 using namespace std; // NOLINT
 
