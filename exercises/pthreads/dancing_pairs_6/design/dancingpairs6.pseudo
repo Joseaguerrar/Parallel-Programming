@@ -1,0 +1,40 @@
+procedure main()
+  shared male_queue := create_semaphore(0)
+  shared female_queue := create_semaphore(0)
+  shared team_barrier := create_barrier(4)
+
+  while true do
+    case read_char() of
+      'M': create_thread(male)
+      'W': create_thread(female)
+      EOF: return
+    end case
+  end while
+end procedure
+
+procedure male()
+  wait(male_queue)
+  wait(team_barrier)
+  dance()
+  wait(team_barrier)
+end procedure
+
+procedure female()
+  wait(female_queue)
+  wait(team_barrier)
+  dance()
+  wait(team_barrier)
+end procedure
+
+procedure team_manager()
+  while true do
+    wait(male_queue)
+    wait(male_queue)
+    wait(female_queue)
+    wait(female_queue)
+    signal(team_barrier)
+    signal(team_barrier)
+    signal(team_barrier)
+    signal(team_barrier)
+  end while
+end procedure
