@@ -3,6 +3,7 @@
 #include <pthread.h>
 #include <semaphore.h>
 #include <iostream>
+#include <cctype>  
 
 using namespace std; // NOLINT
 
@@ -100,12 +101,14 @@ int main() {
 
     while (true) {
         cin >> input;
-        if (input == 'H' || input == 'h') {
+        input = toupper(input);  // Convertir a mayúsculas
+        if (input == 'H') {
             pthread_create(&threads[thread_count++], nullptr,
-                                                             hydrogen, nullptr);
-        } else if (input == 'O' || input == 'o') {
-            pthread_create(&threads[thread_count++], nullptr, oxygen, nullptr);
-        } else if (input == 'E' || input == 'e') {
+                           hydrogen, nullptr);
+        } else if (input == 'O') {
+            pthread_create(&threads[thread_count++], nullptr,
+                           oxygen, nullptr);
+        } else if (input == 'E') {
             cout << "Exiting..." << endl;
             break;
         } else {
