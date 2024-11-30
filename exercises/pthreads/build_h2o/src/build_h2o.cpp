@@ -1,9 +1,10 @@
-#include <iostream>
+// Copyright [2024] <jose.guerrarodriguez@ucr.ac.cr>
+#include <unistd.h>
 #include <pthread.h>
 #include <semaphore.h>
-#include <unistd.h>
+#include <iostream>
 
-using namespace std;
+using namespace std;//NOLINT
 // Semáforos para sincronización
 sem_t hydrogen_sem;
 sem_t oxygen_sem;
@@ -17,7 +18,7 @@ int oxygen_count = 0;
 void bond(const string& atom) {
     // Simula el proceso de enlazar moléculas
     cout << atom << " is bonding..." << endl;
-    usleep(100000); // Simula un pequeño retraso
+    usleep(100000);  // Simula un pequeño retraso
 }
 
 void* hydrogen(void* arg) {
