@@ -1,19 +1,19 @@
 // Copyright [2024] <jose.guerrarodriguez@ucr.ac.cr>
-#include <iostream>
-#include <pthread.h>
-#include <queue>
 #include <unistd.h>
+#include <pthread.h>
+#include <iostream>
+#include <queue>
 #include <cctype>
 
-using namespace std;
+using namespace std; //NOLINT
 
 /**
  * @struct DanceFloor
  * @brief Representa el salón de baile compartido para gestionar la sincronización de los bailarines.
  */
 struct DanceFloor {
-    pthread_mutex_t mtx;         ///< Mutex para proteger los recursos compartidos.
-    pthread_cond_t cv_team;      ///< Variable de condición para sincronizar equipos.
+    pthread_mutex_t mtx;      ///< Mutex para proteger los recursos compartidos.
+    pthread_cond_t cv_team;      ///< Variable para sincronizar equipos.
     int male_count;              ///< Número de hombres actualmente esperando.
     int female_count;            ///< Número de mujeres actualmente esperando.
     bool exit_flag;              ///< Bandera para indicar la terminación.
@@ -42,7 +42,7 @@ struct DanceFloor {
  * Muestra un mensaje indicando que un equipo está bailando.
  */
 void dance() {
-    sleep(1); // Simula el tiempo necesario para bailar.
+    sleep(1);  // Simula el tiempo necesario para bailar.
     cout << "¡Un equipo de 2 hombres y 2 mujeres está bailando!" << endl;
 }
 
@@ -57,7 +57,8 @@ void* male(void* arg) {
     pthread_mutex_lock(&floor->mtx);
     floor->male_count++;
 
-    while ((floor->male_count < 2 || floor->female_count < 2) && !floor->exit_flag) {
+    while ((floor->male_count < 2 || floor->female_count < 2) &&
+                                                            !floor->exit_flag) {
         pthread_cond_wait(&floor->cv_team, &floor->mtx);
     }
 
@@ -67,8 +68,8 @@ void* male(void* arg) {
     }
 
     // Forma un equipo
-    floor->male_count -= 2; // Dos hombres por equipo
-    floor->female_count -= 2; // Dos mujeres por equipo
+    floor->male_count -= 2;  // Dos hombres por equipo
+    floor->female_count -= 2;  // Dos mujeres por equipo
     pthread_cond_broadcast(&floor->cv_team);
 
     pthread_mutex_unlock(&floor->mtx);
@@ -88,7 +89,8 @@ void* female(void* arg) {
     pthread_mutex_lock(&floor->mtx);
     floor->female_count++;
 
-    while ((floor->male_count < 2 || floor->female_count < 2) && !floor->exit_flag) {
+    while ((floor->male_count < 2 || floor->female_count < 2) &&
+                                                            !floor->exit_flag) {
         pthread_cond_wait(&floor->cv_team, &floor->mtx);
     }
 
@@ -98,8 +100,8 @@ void* female(void* arg) {
     }
 
     // Forma un equipo
-    floor->male_count -= 2; // Dos hombres por equipo
-    floor->female_count -= 2; // Dos mujeres por equipo
+    floor->male_count -= 2;  // Dos hombres por equipo
+    floor->female_count -= 2;  // Dos mujeres por equipo
     pthread_cond_broadcast(&floor->cv_team);
 
     pthread_mutex_unlock(&floor->mtx);
@@ -114,11 +116,15 @@ void* female(void* arg) {
  * @return 0 en caso de ejecución exitosa, 1 si falla la creación de algún hilo.
  */
 int main() {
-    DanceFloor floor; ///< Instancia del salón de baile compartido.
-    queue<pthread_t> threads; ///< Cola para gestionar las referencias a los hilos.
+    DanceFloor floor;
+    ///< Instancia del salón de baile compartido.
+    queue<pthread_t> threads;
+    ///< Cola para gestionar las referencias a los hilos.
     char dancer;
 
-    cout << "Ingrese los bailarines (M para hombre, W para mujer, E para salir): " << endl;
+    cout <<
+     "Ingrese los bailarines (M para hombre, W para mujer, E para salir): " <<
+      endl;
 
     while (true) {
         cin >> dancer;
@@ -127,7 +133,8 @@ int main() {
         if (dancer == 'E') {
             pthread_mutex_lock(&floor.mtx);
             floor.exit_flag = true;
-            pthread_cond_broadcast(&floor.cv_team);  // Despierta a todos los hilos
+            pthread_cond_broadcast(&floor.cv_team);
+            // Despierta a todos los hilos
             pthread_mutex_unlock(&floor.mtx);
             cout << "Saliendo..." << endl;
             break;
